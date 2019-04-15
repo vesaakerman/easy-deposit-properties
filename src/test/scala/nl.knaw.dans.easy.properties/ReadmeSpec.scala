@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties
 import java.io.ByteArrayOutputStream
 
 import better.files.File
+import nl.knaw.dans.easy.properties.app.DatabaseConfiguration
 import org.scalatest._
 
 class ReadmeSpec extends FlatSpec with Matchers with CustomMatchers {
@@ -25,6 +26,7 @@ class ReadmeSpec extends FlatSpec with Matchers with CustomMatchers {
   private val configuration = Configuration(
     version = "my-version",
     serverPort = 12345,
+    databaseConfig = DatabaseConfiguration("", ""),
   )
   private val clo = new CommandLineOptions(Array[String](), configuration) {
     // avoids System.exit() in case of invalid arguments or "--help"

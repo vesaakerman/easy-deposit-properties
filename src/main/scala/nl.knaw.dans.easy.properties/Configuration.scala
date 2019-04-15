@@ -17,11 +17,12 @@ package nl.knaw.dans.easy.properties
 
 import better.files.File
 import better.files.File.root
+import nl.knaw.dans.easy.properties.app.DatabaseConfiguration
 import org.apache.commons.configuration.PropertiesConfiguration
 
 case class Configuration(version: String,
                          serverPort: Int,
-                         // other configuration properties defined in application.properties
+                         databaseConfig: DatabaseConfiguration,
                         )
 
 object Configuration {
@@ -40,7 +41,12 @@ object Configuration {
     new Configuration(
       version = (home / "bin" / "version").contentAsString.stripLineEnd,
       serverPort = properties.getInt("daemon.http.port"),
-      // read other properties defined in application.properties
+      databaseConfig = DatabaseConfiguration(
+        properties.getString("database.driver-class"),
+        properties.getString("database.url"),
+        properties.getString("database.username"),
+        properties.getString("database.password"),
+      ),
     )
   }
 }
