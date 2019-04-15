@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream
 
 import better.files.File
 import nl.knaw.dans.easy.properties.app.DatabaseConfiguration
+import nl.knaw.dans.easy.properties.fixture.CustomMatchers
 import org.scalatest._
 
 class ReadmeSpec extends FlatSpec with Matchers with CustomMatchers {
