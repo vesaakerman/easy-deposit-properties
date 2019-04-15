@@ -25,7 +25,7 @@ import org.scalatra.servlet.ScalatraListener
 import scala.util.Try
 
 class EasyDepositPropertiesService(serverPort: Int,
-                         servlets: Map[String, ScalatraServlet]) extends DebugEnhancedLogging {
+                                   servlets: Map[String, ScalatraServlet]) extends DebugEnhancedLogging {
 
   private val server = new Server(serverPort) {
     setHandler(

@@ -15,10 +15,6 @@
  */
 package nl.knaw.dans.easy.properties
 
-import scala.util.{ Success, Try }
-
 class EasyDepositPropertiesApp(configuration: Configuration)  {
-
-
 
 }
