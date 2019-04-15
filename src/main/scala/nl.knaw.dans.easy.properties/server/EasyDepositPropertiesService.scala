@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties
+package nl.knaw.dans.easy.properties.server
 
 import javax.servlet.ServletContext
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging

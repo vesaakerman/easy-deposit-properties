@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties
 
 import better.files.File
 import better.files.File.root
-import nl.knaw.dans.easy.properties.app.DatabaseConfiguration
+import nl.knaw.dans.easy.properties.app.database.DatabaseConfiguration
 import org.apache.commons.configuration.PropertiesConfiguration
 
 case class Configuration(version: String,

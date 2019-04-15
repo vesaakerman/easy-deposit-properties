@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties
 
 import better.files.File
+import nl.knaw.dans.easy.properties.server.{ EasyDepositPropertiesService, EasyDepositPropertiesServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 

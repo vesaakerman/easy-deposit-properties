@@ -3,8 +3,7 @@ package nl.knaw.dans.easy.properties.fixture
 import java.sql.Connection
 
 import better.files.File
-import nl.knaw.dans.easy.properties.app.DatabaseConfiguration
-import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
+import nl.knaw.dans.easy.properties.app.database.{ DatabaseAccess, DatabaseConfiguration }
 import org.scalatest.BeforeAndAfterEach
 import resource.{ constant, managed }
 

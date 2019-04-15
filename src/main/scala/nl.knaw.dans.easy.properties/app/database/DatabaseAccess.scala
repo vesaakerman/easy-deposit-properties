@@ -18,7 +18,6 @@ package nl.knaw.dans.easy.properties.app.database
 import java.sql.Connection
 
 import javax.sql.DataSource
-import nl.knaw.dans.easy.properties.app.DatabaseConfiguration
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.dbcp2.BasicDataSource

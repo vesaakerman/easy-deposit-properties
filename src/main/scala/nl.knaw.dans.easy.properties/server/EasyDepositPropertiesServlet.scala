@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties
+package nl.knaw.dans.easy.properties.server
 
+import nl.knaw.dans.easy.properties.EasyDepositPropertiesApp
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.scalatra._
 
