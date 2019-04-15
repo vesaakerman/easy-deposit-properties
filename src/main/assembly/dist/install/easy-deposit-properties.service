@@ -1,0 +1,16 @@
+[Unit]
+Description=EASY Deposit Properties Service
+
+[Service]
+ExecStart=/bin/java \
+   -Dlogback.configurationFile=/etc/opt/dans.knaw.nl/easy-deposit-properties/logback-service.xml \
+   -Dapp.home=/opt/dans.knaw.nl/easy-deposit-properties \
+   -jar /opt/dans.knaw.nl/easy-deposit-properties/bin/easy-deposit-properties.jar run-service
+# Java returns 143 even if the SIGTERM was handled correctly.
+SuccessExitStatus=143
+
+User=easy-deposit-properties
+Group=easy-deposit-properties
+
+[Install]
+WantedBy=multi-user.target
