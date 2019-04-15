@@ -82,6 +82,10 @@
             <groupId>commons-daemon</groupId>
             <artifactId>commons-daemon</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
+        </dependency>
 
         <!-- service -->
         <dependency>
@@ -106,6 +110,27 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+        </dependency>
+
+        <!-- database -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+
+        <!-- joda -->
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.joda</groupId>
+            <artifactId>joda-convert</artifactId>
         </dependency>
     </dependencies>
 
@@ -173,20 +198,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>rpm-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-rpm</id>
-                                <goals>
-                                    <goal>attached-rpm</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <group>Applications/Archiving</group>
-                            <requires combine.children="append">
-                                <require>jsvc</require>
-                            </requires>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
