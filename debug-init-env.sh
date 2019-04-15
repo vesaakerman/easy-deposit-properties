@@ -15,7 +15,12 @@
 # limitations under the License.
 #
 
-echo -n "Pre-creating log..."
-TEMPDIR=data
-touch $TEMPDIR/easy-deposit-properties.log
+echo -n "Pre-creating log and database..."
+DATADIR=data
+
+mkdir $DATADIR/database
+cp src/test/resources/database/db.properties $DATADIR/database/db.properties
+cp src/test/resources/database/db.script $DATADIR/database/db.script
+
+touch $DATADIR/easy-deposit-properties.log
 echo "OK"
