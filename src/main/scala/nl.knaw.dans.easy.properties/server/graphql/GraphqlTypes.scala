@@ -76,5 +76,5 @@ object GraphqlTypes {
   implicit val DepositType: ObjectType[Unit, Deposit] = deriveObjectType()
   implicit val QueryType: ObjectType[SchemaType, Unit] = deriveContextObjectType[SchemaType, Query, Unit](identity)
   implicit val MutationType: ObjectType[SchemaType, Unit] = deriveContextObjectType[SchemaType, Mutation, Unit](identity)
-  val schema: Schema[SchemaType, Unit] = Schema[SchemaType, Unit](QueryType, mutation = Option(MutationType))
+  val DepositSchema: Schema[SchemaType, Unit] = Schema[SchemaType, Unit](QueryType, mutation = Option(MutationType))
 }

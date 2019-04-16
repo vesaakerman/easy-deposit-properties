@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.server
 
 import javax.servlet.http.HttpServletRequest
 import nl.knaw.dans.easy.properties.server.graphql.DemoRepository
-import nl.knaw.dans.easy.properties.server.graphql.GraphqlTypes.{ SchemaType, schema }
+import nl.knaw.dans.easy.properties.server.graphql.GraphqlTypes._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet._
 import org.json4s.JsonAST.{ JArray, JInt, JObject, JString }
@@ -72,7 +72,7 @@ class GraphQLServlet extends ScalatraServlet with FutureSupport
   }
 
   private def execute(queryAst: Document, variables: Option[String], operation: Option[String]): Future[ActionResult] = {
-    Executor.execute(schema, queryAst, ctx,
+    Executor.execute(DepositSchema, queryAst, ctx,
       operationName = operation,
       variables = variables map parseVariables getOrElse JObject()
     )

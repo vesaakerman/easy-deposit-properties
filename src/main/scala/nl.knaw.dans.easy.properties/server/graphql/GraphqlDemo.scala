@@ -72,12 +72,12 @@ object GraphqlDemo extends App {
   private val ctx = SchemaType(new DemoRepository {})
   private implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
-  val result0: Future[JValue] = Executor.execute(schema, query2, ctx)
+  val result0: Future[JValue] = Executor.execute(DepositSchema, query2, ctx)
   println(Serialization.writePretty(Await.result(result0, 1 second)))
   
-  val result1: Future[JValue] = Executor.execute(schema, mutation1, ctx)
+  val result1: Future[JValue] = Executor.execute(DepositSchema, mutation1, ctx)
   println(Serialization.writePretty(Await.result(result1, 1 second)))
 
-  val result2: Future[JValue] = Executor.execute(schema, query2, ctx)
+  val result2: Future[JValue] = Executor.execute(DepositSchema, query2, ctx)
   println(Serialization.writePretty(Await.result(result2, 1 second)))
 }
