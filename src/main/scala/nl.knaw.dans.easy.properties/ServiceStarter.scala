@@ -16,27 +16,33 @@
 package nl.knaw.dans.easy.properties
 
 import better.files.File
-import nl.knaw.dans.easy.properties.server.{ EasyDepositPropertiesService, EasyDepositPropertiesServlet }
+import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
+import nl.knaw.dans.easy.properties.server.{ EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphQLServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.daemon.{ Daemon, DaemonContext }
 
 class ServiceStarter extends Daemon with DebugEnhancedLogging {
+  var database: DatabaseAccess = _
   var app: EasyDepositPropertiesApp = _
   var service: EasyDepositPropertiesService = _
 
   override def init(context: DaemonContext): Unit = {
     logger.info("Initializing service...")
     val configuration = Configuration(File(System.getProperty("app.home")))
+    database = new DatabaseAccess(configuration.databaseConfig)
     app = new EasyDepositPropertiesApp(configuration)
     service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(app, configuration.version),
+      "/graphql" -> new GraphQLServlet(),
+      "/graphiql" -> new GraphiQLServlet(),
     ))
     logger.info("Service initialized.")
   }
 
   override def start(): Unit = {
     logger.info("Starting service...")
+    database.initConnectionPool().unsafeGetOrThrow
     service.start().unsafeGetOrThrow
     logger.info("Service started.")
   }
@@ -44,6 +50,7 @@ class ServiceStarter extends Daemon with DebugEnhancedLogging {
   override def stop(): Unit = {
     logger.info("Stopping service...")
     service.stop().unsafeGetOrThrow
+    database.closeConnectionPool().unsafeGetOrThrow
   }
 
   override def destroy(): Unit = {

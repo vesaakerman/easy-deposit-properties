@@ -16,7 +16,8 @@
 package nl.knaw.dans.easy.properties
 
 import better.files.File
-import nl.knaw.dans.easy.properties.server.{ EasyDepositPropertiesService, EasyDepositPropertiesServlet }
+import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
+import nl.knaw.dans.easy.properties.server.{ EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphQLServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
@@ -31,6 +32,7 @@ object Command extends App with DebugEnhancedLogging {
   val commandLine: CommandLineOptions = new CommandLineOptions(args, configuration) {
     verify()
   }
+  val database = new DatabaseAccess(configuration.databaseConfig)
   val app = new EasyDepositPropertiesApp(configuration)
 
   runSubcommand(app)
@@ -51,15 +53,19 @@ object Command extends App with DebugEnhancedLogging {
   private def runAsService(app: EasyDepositPropertiesApp): Try[FeedBackMessage] = Try {
     val service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(app, configuration.version),
+      "/graphql" -> new GraphQLServlet(),
+      "/graphiql" -> new GraphiQLServlet(),
     ))
     Runtime.getRuntime.addShutdownHook(new Thread("service-shutdown") {
       override def run(): Unit = {
-        service.stop()
-        service.destroy()
+        service.stop().unsafeGetOrThrow
+        database.closeConnectionPool().unsafeGetOrThrow
+        service.destroy().unsafeGetOrThrow
       }
     })
 
-    service.start()
+    database.initConnectionPool().unsafeGetOrThrow
+    service.start().unsafeGetOrThrow
     Thread.currentThread.join()
     "Service terminated normally."
   }
