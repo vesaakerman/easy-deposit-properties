@@ -106,6 +106,28 @@
             <version>3.1.0</version>
         </dependency>
 
+        <!-- graphql -->
+        <dependency>
+            <groupId>org.sangria-graphql</groupId>
+            <artifactId>sangria_2.12</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sangria-graphql</groupId>
+            <artifactId>sangria-json4s-native_2.12</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- json -->
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-native_2.12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-ext_2.12</artifactId>
+        </dependency>
+
         <!-- logging -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
