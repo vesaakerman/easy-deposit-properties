@@ -35,9 +35,11 @@ object GraphqlTypes {
     val repository: DemoRepository
     
     @GraphQLField
+    @GraphQLDescription("List all registered deposits.")
     def deposits: Seq[Deposit] = repository.getAllDeposits
 
     @GraphQLField
+    @GraphQLDescription("Get the technical metadata of the deposit identified by 'id'.")
     def deposit(id: UUID): Option[Deposit] = repository.getDeposit(id)
   }
   
@@ -45,6 +47,7 @@ object GraphqlTypes {
     val repository: DemoRepository
     
     @GraphQLField
+    @GraphQLDescription("Update the state of the deposit identified by 'id'.")
     def state(id: UUID, label: StateLabel, description: String): Option[Deposit] = repository.setState(id, State(label, description))
   }
   
@@ -72,8 +75,14 @@ object GraphqlTypes {
   )
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType()
-  implicit val StateType: ObjectType[Unit, State] = deriveObjectType()
-  implicit val DepositType: ObjectType[Unit, Deposit] = deriveObjectType()
+  implicit val StateType: ObjectType[Unit, State] = deriveObjectType(
+    DocumentField("label", "The current state of the deposit."),
+    DocumentField("description", "Additional information about the state.")
+  )
+  implicit val DepositType: ObjectType[Unit, Deposit] = deriveObjectType(
+    DocumentField("id", "The identifier of the deposit."),
+    DocumentField("state", "The state of the deposit.")
+  )
   implicit val QueryType: ObjectType[SchemaType, Unit] = deriveContextObjectType[SchemaType, Query, Unit](identity)
   implicit val MutationType: ObjectType[SchemaType, Unit] = deriveContextObjectType[SchemaType, Mutation, Unit](identity)
   val DepositSchema: Schema[SchemaType, Unit] = Schema[SchemaType, Unit](QueryType, mutation = Option(MutationType))
