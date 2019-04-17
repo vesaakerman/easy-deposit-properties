@@ -36,6 +36,19 @@ EXAMPLES
     easy-deposit-properties -o value
 
 
+GRAPHQL SCHEMA
+--------------
+
+To generate the latest version of the GraphQL schema for `easy-deposit-properties`:
+
+    #install get-graphql-schema
+    npm install -g get-graphql-schema
+    
+    # start the service
+    
+    get-graphql-schema http://<base-url>/graphql > docs/schema.graphql
+
+
 INSTALLATION AND CONFIGURATION
 ------------------------------
 

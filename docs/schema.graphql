@@ -1,0 +1,31 @@
+type Deposit {
+  id: String!
+  state: State!
+}
+
+type Mutation {
+  state(id: String!, label: StateLabel!, description: String!): Deposit
+}
+
+type Query {
+  deposits: [Deposit!]!
+  deposit(id: String!): Deposit
+}
+
+type State {
+  label: StateLabel!
+  description: String!
+}
+
+enum StateLabel {
+  FEDORA_ARCHIVED
+  ARCHIVED
+  IN_REVIEW
+  FAILED
+  REJECTED
+  SUBMITTED
+  INVALID
+  FINALIZING
+  DRAFT
+}
+
