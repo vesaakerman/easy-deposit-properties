@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import nl.knaw.dans.easy.properties.server.graphql.DemoRepository
-import nl.knaw.dans.easy.properties.server.graphql.GraphqlTypes._
+import nl.knaw.dans.easy.properties.app.graphql.DemoRepository
+import nl.knaw.dans.easy.properties.app.graphql.GraphqlTypes._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet._
 import org.json4s.JsonDSL._
@@ -32,13 +32,13 @@ import sangria.parser._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.postfixOps
 
-class GraphQLServlet extends ScalatraServlet with FutureSupport
+class GraphQLServlet(repository: DemoRepository) extends ScalatraServlet with FutureSupport
   with ServletLogger
   with MaskedLogFormatter
   with LogResponseBodyOnError
   with DebugEnhancedLogging {
 
-  private val ctx = SchemaType(new DemoRepository {})
+  private val ctx = SchemaType(repository)
 
   implicit protected def executor: ExecutionContext = ExecutionContext.global
 

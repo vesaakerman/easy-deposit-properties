@@ -15,6 +15,9 @@
  */
 package nl.knaw.dans.easy.properties
 
-class EasyDepositPropertiesApp(configuration: Configuration)  {
+import nl.knaw.dans.easy.properties.app.graphql.DemoRepository
 
+class EasyDepositPropertiesApp(configuration: Configuration) {
+
+  val demoRepository = new DemoRepository {}
 }

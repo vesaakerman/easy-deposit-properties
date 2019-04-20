@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.server.graphql
+package nl.knaw.dans.easy.properties.app.graphql
 
 import java.util.UUID
 
