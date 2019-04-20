@@ -15,12 +15,11 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import javax.servlet.http.HttpServletRequest
 import nl.knaw.dans.easy.properties.server.graphql.DemoRepository
 import nl.knaw.dans.easy.properties.server.graphql.GraphqlTypes._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet._
-import org.json4s.JsonAST.{ JArray, JInt, JObject, JString }
+import org.json4s.JsonDSL._
 import org.json4s.ext.UUIDSerializer
 import org.json4s.native.{ JsonMethods, Serialization }
 import org.json4s.{ DefaultFormats, Formats, JValue }
@@ -32,9 +31,6 @@ import sangria.parser._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.postfixOps
-import scala.util.{ Failure, Success }
-
-case class InputQuery(query: String, variables: Option[String], operationName: Option[String])
 
 class GraphQLServlet extends ScalatraServlet with FutureSupport
   with ServletLogger
@@ -48,58 +44,40 @@ class GraphQLServlet extends ScalatraServlet with FutureSupport
 
   private implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
-  private def executeQuery(query: String, variables: Option[String], operation: Option[String], tracing: Boolean): Future[ActionResult] = {
-    QueryParser.parse(query) match {
-      // query parsed successfully, time to execute it!
-      case Success(queryAst) => execute(queryAst, variables, operation)
+  asyncPost("/") {
+    contentType = "application/json"
 
-      // can't parse GraphQL query, return error
-      case Failure(error: SyntaxError) => Future.successful(syntaxError(error))
-      case Failure(error) => Future.failed(error)
-    }
+    val GraphQLInput(query, variables, operation) = Serialization.read[GraphQLInput](request.body)
+    QueryParser.parse(query)(DeliveryScheme.Either)
+      .fold({
+        case e: SyntaxError => Future.successful(BadRequest(syntaxError(e)))
+        case e => Future.failed(e)
+      }, execute(variables, operation))
   }
 
-  private def syntaxError(error: SyntaxError): ActionResult = {
-    BadRequest(JObject(
-      "syntaxError" -> JString(error.getMessage),
-      "locations" -> JArray(List(
-        JObject(
-          "line" -> JInt(error.originalError.position.line),
-          "column" -> JInt(error.originalError.position.column),
-        )
-      ))
-    ))
-  }
-
-  private def execute(queryAst: Document, variables: Option[String], operation: Option[String]): Future[ActionResult] = {
-    Executor.execute(DepositSchema, queryAst, ctx,
-      operationName = operation,
-      variables = variables map parseVariables getOrElse JObject()
-    )
+  private def execute(variables: Option[String], operation: Option[String])(queryAst: Document): Future[ActionResult] = {
+    Executor.execute(DepositSchema, queryAst, ctx, operationName = operation, variables = parseVariables(variables))
       .map(Serialization.writePretty(_))
       .map(Ok(_))
       .recover {
-        case error: QueryAnalysisError => BadRequest(error.resolveError)
-        case error: ErrorWithResolver => InternalServerError(error.resolveError)
+        case error: QueryAnalysisError => BadRequest(Serialization.write(error.resolveError))
+        case error: ErrorWithResolver => InternalServerError(Serialization.write(error.resolveError))
       }
   }
 
-  private def parseVariables(s: String): JValue = {
-    if (s.trim == "" || s.trim == "null") JObject()
-    else JsonMethods.parse(s)
+  private def parseVariables(optS: Option[String]): JValue = {
+    optS.filter(s => s.trim != "" && s.trim != "null")
+      .map(JsonMethods.parse(_))
+      .getOrElse(Nil)
   }
 
-  private def isTracingEnabled(request: HttpServletRequest): Boolean = {
-    request.headers.get("X-Apollo-Tracing").isDefined
-  }
-
-  post("/") {
-    contentType = "application/json"
-    new AsyncResult {
-      override val is: Future[ActionResult] = {
-        val InputQuery(query, variables, operation) = Serialization.read[InputQuery](request.body)
-        executeQuery(query, variables, operation, isTracingEnabled(request))
-      }
+  private def syntaxError(error: SyntaxError): String = {
+    Serialization.write {
+      ("syntaxError" -> error.getMessage) ~
+        ("locations" -> List(
+          ("line" -> error.originalError.position.line) ~
+            ("column" -> error.originalError.position.column)
+        ))
     }
   }
 }
