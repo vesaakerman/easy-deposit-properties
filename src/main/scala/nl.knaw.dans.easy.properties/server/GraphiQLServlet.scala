@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.server
 
 import org.scalatra.{ Ok, ScalatraServlet }
 
-class GraphiQLServlet extends ScalatraServlet {
+object GraphiQLServlet extends ScalatraServlet {
   
   get("/") {
     /*
