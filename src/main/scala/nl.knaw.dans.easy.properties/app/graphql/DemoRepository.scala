@@ -23,7 +23,7 @@ import org.joda.time.{ DateTime, DateTimeZone }
 
 import scala.collection.mutable
 
-trait DemoRepository {
+trait DemoRepository extends DepositRepository {
 
   private val timeZone = DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/Amsterdam"))
 

@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import nl.knaw.dans.easy.properties.app.graphql.DemoRepository
+import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.graphql.GraphqlTypes._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet._
@@ -32,7 +32,7 @@ import sangria.parser._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.postfixOps
 
-class GraphQLServlet(repository: DemoRepository) extends ScalatraServlet with FutureSupport
+class GraphQLServlet(repository: DepositRepository) extends ScalatraServlet with FutureSupport
   with ServletLogger
   with MaskedLogFormatter
   with LogResponseBodyOnError

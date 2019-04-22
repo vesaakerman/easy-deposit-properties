@@ -35,7 +35,7 @@ object GraphqlTypes {
   case object DateCoercionViolation extends ValueCoercionViolation("Date value expected")
   
   trait Query {
-    val repository: DemoRepository
+    val repository: DepositRepository
     
     @GraphQLField
     @GraphQLDescription("List all registered deposits.")
@@ -51,7 +51,7 @@ object GraphqlTypes {
   }
   
   trait Mutation {
-    val repository: DemoRepository
+    val repository: DepositRepository
     
     @GraphQLField
     @GraphQLDescription("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'.")
@@ -68,8 +68,8 @@ object GraphqlTypes {
   
   type DataContext = Query with Mutation
 
-  def DataContext(repo: DemoRepository): DataContext = new Query with Mutation {
-    override val repository: DemoRepository = repo
+  def DataContext(repo: DepositRepository): DataContext = new Query with Mutation {
+    override val repository: DepositRepository = repo
   }
 
   private def parseUUID(s: String): Either[Violation, UUID] = {
