@@ -38,7 +38,7 @@ class GraphQLServlet(repository: DemoRepository) extends ScalatraServlet with Fu
   with LogResponseBodyOnError
   with DebugEnhancedLogging {
 
-  private val ctx = SchemaType(repository)
+  private val ctx = DataContext(repository)
 
   implicit protected def executor: ExecutionContext = ExecutionContext.global
 
@@ -56,7 +56,10 @@ class GraphQLServlet(repository: DemoRepository) extends ScalatraServlet with Fu
   }
 
   private def execute(variables: Option[String], operation: Option[String])(queryAst: Document): Future[ActionResult] = {
-    Executor.execute(DepositSchema, queryAst, ctx, operationName = operation, variables = parseVariables(variables))
+    Executor.execute(DepositSchema, queryAst, ctx,
+      operationName = operation,
+      variables = parseVariables(variables),
+    )
       .map(Serialization.writePretty(_))
       .map(Ok(_))
       .recover {

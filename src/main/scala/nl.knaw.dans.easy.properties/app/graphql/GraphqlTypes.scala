@@ -51,8 +51,8 @@ object GraphqlTypes {
     def state(id: UUID, label: StateLabel, description: String): Option[Deposit] = repository.setState(id, State(label, description))
   }
   
-  type SchemaType = Query with Mutation
-  def SchemaType(repo: DemoRepository): SchemaType = new Query with Mutation {
+  type DataContext = Query with Mutation
+  def DataContext(repo: DemoRepository): DataContext = new DataContext {
     override val repository: DemoRepository = repo
   }
 
@@ -83,7 +83,7 @@ object GraphqlTypes {
     DocumentField("id", "The identifier of the deposit."),
     DocumentField("state", "The state of the deposit.")
   )
-  implicit val QueryType: ObjectType[SchemaType, Unit] = deriveContextObjectType[SchemaType, Query, Unit](identity)
-  implicit val MutationType: ObjectType[SchemaType, Unit] = deriveContextObjectType[SchemaType, Mutation, Unit](identity)
-  val DepositSchema: Schema[SchemaType, Unit] = Schema[SchemaType, Unit](QueryType, mutation = Option(MutationType))
+  implicit val QueryType: ObjectType[DataContext, Unit] = deriveContextObjectType[DataContext, Query, Unit](identity)
+  implicit val MutationType: ObjectType[DataContext, Unit] = deriveContextObjectType[DataContext, Mutation, Unit](identity)
+  val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
 }
