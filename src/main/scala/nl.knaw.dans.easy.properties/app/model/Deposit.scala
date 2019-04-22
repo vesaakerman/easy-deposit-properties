@@ -17,4 +17,6 @@ package nl.knaw.dans.easy.properties.app.model
 
 import java.util.UUID
 
-case class Deposit(id: UUID, state: State)
+import org.joda.time.DateTime
+
+case class Deposit(id: UUID, creationTimestamp: DateTime, depositorId: String)
