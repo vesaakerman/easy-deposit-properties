@@ -13,8 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.model
+package nl.knaw.dans.easy.properties.app.graphql
 
-import org.joda.time.DateTime
+import nl.knaw.dans.easy.properties.app.graphql.types._
+import sangria.schema._
 
-case class Deposit(id: DepositId, creationTimestamp: DateTime, depositorId: DepositorId)
+object GraphQLSchema extends QueryType with MutationType
+  with DepositorConnectionType
+  with ModelTypes
+  with Scalars {
+
+  val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
+}

@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.model
+package nl.knaw.dans.easy.properties.app.graphql
 
-import org.joda.time.DateTime
-
-case class Deposit(id: DepositId, creationTimestamp: DateTime, depositorId: DepositorId)
+case class DataContext(deposits: DepositRepository)

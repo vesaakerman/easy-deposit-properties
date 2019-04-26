@@ -1,20 +1,58 @@
+"""
+A DateTime scalar type represents textual data, formatted as an ISO8601 date-time.
+"""
+scalar DateTime
+
 type Deposit {
-  id: String!
-  state: State!
+  """The identifier of the deposit."""
+  id: UUID!
+
+  """The moment this deposit was created."""
+  creationTimestamp: DateTime!
+
+  """The state of the deposit."""
+  state: State
+  depositor: DepositorConnection!
+}
+
+type DepositorConnection {
+  """The EASY account of the depositor."""
+  depositorId: String!
+
+  """Get the technical metadata of the deposits from the given depositor."""
+  deposit: [Deposit!]!
 }
 
 type Mutation {
-  state(id: String!, label: StateLabel!, description: String!): Deposit
+  """Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."""
+  registerDeposit(id: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
+
+  """Update the state of the deposit identified by 'id'."""
+  updateState(id: UUID!, label: StateLabel!, description: String!): Deposit
 }
 
 type Query {
+  """List all registered deposits."""
   deposits: [Deposit!]!
-  deposit(id: String!): Deposit
+
+  """Get the technical metadata of the deposit identified by 'id'."""
+  deposit(id: UUID!): Deposit
+
+  """Select a depositor."""
+  depositor(depositor: String!): DepositorConnection!
+
+  """Lists all deposits with the given state label."""
+  depositsWithState(label: StateLabel!): [Deposit!]!
 }
 
+"""The state of the deposit."""
 type State {
+  """The state label of the deposit."""
   label: StateLabel!
+
+  """Additional information about the state."""
   description: String!
+  deposit: [Deposit!]!
 }
 
 enum StateLabel {
@@ -28,4 +66,9 @@ enum StateLabel {
   FINALIZING
   DRAFT
 }
+
+"""
+The UUID scalar type represents textual data, formatted as a universally unique identifier.
+"""
+scalar UUID
 

@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
-import nl.knaw.dans.easy.properties.app.graphql.GraphqlTypes._
+import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
+import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet._
 import org.json4s.JsonDSL._
@@ -44,7 +44,7 @@ class GraphQLServlet(repository: DepositRepository) extends ScalatraServlet with
 
   private implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
-  asyncPost("/") {
+  post("/") {
     contentType = "application/json"
 
     val GraphQLInput(query, variables, operation) = Serialization.read[GraphQLInput](request.body)

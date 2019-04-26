@@ -1,0 +1,12 @@
+query ListAllDeposits {
+    deposits {
+        id
+        depositor {
+            depositorId
+        }
+        state {
+            label
+            description
+        }
+    }
+}

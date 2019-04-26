@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.model
+package nl.knaw.dans.easy.properties.app
 
-import org.joda.time.DateTime
+import java.util.UUID
 
-case class Deposit(id: DepositId, creationTimestamp: DateTime, depositorId: DepositorId)
+package object model {
+  
+  type DepositId = UUID
+  type DepositorId = String
+}
