@@ -15,125 +15,51 @@
  */
 package nl.knaw.dans.easy.properties.server
 
+import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.example.repository.DemoRepositoryImpl
-import nl.knaw.dans.easy.properties.fixture.TestSupportFixture
+import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatra.test.EmbeddedJettyContainer
 import org.scalatra.test.scalatest.ScalatraSuite
 
-class GraphQLServletSpec extends TestSupportFixture with EmbeddedJettyContainer with ScalatraSuite {
+class GraphQLServletSpec extends TestSupportFixture
+  with FileSystemSupport
+  with TableDrivenPropertyChecks
+  with EmbeddedJettyContainer
+  with ScalatraSuite {
 
+  private val graphqlExamplesDir = testDir / "graphql"
   private val repository = new DemoRepositoryImpl
   private val servlet = new GraphQLServlet(repository)
 
   addServlet(servlet, "/*")
 
-  "POST GraphQL route" should "list the id's of all deposits" in {
-    val query =
-      """query {
-        |  deposits {
-        |    id
-        |  }
-        |}""".stripMargin
-    val inputBody = s"""{"query": "$query"}"""
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
 
-    post(uri = "/", body = inputBody.getBytes) {
-      body shouldBe
-        """{
-          |  "data":{
-          |    "deposits":[
-          |      {
-          |        "id":"00000000-0000-0000-0000-000000000002"
-          |      },
-          |      {
-          |        "id":"00000000-0000-0000-0000-000000000005"
-          |      },
-          |      {
-          |        "id":"00000000-0000-0000-0000-000000000004"
-          |      },
-          |      {
-          |        "id":"00000000-0000-0000-0000-000000000001"
-          |      },
-          |      {
-          |        "id":"00000000-0000-0000-0000-000000000003"
-          |      }
-          |    ]
-          |  }
-          |}""".stripMargin
-      status shouldBe 200
+    File(getClass.getResource("/graphql-examples"))
+      .copyTo(graphqlExamplesDir)
+  }
+
+  def exampleTests(): Unit = {
+    for (input <- graphqlExamplesDir.list(_.name endsWith ".graphql");
+         output = graphqlExamplesDir / s"${ input.nameWithoutExtension }.json") {
+      it should s"test example ${ input.nameWithoutExtension }" in {
+        assume(input.exists, s"input file does not exist: $input")
+        assume(output.exists, s"output file does not exist: $output")
+
+        val query = input.contentAsString.stripLineEnd.replace("\"", "\\\"") // " -> \"
+        val inputBody =
+          s"""{"query": "$query"}"""
+        val expectedOutput = output.contentAsString.stripLineEnd.replaceAll(": ", ":") // remove some formatting
+
+        post(uri = "/", body = inputBody.getBytes) {
+          body shouldBe expectedOutput
+          status shouldBe 200
+        }
+      }
     }
   }
-  
-  it should "list depositorId, creationDate and full state for a single deposit" in {
-    val query =
-      """query {
-        |  deposit(id: \"00000000-0000-0000-0000-000000000001\") {
-        |    depositor {
-        |      depositorId
-        |    }
-        |    creationTimestamp
-        |    state {
-        |      label
-        |      description
-        |    }
-        |  }
-        |}""".stripMargin
-    val inputBody = s"""{"query": "$query"}"""
 
-    post(uri = "/", body = inputBody.getBytes) {
-      body shouldBe
-        """{
-          |  "data":{
-          |    "deposit":{
-          |      "depositor":{
-          |        "depositorId":"user001"
-          |      },
-          |      "creationTimestamp":"2019-04-22T15:58:00.000+02:00",
-          |      "state":{
-          |        "label":"SUBMITTED",
-          |        "description":"await processing"
-          |      }
-          |    }
-          |  }
-          |}""".stripMargin
-      status shouldBe 200
-    }
-  }
-  
-  it should "list the depositIds of all deposits with the same state as the state of the given depositid" in {
-    val query =
-      """query {
-        |  deposit(id: \"00000000-0000-0000-0000-000000000001\") {
-        |    state {
-        |      deposit {
-        |        id
-        |      }
-        |    }
-        |  }
-        |}""".stripMargin
-    val inputBody = s"""{"query": "$query"}"""
-
-    post(uri = "/", body = inputBody.getBytes) {
-      body shouldBe
-        """{
-          |  "data":{
-          |    "deposit":{
-          |      "state":{
-          |        "deposit":[
-          |          {
-          |            "id":"00000000-0000-0000-0000-000000000005"
-          |          },
-          |          {
-          |            "id":"00000000-0000-0000-0000-000000000004"
-          |          },
-          |          {
-          |            "id":"00000000-0000-0000-0000-000000000001"
-          |          }
-          |        ]
-          |      }
-          |    }
-          |  }
-          |}""".stripMargin
-      status shouldBe 200
-    }
-  }
+  "GraphQL endpoint" should behave like exampleTests()
 }
