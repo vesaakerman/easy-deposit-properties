@@ -41,25 +41,28 @@ class GraphQLServletSpec extends TestSupportFixture
       .copyTo(graphqlExamplesDir)
   }
 
-  def exampleTests(): Unit = {
-    for (input <- graphqlExamplesDir.list(_.name endsWith ".graphql");
-         output = graphqlExamplesDir / s"${ input.nameWithoutExtension }.json") {
-      it should s"test example ${ input.nameWithoutExtension }" in {
-        assume(input.exists, s"input file does not exist: $input")
-        assume(output.exists, s"output file does not exist: $output")
+  "GraphQL endpoint" should "run all examples defined in the test resources" in {
+    val examples = Table(
+      "input" -> "output",
+      graphqlExamplesDir.list(_.name endsWith ".graphql")
+        .map(input => input -> graphqlExamplesDir / s"${ input.nameWithoutExtension }.json")
+        .toList: _*
+    )
 
-        val query = input.contentAsString.stripLineEnd.replace("\"", "\\\"") // " -> \"
-        val inputBody =
-          s"""{"query": "$query"}"""
-        val expectedOutput = output.contentAsString.stripLineEnd.replaceAll(": ", ":") // remove some formatting
+    forEvery(examples) { (input, output) =>
+      assume(input.exists, s"input file does not exist: $input")
+      assume(output.exists, s"output file does not exist: $output")
 
-        post(uri = "/", body = inputBody.getBytes) {
-          body shouldBe expectedOutput
-          status shouldBe 200
-        }
+      val query = input.contentAsString.stripLineEnd.replace("\"", "\\\"") // " -> \"
+
+      val inputBody =
+        s"""{"query": "$query"}"""
+      val expectedOutput = output.contentAsString.stripLineEnd.replaceAll(": ", ":") // remove some formatting
+
+      post(uri = "/", body = inputBody.getBytes) {
+        body shouldBe expectedOutput
+        status shouldBe 200
       }
     }
   }
-
-  "GraphQL endpoint" should behave like exampleTests()
 }
