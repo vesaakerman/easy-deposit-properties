@@ -15,8 +15,6 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
-import java.util.UUID
-
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, State }
@@ -35,7 +33,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.values.toSeq
   }
 
-  def getDeposit(id: UUID): Option[Deposit] = {
+  def getDeposit(id: DepositId): Option[Deposit] = {
     trace(id)
     depositRepo.get(id)
   }
@@ -54,12 +52,12 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     }
   }
 
-  def getState(id: UUID): Option[State] = {
+  def getState(id: DepositId): Option[State] = {
     trace(id)
     stateRepo.get(id)
   }
 
-  def setState(id: UUID, state: State): Option[Deposit] = {
+  def setState(id: DepositId, state: State): Option[Deposit] = {
     if (depositRepo contains id) {
       if (stateRepo contains id)
         stateRepo.update(id, state)

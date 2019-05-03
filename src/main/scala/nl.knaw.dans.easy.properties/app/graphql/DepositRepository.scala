@@ -15,24 +15,22 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
-import java.util.UUID
-
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, State }
 
 trait DepositRepository {
 
   def getAllDeposits: Seq[Deposit]
 
-  def getDeposit(id: UUID): Option[Deposit]
+  def getDeposit(id: DepositId): Option[Deposit]
 
   def getDepositByUserId(depositorId: DepositorId): Seq[Deposit]
 
   def registerDeposit(deposit: Deposit): Option[Deposit]
 
-  def getState(id: UUID): Option[State]
+  def getState(id: DepositId): Option[State]
 
-  def setState(id: UUID, state: State): Option[Deposit]
+  def setState(id: DepositId, state: State): Option[Deposit]
 
   def getDepositByState(state: StateLabel): Seq[Deposit]
 }
