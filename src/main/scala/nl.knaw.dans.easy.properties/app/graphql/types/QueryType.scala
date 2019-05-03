@@ -22,15 +22,16 @@ import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextOb
 import sangria.schema.ObjectType
 
 trait QueryType {
-  this: DepositorConnectionType with ModelTypes with Scalars =>
+  this: DepositorConnectionType with MetaTypes with ModelTypes with Scalars =>
 
   trait Query {
     val repository: DepositRepository
 
     @GraphQLField
     @GraphQLDescription("List all registered deposits.")
-    def deposits: Seq[Deposit] = {
-      repository.getAllDeposits
+    def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
+      val result = repository.getAllDeposits
+      orderBy.fold(result)(order => result.sorted(order.ordering))
     }
 
     @GraphQLField
@@ -47,8 +48,9 @@ trait QueryType {
     
     @GraphQLField
     @GraphQLDescription("Lists all deposits with the given state label.")
-    def depositsWithState(label: StateLabel): Seq[Deposit] = {
-      repository.getDepositByState(label)
+    def depositsWithState(label: StateLabel, orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
+      val result = repository.getDepositByState(label)
+      orderBy.fold(result)(order => result.sorted(order.ordering))
     }
   }
 

@@ -21,7 +21,7 @@ import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveObjectTyp
 import sangria.schema.ObjectType
 
 trait DepositorConnectionType {
-  this: ModelTypes =>
+  this: MetaTypes with ModelTypes =>
 
   trait DepositorConnection {
     @GraphQLField
@@ -30,14 +30,17 @@ trait DepositorConnectionType {
     
     @GraphQLField
     @GraphQLDescription("Get the technical metadata of the deposits from the given depositor.")
-    def deposit: Seq[Deposit]
+    def deposit(orderBy: Option[DepositOrder] = None): Seq[Deposit]
   }
   
   object DepositorConnection {
     def apply(dp: DepositorId)(repo: DepositRepository): DepositorConnection = new DepositorConnection {
       def depositorId: DepositorId = dp
 
-      def deposit: Seq[Deposit] = repo.getDepositByUserId(dp)
+      def deposit(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
+        val result = repo.getDepositByUserId(dp)
+        orderBy.fold(result)(order => result.sorted(order.ordering))
+      }
     }
   }
 

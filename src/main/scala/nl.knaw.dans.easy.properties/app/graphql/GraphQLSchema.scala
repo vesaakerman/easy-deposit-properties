@@ -20,6 +20,7 @@ import sangria.execution.deferred.DeferredResolver
 import sangria.schema._
 
 object GraphQLSchema extends QueryType with MutationType
+  with MetaTypes
   with DepositorConnectionType
   with ModelTypes
   with Scalars {

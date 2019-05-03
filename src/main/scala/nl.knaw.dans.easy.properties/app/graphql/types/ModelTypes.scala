@@ -20,13 +20,13 @@ import nl.knaw.dans.easy.properties.app.model.State.StateLabel
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
-import sangria.schema.{ DeferredValue, EnumType, Field, ListType, ObjectType, OptionType }
+import sangria.schema._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait ModelTypes {
-  this: DepositorConnectionType with Scalars =>
+  this: DepositorConnectionType with MetaTypes with Scalars =>
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType()
   implicit val stateHasId: HasId[(DepositId, Option[State]), DepositId] = HasId { case (id, _) => id }
@@ -44,7 +44,12 @@ trait ModelTypes {
         name = "deposit",
         fieldType = ListType(DepositType),
         description = Option(""),
-        resolve = c => c.ctx.deposits.getDepositByState(c.value.label),
+        arguments = Argument("orderBy", OptionInputType(DepositOrderInputType)) :: Nil,
+        resolve = c => {
+          val result = c.ctx.deposits.getDepositByState(c.value.label)
+          c.argOpt[DepositOrder]("orderBy")
+            .fold(result)(order => result.sorted(order.ordering))
+        },
       ),
     ),
   )

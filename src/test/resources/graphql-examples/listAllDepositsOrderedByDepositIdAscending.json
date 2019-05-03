@@ -1,0 +1,56 @@
+{
+  "data": {
+    "deposits": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "depositor": {
+          "depositorId": "user001"
+        },
+        "state": {
+          "label": "SUBMITTED",
+          "description": "await processing"
+        }
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "depositor": {
+          "depositorId": "user001"
+        },
+        "state": {
+          "label": "FAILED",
+          "description": "I did something wrong"
+        }
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "depositor": {
+          "depositorId": "user002"
+        },
+        "state": {
+          "label": "ARCHIVED",
+          "description": "all is done"
+        }
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "depositor": {
+          "depositorId": "user001"
+        },
+        "state": {
+          "label": "SUBMITTED",
+          "description": "await processing"
+        }
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "depositor": {
+          "depositorId": "user002"
+        },
+        "state": {
+          "label": "SUBMITTED",
+          "description": "await processing"
+        }
+      }
+    ]
+  }
+}

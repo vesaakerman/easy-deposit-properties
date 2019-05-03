@@ -1,0 +1,12 @@
+query ListAllDepositsOrderedByDepositIdDescending {
+    deposits(orderBy: {field: DEPOSIT_ID, direction: DESC}) {
+        id
+        depositor {
+            depositorId
+        }
+        state {
+            label
+            description
+        }
+    }
+}

@@ -20,7 +20,25 @@ type DepositorConnection {
   depositorId: String!
 
   """Get the technical metadata of the deposits from the given depositor."""
-  deposit: [Deposit!]!
+  deposit(orderBy: DepositOrder): [Deposit!]!
+}
+
+"""Ordering options for deposits"""
+input DepositOrder {
+  """The field to order deposit by"""
+  field: DepositOrderField!
+
+  """The ordering direction"""
+  direction: OrderDirection!
+}
+
+"""Properties by which deposits can be ordered"""
+enum DepositOrderField {
+  """Order deposits by creation timestamp"""
+  CREATION_TIMESTAMP
+
+  """Order deposits by depositId"""
+  DEPOSIT_ID
 }
 
 type Mutation {
@@ -31,9 +49,20 @@ type Mutation {
   updateState(id: UUID!, label: StateLabel!, description: String!): Deposit
 }
 
+"""
+Possible directions in which to order a list of items when provided an orderBy argument
+"""
+enum OrderDirection {
+  """Specifies a descending order for a given orderBy argument"""
+  DESC
+
+  """Specifies an ascending order for a given orderBy argumen."""
+  ASC
+}
+
 type Query {
   """List all registered deposits."""
-  deposits: [Deposit!]!
+  deposits(orderBy: DepositOrder): [Deposit!]!
 
   """Get the technical metadata of the deposit identified by 'id'."""
   deposit(id: UUID!): Deposit
@@ -42,7 +71,7 @@ type Query {
   depositor(depositor: String!): DepositorConnection!
 
   """Lists all deposits with the given state label."""
-  depositsWithState(label: StateLabel!): [Deposit!]!
+  depositsWithState(label: StateLabel!, orderBy: DepositOrder): [Deposit!]!
 }
 
 """The state of the deposit."""
@@ -52,7 +81,7 @@ type State {
 
   """Additional information about the state."""
   description: String!
-  deposit: [Deposit!]!
+  deposit(orderBy: DepositOrder): [Deposit!]!
 }
 
 enum StateLabel {
