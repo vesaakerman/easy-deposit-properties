@@ -24,6 +24,7 @@ import org.json4s.{ DefaultFormats, Formats, JValue }
 import org.scalatra._
 import sangria.ast.Document
 import sangria.execution._
+import sangria.execution.deferred.DeferredResolver
 import sangria.marshalling.json4s.native._
 import sangria.parser._
 import sangria.schema.Schema
@@ -31,11 +32,15 @@ import sangria.schema.Schema
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.postfixOps
 
-class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit], ctx: Ctx) extends ScalatraServlet with FutureSupport
-  with ServletLogger
-  with MaskedLogFormatter
-  with LogResponseBodyOnError
-  with DebugEnhancedLogging {
+class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
+                          ctx: Ctx,
+                          deferredResolver: DeferredResolver[Ctx] = DeferredResolver.empty)
+  extends ScalatraServlet
+    with FutureSupport
+    with ServletLogger
+    with MaskedLogFormatter
+    with LogResponseBodyOnError
+    with DebugEnhancedLogging {
 
   implicit protected def executor: ExecutionContext = ExecutionContext.global
 
@@ -56,6 +61,7 @@ class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit], ctx: Ctx) extends ScalatraS
     Executor.execute(schema, queryAst, ctx,
       operationName = operation,
       variables = parseVariables(variables),
+      deferredResolver = deferredResolver
     )
       .map(Serialization.writePretty(_))
       .map(Ok(_))
