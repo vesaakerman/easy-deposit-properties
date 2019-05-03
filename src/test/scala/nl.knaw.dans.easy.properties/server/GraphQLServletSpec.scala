@@ -18,6 +18,11 @@ package nl.knaw.dans.easy.properties.server
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.example.repository.DemoRepositoryImpl
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
+import org.json4s.JsonDSL._
+import org.json4s.ext.UUIDSerializer
+import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization._
+import org.json4s.{ DefaultFormats, Formats }
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatra.test.EmbeddedJettyContainer
 import org.scalatra.test.scalatest.ScalatraSuite
@@ -31,6 +36,7 @@ class GraphQLServletSpec extends TestSupportFixture
   private val graphqlExamplesDir = testDir / "graphql"
   private val repository = new DemoRepositoryImpl
   private val servlet = DepositPropertiesGraphQLServlet(repository)
+  private implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
   addServlet(servlet, "/*")
 
@@ -53,11 +59,8 @@ class GraphQLServletSpec extends TestSupportFixture
       assume(input.exists, s"input file does not exist: $input")
       assume(output.exists, s"output file does not exist: $output")
 
-      val query = input.contentAsString.stripLineEnd.replace("\"", "\\\"") // " -> \"
-
-      val inputBody =
-        s"""{"query": "$query"}"""
-      val expectedOutput = output.contentAsString.stripLineEnd.replaceAll(": ", ":") // remove some formatting
+      val inputBody = compact(render("query" -> input.contentAsString))
+      val expectedOutput = writePretty(parse(output.contentAsString))
 
       post(uri = "/", body = inputBody.getBytes) {
         body shouldBe expectedOutput
