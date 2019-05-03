@@ -30,6 +30,8 @@ trait DepositRepository {
 
   def getState(id: DepositId): Option[State]
 
+  def getStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])]
+
   def setState(id: DepositId, state: State): Option[Deposit]
 
   def getDepositByState(state: StateLabel): Seq[Deposit]

@@ -57,6 +57,10 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     stateRepo.get(id)
   }
 
+  def getStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])] = {
+    ids.map(id => id -> stateRepo.get(id))
+  }
+
   def setState(id: DepositId, state: State): Option[Deposit] = {
     if (depositRepo contains id) {
       if (stateRepo contains id)

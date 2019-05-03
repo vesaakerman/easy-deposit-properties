@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql
 
 import nl.knaw.dans.easy.properties.app.graphql.types._
+import sangria.execution.deferred.DeferredResolver
 import sangria.schema._
 
 object GraphQLSchema extends QueryType with MutationType
@@ -24,4 +25,5 @@ object GraphQLSchema extends QueryType with MutationType
   with Scalars {
 
   val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
+  val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(states)
 }

@@ -71,69 +71,75 @@ class GraphQLResolveSpec extends TestSupportFixture
       .copyTo(graphqlExamplesDir)
   }
 
-  "graphql" should "resolve 'deposit.graphql' with two calls to the repository" in {
+  "graphql" should "resolve 'deposit.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "deposit.graphql"
 
     inSequence {
       repository.getDeposit _ expects depositId1 returning Some(deposit1)
-      repository.getState _ expects depositId1 returning Some(state1)
+      repository.getStates _ expects Seq(depositId1) returning Seq(depositId1 -> Some(state1))
     }
 
     runQuery(input.contentAsString)
   }
 
-  it should "resolve 'listAllDeposits.graphql' with n + 1 calls to the repository" in {
+  it should "resolve 'listAllDeposits.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "listAllDeposits.graphql"
 
     inSequence {
       repository.getAllDeposits _ expects() returning Seq(deposit1, deposit2, deposit3)
-      repository.getState _ expects depositId1 returning Some(state1)
-      repository.getState _ expects depositId2 returning Some(state2)
-      repository.getState _ expects depositId3 returning Some(state3)
+      repository.getStates _ expects Seq(depositId1, depositId2, depositId3) returning Seq(
+        depositId1 -> Some(state1),
+        depositId2 -> Some(state2),
+        depositId3 -> Some(state3),
+      )
     }
 
     runQuery(input.contentAsString)
   }
 
-  it should "resolve 'listDepositsFromDepositor.graphql' with n + 1 calls to the repository" in {
+  it should "resolve 'listDepositsFromDepositor.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "listDepositsFromDepositor.graphql"
 
     inSequence {
       repository.getDepositByUserId _ expects "user002" returning Seq(deposit2, deposit3)
-      repository.getState _ expects depositId2 returning Some(state2)
-      repository.getState _ expects depositId3 returning Some(state3)
+      repository.getStates _ expects Seq(depositId2, depositId3) returning Seq(
+        depositId2 -> Some(state2),
+        depositId3 -> Some(state3),
+      )
     }
 
     runQuery(input.contentAsString)
   }
 
-  it should "resolve 'listDepositsWithSameDepositor.graphql' with n + 2 calls to the repository" in {
+  it should "resolve 'listDepositsWithSameDepositor.graphql' with 3 calls to the repository" in {
     val input = graphqlExamplesDir / "listDepositsWithSameDepositor.graphql"
     input.writeText(input.contentAsString.replace(depositId1.toString, depositId2.toString))
 
     inSequence {
       repository.getDeposit _ expects depositId2 returning Some(deposit2)
       repository.getDepositByUserId _ expects "user002" returning Seq(deposit2, deposit3)
-      repository.getState _ expects depositId2 returning Some(state2)
-      repository.getState _ expects depositId3 returning Some(state3)
+      repository.getStates _ expects Seq(depositId2, depositId3) returning Seq(
+        depositId2 -> Some(state2),
+        depositId3 -> Some(state3),
+      )
     }
 
     runQuery(input.contentAsString)
   }
 
-  it should "resolve 'listDepositsWithSameState.graphql' with n + 2 calls to the repository" in {
+  it should "resolve 'listDepositsWithSameState.graphql' with 3 calls to the repository" in {
     val input = graphqlExamplesDir / "listDepositsWithSameState.graphql"
 
     inSequence {
       repository.getDeposit _ expects depositId1 returning Some(deposit1)
-      repository.getState _ expects depositId1 returning Some(state1)
+      repository.getStates _ expects Seq(depositId1) returning Seq(depositId1 -> Some(state1))
       repository.getDepositByState _ expects StateLabel.SUBMITTED returning Seq(deposit1, deposit3)
     }
 
     runQuery(input.contentAsString)
   }
 
-  it should "resolve 'listDepositsWithState.graphql' with n + 2 calls to the repository" in {
+  it should "resolve 'listDepositsWithState.graphql' with 1 calls to the repository" in {
     val input = graphqlExamplesDir / "listDepositsWithState.graphql"
 
     inSequence {

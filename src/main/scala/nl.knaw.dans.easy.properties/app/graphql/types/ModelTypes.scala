@@ -17,14 +17,23 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
+import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
-import sangria.schema.{ EnumType, Field, ListType, ObjectType, OptionType }
+import sangria.schema.{ DeferredValue, EnumType, Field, ListType, ObjectType, OptionType }
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 trait ModelTypes {
   this: DepositorConnectionType with Scalars =>
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType()
+  implicit val stateHasId: HasId[(DepositId, Option[State]), DepositId] = HasId { case (id, _) => id }
+
+  val states = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => {
+    Future { ctx.deposits.getStates(ids) }
+  })
 
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
     ObjectTypeDescription("The state of the deposit."),
@@ -50,7 +59,7 @@ trait ModelTypes {
         name = "state",
         fieldType = OptionType(StateType),
         description = Option("The state of the deposit."),
-        resolve = c => c.ctx.deposits.getState(c.value.id),
+        resolve = c => DeferredValue(states.defer(c.value.id)).map { case (_, optState) => optState },
       ),
       Field(
         name = "depositor",
