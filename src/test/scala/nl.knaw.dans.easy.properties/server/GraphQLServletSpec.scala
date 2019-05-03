@@ -30,7 +30,7 @@ class GraphQLServletSpec extends TestSupportFixture
 
   private val graphqlExamplesDir = testDir / "graphql"
   private val repository = new DemoRepositoryImpl
-  private val servlet = new GraphQLServlet(repository)
+  private val servlet = DepositPropertiesGraphQLServlet(repository)
 
   addServlet(servlet, "/*")
 

@@ -15,8 +15,6 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
-import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet._
 import org.json4s.JsonDSL._
@@ -28,17 +26,16 @@ import sangria.ast.Document
 import sangria.execution._
 import sangria.marshalling.json4s.native._
 import sangria.parser._
+import sangria.schema.Schema
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.postfixOps
 
-class GraphQLServlet(repository: DepositRepository) extends ScalatraServlet with FutureSupport
+class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit], ctx: Ctx) extends ScalatraServlet with FutureSupport
   with ServletLogger
   with MaskedLogFormatter
   with LogResponseBodyOnError
   with DebugEnhancedLogging {
-
-  private val ctx = DataContext(repository)
 
   implicit protected def executor: ExecutionContext = ExecutionContext.global
 
@@ -56,7 +53,7 @@ class GraphQLServlet(repository: DepositRepository) extends ScalatraServlet with
   }
 
   private def execute(variables: Option[String], operation: Option[String])(queryAst: Document): Future[ActionResult] = {
-    Executor.execute(DepositSchema, queryAst, ctx,
+    Executor.execute(schema, queryAst, ctx,
       operationName = operation,
       variables = parseVariables(variables),
     )
