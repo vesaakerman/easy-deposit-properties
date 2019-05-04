@@ -42,7 +42,7 @@ class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
     with LogResponseBodyOnError
     with DebugEnhancedLogging {
 
-  implicit protected def executor: ExecutionContext = ExecutionContext.global
+  override implicit protected def executor: ExecutionContext = ExecutionContext.global
 
   private implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 

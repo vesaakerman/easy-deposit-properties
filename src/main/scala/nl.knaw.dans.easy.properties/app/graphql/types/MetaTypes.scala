@@ -72,9 +72,9 @@ trait MetaTypes {
     DocumentInputField("direction", "The ordering direction"),
   )
   implicit val DepositOrderFromInput: FromInput[DepositOrder] = new FromInput[DepositOrder] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
 
-    def fromResult(node: marshaller.Node): DepositOrder = {
+    override def fromResult(node: marshaller.Node): DepositOrder = {
       val ad = node.asInstanceOf[Map[String, Any]]
 
       DepositOrder(

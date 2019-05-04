@@ -37,12 +37,12 @@ trait StateConnectionType {
 
   object StateConnection {
     def apply(label: StateLabel)(repo: DepositRepository): StateConnection = new StateConnection {
-      def deposits(orderBy: Option[DepositOrder]): Seq[Deposit] = {
+      override def deposits(orderBy: Option[DepositOrder]): Seq[Deposit] = {
         val result = repo.getDepositsByState(label)
         orderBy.fold(result)(order => result.sorted(order.ordering))
       }
 
-      def depositor(id: DepositorId): StateDepositorConnection = {
+      override def depositor(id: DepositorId): StateDepositorConnection = {
         StateDepositorConnection(label, id)(repo)
       }
     }

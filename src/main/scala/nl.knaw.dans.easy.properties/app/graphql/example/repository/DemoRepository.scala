@@ -28,17 +28,17 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   val stateRepo: mutable.Map[DepositId, State]
 
-  def getAllDeposits: Seq[Deposit] = {
+  override def getAllDeposits: Seq[Deposit] = {
     trace(())
     depositRepo.values.toSeq
   }
 
-  def getDeposit(id: DepositId): Option[Deposit] = {
+  override def getDeposit(id: DepositId): Option[Deposit] = {
     trace(id)
     depositRepo.get(id)
   }
 
-  def getDeposits(ids: Seq[DepositId]): Seq[(DepositId, Option[Deposit])] = {
+  override def getDeposits(ids: Seq[DepositId]): Seq[(DepositId, Option[Deposit])] = {
     trace(ids)
     ids.map(id => id -> depositRepo.get(id))
   }
@@ -48,12 +48,12 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.get(id).filter(_.depositorId == depositorId)
   }
 
-  def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit] = {
+  override def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit] = {
     trace(depositorId)
     depositRepo.values.filter(_.depositorId == depositorId).toSeq
   }
 
-  def registerDeposit(deposit: Deposit): Option[Deposit] = {
+  override def registerDeposit(deposit: Deposit): Option[Deposit] = {
     if (depositRepo contains deposit.id)
       Option.empty
     else {
@@ -62,16 +62,16 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     }
   }
 
-  def getState(id: DepositId): Option[State] = {
+  override def getState(id: DepositId): Option[State] = {
     trace(id)
     stateRepo.get(id)
   }
 
-  def getStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])] = {
+  override def getStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])] = {
     ids.map(id => id -> stateRepo.get(id))
   }
 
-  def setState(id: DepositId, state: State): Option[Deposit] = {
+  override def setState(id: DepositId, state: State): Option[Deposit] = {
     if (depositRepo contains id) {
       if (stateRepo contains id)
         stateRepo.update(id, state)
@@ -83,13 +83,13 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     else Option.empty
   }
 
-  def getDepositsByState(label: StateLabel): Seq[Deposit] = {
+  override def getDepositsByState(label: StateLabel): Seq[Deposit] = {
     trace(label)
     val depositsWithState = stateRepo.collect { case (depositId, State(`label`, _)) => depositId }.toSeq
     getDeposits(depositsWithState).flatMap { case (_, deposit) => deposit }
   }
 
-  def getDepositsByDepositorAndState(depositorId: DepositorId, label: StateLabel): Seq[Deposit] = {
+  override def getDepositsByDepositorAndState(depositorId: DepositorId, label: StateLabel): Seq[Deposit] = {
     trace(depositorId, label)
     
     val deposits = depositRepo.filter { case (_, deposit) => deposit.depositorId == depositorId }
