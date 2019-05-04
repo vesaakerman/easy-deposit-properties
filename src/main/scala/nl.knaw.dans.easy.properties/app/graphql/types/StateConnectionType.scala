@@ -24,17 +24,17 @@ import sangria.schema.ObjectType
 trait StateConnectionType {
   this: ModelTypes with MetaTypes =>
 
-  @GraphQLDescription("") // TODO
+  @GraphQLDescription("Container for further querying with a given state.")
   trait StateConnection {
     @GraphQLField
     @GraphQLDescription("List all deposits with this state.")
     def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit]
 
     @GraphQLField
-    @GraphQLDescription("") // TODO
+    @GraphQLDescription("Select all deposits with this state and which are submitted by the given depositor")
     def depositor(id: DepositorId): StateDepositorConnection
   }
-  
+
   object StateConnection {
     def apply(label: StateLabel)(repo: DepositRepository): StateConnection = new StateConnection {
       def deposits(orderBy: Option[DepositOrder]): Seq[Deposit] = {
@@ -50,7 +50,7 @@ trait StateConnectionType {
 
   implicit val StateConnectionType: ObjectType[DataContext, StateConnection] = deriveObjectType()
 
-  @GraphQLDescription("") // TODO
+  @GraphQLDescription("Container for further querying with a given state and depositorId.")
   trait StateDepositorConnection {
     @GraphQLField
     @GraphQLDescription("List all deposits with this state and depositor.")

@@ -48,7 +48,7 @@ trait QueryType {
     }
 
     @GraphQLField
-    @GraphQLDescription("")
+    @GraphQLDescription("Lookup a state by its label.")
     def state(label: StateLabel): StateConnection = {
       StateConnection(label)(repository)
     }

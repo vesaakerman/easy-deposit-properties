@@ -80,6 +80,8 @@ type Query {
 
   """Select a depositor."""
   depositor(depositor: String!): Depositor!
+
+  """Lookup a state by its label."""
   state(label: StateLabel!): StateConnection!
 
   """Lists all deposits with the given state label."""
@@ -98,12 +100,18 @@ type State {
   deposit(orderBy: DepositOrder): [Deposit!]!
 }
 
+"""Container for further querying with a given state."""
 type StateConnection {
   """List all deposits with this state."""
   deposits(orderBy: DepositOrder): [Deposit!]!
+
+  """
+  Select all deposits with this state and which are submitted by the given depositor
+  """
   depositor(id: String!): StateDepositorConnection!
 }
 
+"""Container for further querying with a given state and depositorId."""
 type StateDepositorConnection {
   """List all deposits with this state and depositor."""
   deposits(orderBy: DepositOrder): [Deposit!]!
