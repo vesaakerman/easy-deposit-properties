@@ -1,0 +1,24 @@
+{
+  "data": {
+    "depositsWithState": [
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "depositor": {
+          "depositorId": "user002"
+        }
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "depositor": {
+          "depositorId": "user001"
+        }
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "depositor": {
+          "depositorId": "user001"
+        }
+      }
+    ]
+  }
+}
