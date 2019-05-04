@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.server
 import org.scalatra.{ Ok, ScalatraServlet }
 
 object GraphiQLServlet extends ScalatraServlet {
-  
+
   get("/") {
     /*
      * this html response was copied from

@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
-import sangria.macros.derive.{ GraphQLDeprecated, GraphQLDescription, GraphQLField, deriveContextObjectType }
+import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextObjectType }
 import sangria.schema.ObjectType
 
 trait QueryType {

@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app
 import java.util.UUID
 
 package object model {
-  
+
   type DepositId = UUID
   type DepositorId = String
 }

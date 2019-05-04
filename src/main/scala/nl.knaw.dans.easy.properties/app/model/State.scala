@@ -20,10 +20,10 @@ import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 case class State(label: StateLabel, description: String)
 
 object State {
-  
+
   object StateLabel extends Enumeration {
     type StateLabel = Value
-    
+
     // @formatter:off
     val DRAFT          : StateLabel = Value("DRAFT")
     val FINALIZING     : StateLabel = Value("FINALIZING")

@@ -143,7 +143,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "findDepositor" / "depositWithDepositorAndId" / "plain.graphql"
 
     inSequence {
-      (repository.getDeposit(_: DepositId, _: DepositorId)) expects (depositId3, "user002") once() returning Option(deposit3)
+      (repository.getDeposit(_: DepositId, _: DepositorId)) expects(depositId3, "user002") once() returning Option(deposit3)
       repository.getStates _ expects Seq(depositId3) once() returning Seq(
         depositId3 -> Some(state3),
       )
@@ -185,7 +185,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "state" / "listDepositsWithDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDepositsByDepositorAndState _ expects ("user001", StateLabel.SUBMITTED) once() returning Seq(deposit1, deposit3)
+      repository.getDepositsByDepositorAndState _ expects("user001", StateLabel.SUBMITTED) once() returning Seq(deposit1, deposit3)
       repository.getStates _ expects Seq(depositId1, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId3 -> Some(state3),

@@ -28,7 +28,7 @@ trait DepositorType {
     @GraphQLField
     @GraphQLDescription("The EASY account of the depositor.")
     def depositorId: DepositorId
-    
+
     @GraphQLField
     @GraphQLDescription("List all deposits originating from the same depositor.")
     def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit]
@@ -37,7 +37,7 @@ trait DepositorType {
     @GraphQLDescription("Get the technical metadata of the deposit identified by 'id' and submitted by this depositor.")
     def deposit(id: DepositId): Option[Deposit]
   }
-  
+
   object Depositor {
     def apply(dp: DepositorId)(repo: DepositRepository): Depositor = new Depositor {
       override def depositorId: DepositorId = dp

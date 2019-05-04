@@ -91,7 +91,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   override def getDepositsByDepositorAndState(depositorId: DepositorId, label: StateLabel): Seq[Deposit] = {
     trace(depositorId, label)
-    
+
     val deposits = depositRepo.filter { case (_, deposit) => deposit.depositorId == depositorId }
     getStates(deposits.keys.toSeq)
       .collect { case (depositId, Some(State(`label`, _))) => deposits.get(depositId) }
