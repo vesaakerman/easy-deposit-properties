@@ -18,11 +18,11 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
-import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextObjectType }
+import sangria.macros.derive.{ GraphQLDeprecated, GraphQLDescription, GraphQLField, deriveContextObjectType }
 import sangria.schema.ObjectType
 
 trait QueryType {
-  this: DepositorType with MetaTypes with ModelTypes with Scalars =>
+  this: DepositorType with StateConnectionType with MetaTypes with ModelTypes with Scalars =>
 
   @GraphQLDescription("The query root of easy-deposit-properties' GraphQL interface.")
   trait Query {
@@ -46,11 +46,18 @@ trait QueryType {
     def depositor(depositor: DepositorId): Depositor = {
       Depositor(depositor)(repository)
     }
-    
+
+    @GraphQLField
+    @GraphQLDescription("")
+    def state(label: StateLabel): StateConnection = {
+      StateConnection(label)(repository)
+    }
+
     @GraphQLField
     @GraphQLDescription("Lists all deposits with the given state label.")
+    @GraphQLDeprecated("replaced by 'state' and 'StateConnectionType'")
     def depositsWithState(label: StateLabel, orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
-      val result = repository.getDepositByState(label)
+      val result = repository.getDepositsByState(label)
       orderBy.fold(result)(order => result.sorted(order.ordering))
     }
   }

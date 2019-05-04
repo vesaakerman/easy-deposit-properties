@@ -57,7 +57,7 @@ trait ModelTypes {
         description = Option("List all deposits with the same state label."),
         arguments = Argument("orderBy", OptionInputType(DepositOrderInputType)) :: Nil,
         resolve = c => {
-          val result = c.ctx.deposits.getDepositByState(c.value.label)
+          val result = c.ctx.deposits.getDepositsByState(c.value.label)
           c.argOpt[DepositOrder]("orderBy")
             .fold(result)(order => result.sorted(order.ordering))
         },

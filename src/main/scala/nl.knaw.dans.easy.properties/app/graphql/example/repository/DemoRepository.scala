@@ -38,12 +38,17 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.get(id)
   }
 
+  def getDeposits(ids: Seq[DepositId]): Seq[(DepositId, Option[Deposit])] = {
+    trace(ids)
+    ids.map(id => id -> depositRepo.get(id))
+  }
+
   override def getDeposit(id: DepositId, depositorId: DepositorId): Option[Deposit] = {
     trace(id, depositorId)
     depositRepo.get(id).filter(_.depositorId == depositorId)
   }
 
-  def getDepositByUserId(depositorId: DepositorId): Seq[Deposit] = {
+  def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit] = {
     trace(depositorId)
     depositRepo.values.filter(_.depositorId == depositorId).toSeq
   }
@@ -78,13 +83,18 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     else Option.empty
   }
 
-  def getDepositByState(label: StateLabel): Seq[Deposit] = {
+  def getDepositsByState(label: StateLabel): Seq[Deposit] = {
     trace(label)
-    for {
-      (depositId, State(stateLabel, _)) <- stateRepo.toSeq
-      if stateLabel == label
-      deposit <- depositRepo.get(depositId)
-      _ = debug(deposit.id.toString)
-    } yield deposit
+    val depositsWithState = stateRepo.collect { case (depositId, State(`label`, _)) => depositId }.toSeq
+    getDeposits(depositsWithState).flatMap { case (_, deposit) => deposit }
+  }
+
+  def getDepositsByDepositorAndState(depositorId: DepositorId, label: StateLabel): Seq[Deposit] = {
+    trace(depositorId, label)
+    
+    val deposits = depositRepo.filter { case (_, deposit) => deposit.depositorId == depositorId }
+    getStates(deposits.keys.toSeq)
+      .collect { case (depositId, Some(State(`label`, _))) => deposits.get(depositId) }
+      .flatten
   }
 }

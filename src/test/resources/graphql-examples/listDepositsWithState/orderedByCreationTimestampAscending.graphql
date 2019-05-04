@@ -1,8 +1,0 @@
-query ListDepositsWithState {
-    depositsWithState(label: SUBMITTED, orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
-        id
-        depositor {
-            depositorId
-        }
-    }
-}

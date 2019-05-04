@@ -1,0 +1,15 @@
+query ListDepositsWithStateAndDepositor {
+    state(label: SUBMITTED) {
+        depositor(id: "user001") {
+            deposits(orderBy: {field: DEPOSIT_ID, direction: DESC}) {
+                creationTimestamp
+                depositor {
+                    depositorId
+                }
+                state {
+                    description
+                }
+            }
+        }
+    }
+}

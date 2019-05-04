@@ -80,9 +80,10 @@ type Query {
 
   """Select a depositor."""
   depositor(depositor: String!): Depositor!
+  state(label: StateLabel!): StateConnection!
 
   """Lists all deposits with the given state label."""
-  depositsWithState(label: StateLabel!, orderBy: DepositOrder): [Deposit!]!
+  depositsWithState(label: StateLabel!, orderBy: DepositOrder): [Deposit!]! @deprecated(reason: "replaced by 'state' and 'StateConnectionType'")
 }
 
 """The state of the deposit."""
@@ -95,6 +96,17 @@ type State {
 
   """List all deposits with the same state label."""
   deposit(orderBy: DepositOrder): [Deposit!]!
+}
+
+type StateConnection {
+  """List all deposits with this state."""
+  deposits(orderBy: DepositOrder): [Deposit!]!
+  depositor(id: String!): StateDepositorConnection!
+}
+
+type StateDepositorConnection {
+  """List all deposits with this state and depositor."""
+  deposits(orderBy: DepositOrder): [Deposit!]!
 }
 
 """The label identifying the state of a deposit."""
@@ -137,3 +149,4 @@ enum StateLabel {
 The UUID scalar type represents textual data, formatted as a universally unique identifier.
 """
 scalar UUID
+

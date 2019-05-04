@@ -43,7 +43,7 @@ trait DepositorType {
       override def depositorId: DepositorId = dp
 
       override def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
-        val result = repo.getDepositByUserId(dp)
+        val result = repo.getDepositsByDepositor(dp)
         orderBy.fold(result)(order => result.sorted(order.ordering))
       }
 
