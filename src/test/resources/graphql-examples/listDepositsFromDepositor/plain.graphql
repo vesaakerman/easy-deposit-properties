@@ -1,6 +1,6 @@
 query ListDepositsFromDepositor {
     depositor(depositor: "user002") {
-        deposit {
+        deposits {
             id
             state {
                 label

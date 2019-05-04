@@ -20,7 +20,7 @@ import java.util.UUID
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
@@ -90,7 +90,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposit.graphql"
 
     inSequence {
-      repository.getDeposit _ expects depositId1 returning Some(deposit1)
+      (repository.getDeposit(_: DepositId)) expects depositId1 returning Some(deposit1)
       repository.getStates _ expects Seq(depositId1) returning Seq(depositId1 -> Some(state1))
     }
 
@@ -131,7 +131,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     input.writeText(input.contentAsString.replace(depositId1.toString, depositId2.toString))
 
     inSequence {
-      repository.getDeposit _ expects depositId2 returning Some(deposit2)
+      (repository.getDeposit(_: DepositId)) expects depositId2 returning Some(deposit2)
       repository.getDepositByUserId _ expects "user002" returning Seq(deposit2, deposit3)
       repository.getStates _ expects Seq(depositId2, depositId3) returning Seq(
         depositId2 -> Some(state2),
@@ -146,7 +146,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "listDepositsWithSameState" / "plain.graphql"
 
     inSequence {
-      repository.getDeposit _ expects depositId1 returning Some(deposit1)
+      (repository.getDeposit(_: DepositId)) expects depositId1 returning Some(deposit1)
       repository.getStates _ expects Seq(depositId1) returning Seq(depositId1 -> Some(state1))
       repository.getDepositByState _ expects StateLabel.SUBMITTED returning Seq(deposit1, deposit3)
     }

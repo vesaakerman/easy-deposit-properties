@@ -1,6 +1,6 @@
 query ListDepositsFromDepositor {
     depositor(depositor: "user002") {
-        deposit(orderBy: {field: DEPOSIT_ID, direction: ASC}) {
+        deposits(orderBy: {field: DEPOSIT_ID, direction: ASC}) {
             id
             state {
                 label

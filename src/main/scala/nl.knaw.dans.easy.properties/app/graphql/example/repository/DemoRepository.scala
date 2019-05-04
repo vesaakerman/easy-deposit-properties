@@ -38,6 +38,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.get(id)
   }
 
+  override def getDeposit(id: DepositId, depositorId: DepositorId): Option[Deposit] = {
+    trace(id, depositorId)
+    depositRepo.get(id).filter(_.depositorId == depositorId)
+  }
+
   def getDepositByUserId(depositorId: DepositorId): Seq[Deposit] = {
     trace(depositorId)
     depositRepo.values.filter(_.depositorId == depositorId).toSeq

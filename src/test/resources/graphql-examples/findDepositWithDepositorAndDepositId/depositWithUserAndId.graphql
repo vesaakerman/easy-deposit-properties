@@ -1,7 +1,8 @@
 query ListDepositsFromDepositor {
     depositor(depositor: "user002") {
-        deposits(orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
+        deposit(id: "00000000-0000-0000-0000-000000000003") {
             id
+            creationTimestamp
             state {
                 label
                 description

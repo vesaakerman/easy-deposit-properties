@@ -16,12 +16,12 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
 import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveObjectType }
 import sangria.schema.ObjectType
 
 trait DepositorType {
-  this: MetaTypes with ModelTypes =>
+  this: MetaTypes with ModelTypes with Scalars =>
 
   @GraphQLDescription("Information about the depositor that submitted this deposit.")
   trait Depositor {
@@ -31,16 +31,24 @@ trait DepositorType {
     
     @GraphQLField
     @GraphQLDescription("List all deposits originating from the same depositor.")
-    def deposit(orderBy: Option[DepositOrder] = None): Seq[Deposit]
+    def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit]
+
+    @GraphQLField
+    @GraphQLDescription("Get the technical metadata of the deposit identified by 'id' and submitted by this depositor.")
+    def deposit(id: DepositId): Option[Deposit]
   }
   
   object Depositor {
     def apply(dp: DepositorId)(repo: DepositRepository): Depositor = new Depositor {
-      def depositorId: DepositorId = dp
+      override def depositorId: DepositorId = dp
 
-      def deposit(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
+      override def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
         val result = repo.getDepositByUserId(dp)
         orderBy.fold(result)(order => result.sorted(order.ordering))
+      }
+
+      override def deposit(id: DepositId): Option[Deposit] = {
+        repo.getDeposit(id, dp)
       }
     }
   }

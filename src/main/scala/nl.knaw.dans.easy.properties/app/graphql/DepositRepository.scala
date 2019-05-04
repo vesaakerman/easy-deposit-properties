@@ -24,6 +24,8 @@ trait DepositRepository {
 
   def getDeposit(id: DepositId): Option[Deposit]
 
+  def getDeposit(id: DepositId, depositorId: DepositorId): Option[Deposit]
+
   def getDepositByUserId(depositorId: DepositorId): Seq[Deposit]
 
   def registerDeposit(deposit: Deposit): Option[Deposit]
