@@ -25,6 +25,7 @@ import sangria.schema.ObjectType
 trait MutationType {
   this: ModelTypes with Scalars =>
 
+  @GraphQLDescription("The root query for implementing GraphQL mutations.")
   trait Mutation {
     val repository: DepositRepository
 

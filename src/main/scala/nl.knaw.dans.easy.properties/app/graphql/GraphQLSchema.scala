@@ -21,7 +21,7 @@ import sangria.schema._
 
 object GraphQLSchema extends QueryType with MutationType
   with MetaTypes
-  with DepositorConnectionType
+  with DepositorType
   with ModelTypes
   with Scalars {
 

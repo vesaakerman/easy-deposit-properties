@@ -26,9 +26,20 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait ModelTypes {
-  this: DepositorConnectionType with MetaTypes with Scalars =>
+  this: DepositorType with MetaTypes with Scalars =>
 
-  implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType()
+  implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
+    EnumTypeDescription("The label identifying the state of a deposit."),
+    DocumentValue("DRAFT", "Open for additional data."),
+    DocumentValue("FINALIZING", "Closed and being checked for validity."),
+    DocumentValue("INVALID", "Does not contain a valid bag."),
+    DocumentValue("SUBMITTED", "Valid and waiting for processing by easy-ingest-flow, or being processed in it."),
+    DocumentValue("IN_REVIEW", "Currently undergoing curation by the datamanagers."),
+    DocumentValue("REJECTED", "Did not meet the requirements set by easy-ingest-flow for this type of deposit."),
+    DocumentValue("FAILED", "Failed to be archived because of some unexpected condition. It may be possible to manually fix this."),
+    DocumentValue("FEDORA_ARCHIVED", "Was successfully archived in the Fedora Archive."),
+    DocumentValue("ARCHIVED", "Was successfully archived in the data vault."),
+  )
   implicit val stateHasId: HasId[(DepositId, Option[State]), DepositId] = HasId { case (id, _) => id }
 
   val states = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => {
@@ -43,7 +54,7 @@ trait ModelTypes {
       Field(
         name = "deposit",
         fieldType = ListType(DepositType),
-        description = Option(""),
+        description = Option("List all deposits with the same state label."),
         arguments = Argument("orderBy", OptionInputType(DepositOrderInputType)) :: Nil,
         resolve = c => {
           val result = c.ctx.deposits.getDepositByState(c.value.label)
@@ -56,6 +67,7 @@ trait ModelTypes {
 
   // lazy because we need it before being declared (in StateType)
   implicit lazy val DepositType: ObjectType[DataContext, Deposit] = deriveObjectType(
+    ObjectTypeDescription("Contains all technical metadata about this deposit."),
     DocumentField("id", "The identifier of the deposit."),
     DocumentField("creationTimestamp", "The moment this deposit was created."),
     ExcludeFields("depositorId"),
@@ -68,9 +80,9 @@ trait ModelTypes {
       ),
       Field(
         name = "depositor",
-        fieldType = DepositorConnectionType,
-        description = Option(""),
-        resolve = c => DepositorConnection(c.value.depositorId)(c.ctx.deposits),
+        fieldType = DepositorType,
+        description = Option("Information about the depositor that submitted this deposit."),
+        resolve = c => Depositor(c.value.depositorId)(c.ctx.deposits),
       )
     ),
   )

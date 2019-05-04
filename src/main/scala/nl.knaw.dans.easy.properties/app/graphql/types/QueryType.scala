@@ -22,8 +22,9 @@ import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextOb
 import sangria.schema.ObjectType
 
 trait QueryType {
-  this: DepositorConnectionType with MetaTypes with ModelTypes with Scalars =>
+  this: DepositorType with MetaTypes with ModelTypes with Scalars =>
 
+  @GraphQLDescription("The query root of easy-deposit-properties' GraphQL interface.")
   trait Query {
     val repository: DepositRepository
 
@@ -42,8 +43,8 @@ trait QueryType {
 
     @GraphQLField
     @GraphQLDescription("Select a depositor.")
-    def depositor(depositor: DepositorId): DepositorConnection = {
-      DepositorConnection(depositor)(repository)
+    def depositor(depositor: DepositorId): Depositor = {
+      Depositor(depositor)(repository)
     }
     
     @GraphQLField

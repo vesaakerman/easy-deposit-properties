@@ -20,21 +20,22 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
 import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveObjectType }
 import sangria.schema.ObjectType
 
-trait DepositorConnectionType {
+trait DepositorType {
   this: MetaTypes with ModelTypes =>
 
-  trait DepositorConnection {
+  @GraphQLDescription("Information about the depositor that submitted this deposit.")
+  trait Depositor {
     @GraphQLField
     @GraphQLDescription("The EASY account of the depositor.")
     def depositorId: DepositorId
     
     @GraphQLField
-    @GraphQLDescription("Get the technical metadata of the deposits from the given depositor.")
+    @GraphQLDescription("List all deposits originating from the same depositor.")
     def deposit(orderBy: Option[DepositOrder] = None): Seq[Deposit]
   }
   
-  object DepositorConnection {
-    def apply(dp: DepositorId)(repo: DepositRepository): DepositorConnection = new DepositorConnection {
+  object Depositor {
+    def apply(dp: DepositorId)(repo: DepositRepository): Depositor = new Depositor {
       def depositorId: DepositorId = dp
 
       def deposit(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
@@ -44,5 +45,5 @@ trait DepositorConnectionType {
     }
   }
 
-  implicit val DepositorConnectionType: ObjectType[DataContext, DepositorConnection] = deriveObjectType()
+  implicit val DepositorType: ObjectType[DataContext, Depositor] = deriveObjectType()
 }
