@@ -31,6 +31,7 @@ trait ModelTypes {
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the state of a deposit."),
     DocumentValue("DRAFT", "Open for additional data."),
+    DocumentValue("UPLOADED", "Deposit upload has been completed."),
     DocumentValue("FINALIZING", "Closed and being checked for validity."),
     DocumentValue("INVALID", "Does not contain a valid bag."),
     DocumentValue("SUBMITTED", "Valid and waiting for processing by easy-ingest-flow, or being processed in it."),

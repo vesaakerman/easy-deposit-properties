@@ -5,15 +5,15 @@
         {
           "id": "00000000-0000-0000-0000-000000000003",
           "state": {
-            "label": "ARCHIVED",
-            "description": "all is done"
+            "label": "INVALID",
+            "description": "deposit is invalid"
           }
         },
         {
           "id": "00000000-0000-0000-0000-000000000005",
           "state": {
-            "label": "SUBMITTED",
-            "description": "await processing"
+            "label": "REJECTED",
+            "description": "deposit is rejected"
           }
         }
       ]

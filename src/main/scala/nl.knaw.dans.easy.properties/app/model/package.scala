@@ -17,8 +17,13 @@ package nl.knaw.dans.easy.properties.app
 
 import java.util.UUID
 
+import org.joda.time.DateTime
+
 package object model {
 
   type DepositId = UUID
   type DepositorId = String
+  type Timestamp = DateTime
+
+  implicit val timestampOrdering: Ordering[Timestamp] = Ordering.fromLessThan(_ isBefore _)
 }

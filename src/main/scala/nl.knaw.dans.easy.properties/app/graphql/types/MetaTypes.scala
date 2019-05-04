@@ -15,8 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import org.joda.time.DateTime
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.schema.{ EnumType, InputObjectType }
@@ -57,7 +56,7 @@ trait MetaTypes {
         case DepositOrderField.DEPOSIT_ID =>
           Ordering[DepositId].on(_.id)
         case DepositOrderField.CREATION_TIMESTAMP =>
-          Ordering.fromLessThan[DateTime](_ isBefore _).on(_.creationTimestamp)
+          Ordering[Timestamp].on(_.creationTimestamp)
       }
 
       direction match {

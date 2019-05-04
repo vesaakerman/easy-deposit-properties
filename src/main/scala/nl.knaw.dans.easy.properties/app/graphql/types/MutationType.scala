@@ -17,8 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
-import org.joda.time.DateTime
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Timestamp }
 import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextObjectType }
 import sangria.schema.ObjectType
 
@@ -31,14 +30,14 @@ trait MutationType {
 
     @GraphQLField
     @GraphQLDescription("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'.")
-    def registerDeposit(id: DepositId, creationTimestamp: DateTime, depositorId: String): Option[Deposit] = {
+    def registerDeposit(id: DepositId, creationTimestamp: Timestamp, depositorId: String): Option[Deposit] = {
       repository.registerDeposit(Deposit(id, creationTimestamp, depositorId))
     }
 
     @GraphQLField
     @GraphQLDescription("Update the state of the deposit identified by 'id'.")
-    def updateState(id: DepositId, label: StateLabel, description: String): Option[Deposit] = {
-      repository.setState(id, State(label, description))
+    def updateState(id: DepositId, label: StateLabel, description: String, timestamp: Timestamp): Option[Deposit] = {
+      repository.setState(id, State(label, description, timestamp))
     }
   }
 

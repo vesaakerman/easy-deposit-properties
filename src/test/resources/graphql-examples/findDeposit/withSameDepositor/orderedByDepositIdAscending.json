@@ -7,22 +7,22 @@
           {
             "id": "00000000-0000-0000-0000-000000000001",
             "state": {
-              "label": "SUBMITTED",
-              "description": "await processing"
+              "label": "ARCHIVED",
+              "description": "deposit is archived"
             }
           },
           {
             "id": "00000000-0000-0000-0000-000000000002",
             "state": {
-              "label": "FAILED",
-              "description": "I did something wrong"
+              "label": "ARCHIVED",
+              "description": "deposit is archived"
             }
           },
           {
             "id": "00000000-0000-0000-0000-000000000004",
             "state": {
-              "label": "SUBMITTED",
-              "description": "await processing"
+              "label": "ARCHIVED",
+              "description": "deposit is archived"
             }
           }
         ]

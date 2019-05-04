@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, State }
+import nl.knaw.dans.easy.properties.app.model._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.collection.mutable
@@ -26,7 +26,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   val depositRepo: mutable.Map[DepositId, Deposit]
 
-  val stateRepo: mutable.Map[DepositId, State]
+  val stateRepo: mutable.Map[DepositId, Seq[State]]
 
   override def getAllDeposits: Seq[Deposit] = {
     trace(())
@@ -64,19 +64,19 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   override def getState(id: DepositId): Option[State] = {
     trace(id)
-    stateRepo.get(id)
+    stateRepo.get(id).map(_.maxBy(_.timestamp))
   }
 
   override def getStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])] = {
-    ids.map(id => id -> stateRepo.get(id))
+    ids.map(id => id -> stateRepo.get(id).map(_.maxBy(_.timestamp)))
   }
 
   override def setState(id: DepositId, state: State): Option[Deposit] = {
     if (depositRepo contains id) {
       if (stateRepo contains id)
-        stateRepo.update(id, state)
+        stateRepo.update(id, stateRepo(id) :+ state)
       else
-        stateRepo += (id -> state)
+        stateRepo += (id -> Seq(state))
 
       depositRepo.get(id)
     }
@@ -85,7 +85,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   override def getDepositsByState(label: StateLabel): Seq[Deposit] = {
     trace(label)
-    val depositsWithState = stateRepo.collect { case (depositId, State(`label`, _)) => depositId }.toSeq
+    val depositsWithState = stateRepo.collect { case (depositId, states) if states.maxBy(_.timestamp).label == label => depositId }.toSeq
     getDeposits(depositsWithState).flatMap { case (_, deposit) => deposit }
   }
 
@@ -94,7 +94,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
     val deposits = depositRepo.filter { case (_, deposit) => deposit.depositorId == depositorId }
     getStates(deposits.keys.toSeq)
-      .collect { case (depositId, Some(State(`label`, _))) => deposits.get(depositId) }
+      .collect { case (depositId, Some(State(`label`, _, _))) => deposits.get(depositId) }
       .flatten
   }
 }

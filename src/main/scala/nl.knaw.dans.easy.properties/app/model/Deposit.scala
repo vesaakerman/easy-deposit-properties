@@ -15,6 +15,4 @@
  */
 package nl.knaw.dans.easy.properties.app.model
 
-import org.joda.time.DateTime
-
-case class Deposit(id: DepositId, creationTimestamp: DateTime, depositorId: DepositorId)
+case class Deposit(id: DepositId, creationTimestamp: Timestamp, depositorId: DepositorId)

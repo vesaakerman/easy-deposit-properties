@@ -36,19 +36,50 @@ class DemoRepositoryImpl extends DemoRepository {
   private val user1 = "user001"
   private val user2 = "user002"
 
+  private val deposit1 = Deposit(depositId1, new DateTime(2019, 1, 1, 0, 0, timeZone), user1)
+  private val deposit2 = Deposit(depositId2, new DateTime(2019, 2, 2, 0, 0, timeZone), user1)
+  private val deposit3 = Deposit(depositId3, new DateTime(2019, 3, 3, 0, 0, timeZone), user2)
+  private val deposit4 = Deposit(depositId4, new DateTime(2019, 4, 4, 0, 0, timeZone), user1)
+  private val deposit5 = Deposit(depositId5, new DateTime(2019, 5, 5, 0, 0, timeZone), user2)
+
+  private val state10 = State(StateLabel.DRAFT, "draft with continued deposit", new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val state11 = State(StateLabel.DRAFT, "draft with continued deposit", new DateTime(2019, 1, 1, 1, 1, timeZone))
+  private val state12 = State(StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 1, 1, 2, 2, timeZone))
+  private val state13 = State(StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 1, 1, 3, 3, timeZone))
+  private val state14 = State(StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 1, 1, 4, 4, timeZone))
+  private val state15 = State(StateLabel.ARCHIVED, "deposit is archived", new DateTime(2019, 1, 1, 5, 5, timeZone))
+
+  private val state20 = State(StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val state21 = State(StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 2, 2, 1, 1, timeZone))
+  private val state22 = State(StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 2, 2, 2, 2, timeZone))
+  private val state23 = State(StateLabel.ARCHIVED, "deposit is archived", new DateTime(2019, 2, 2, 3, 3, timeZone))
+
+  private val state30 = State(StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 3, 3, 0, 0, timeZone))
+  private val state31 = State(StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 3, 3, 1, 1, timeZone))
+  private val state32 = State(StateLabel.INVALID, "deposit is invalid", new DateTime(2019, 3, 3, 2, 2, timeZone))
+
+  private val state40 = State(StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 4, 4, 0, 0, timeZone))
+  private val state41 = State(StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 4, 4, 1, 1, timeZone))
+  private val state42 = State(StateLabel.ARCHIVED, "deposit is archived", new DateTime(2019, 4, 4, 2, 2, timeZone))
+
+  private val state50 = State(StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 5, 5, 0, 0, timeZone))
+  private val state51 = State(StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 5, 5, 1, 1, timeZone))
+  private val state52 = State(StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 5, 5, 2, 2, timeZone))
+  private val state53 = State(StateLabel.REJECTED, "deposit is rejected", new DateTime(2019, 5, 5, 3, 3, timeZone))
+
   override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map(
-    depositId1 -> Deposit(depositId1, new DateTime(2019, 4, 22, 15, 58, timeZone), user1),
-    depositId2 -> Deposit(depositId2, new DateTime(2019, 1, 1, 0, 0, timeZone), user1),
-    depositId3 -> Deposit(depositId3, new DateTime(2019, 2, 2, 0, 0, timeZone), user2),
-    depositId4 -> Deposit(depositId4, new DateTime(2019, 3, 3, 0, 0, timeZone), user1),
-    depositId5 -> Deposit(depositId5, new DateTime(2019, 4, 4, 0, 0, timeZone), user2),
+    depositId1 -> deposit1,
+    depositId2 -> deposit2,
+    depositId3 -> deposit3,
+    depositId4 -> deposit4,
+    depositId5 -> deposit5,
   )
 
-  override val stateRepo: mutable.Map[DepositId, State] = mutable.Map(
-    depositId1 -> State(StateLabel.SUBMITTED, "await processing"),
-    depositId2 -> State(StateLabel.FAILED, "I did something wrong"),
-    depositId3 -> State(StateLabel.ARCHIVED, "all is done"),
-    depositId4 -> State(StateLabel.SUBMITTED, "await processing"),
-    depositId5 -> State(StateLabel.SUBMITTED, "await processing"),
+  override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map(
+    depositId1 -> Seq(state10, state11, state12, state13, state14, state15),
+    depositId2 -> Seq(state20, state21, state22, state23),
+    depositId3 -> Seq(state30, state31, state32),
+    depositId4 -> Seq(state40, state41, state42),
+    depositId5 -> Seq(state50, state51, state52, state53),
   )
 }

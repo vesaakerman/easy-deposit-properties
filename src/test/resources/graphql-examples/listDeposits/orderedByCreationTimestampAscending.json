@@ -2,13 +2,23 @@
   "data": {
     "deposits": [
       {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "depositor": {
+          "depositorId": "user001"
+        },
+        "state": {
+          "label": "ARCHIVED",
+          "description": "deposit is archived"
+        }
+      },
+      {
         "id": "00000000-0000-0000-0000-000000000002",
         "depositor": {
           "depositorId": "user001"
         },
         "state": {
-          "label": "FAILED",
-          "description": "I did something wrong"
+          "label": "ARCHIVED",
+          "description": "deposit is archived"
         }
       },
       {
@@ -17,8 +27,8 @@
           "depositorId": "user002"
         },
         "state": {
-          "label": "ARCHIVED",
-          "description": "all is done"
+          "label": "INVALID",
+          "description": "deposit is invalid"
         }
       },
       {
@@ -27,8 +37,8 @@
           "depositorId": "user001"
         },
         "state": {
-          "label": "SUBMITTED",
-          "description": "await processing"
+          "label": "ARCHIVED",
+          "description": "deposit is archived"
         }
       },
       {
@@ -37,18 +47,8 @@
           "depositorId": "user002"
         },
         "state": {
-          "label": "SUBMITTED",
-          "description": "await processing"
-        }
-      },
-      {
-        "id": "00000000-0000-0000-0000-000000000001",
-        "depositor": {
-          "depositorId": "user001"
-        },
-        "state": {
-          "label": "SUBMITTED",
-          "description": "await processing"
+          "label": "REJECTED",
+          "description": "deposit is rejected"
         }
       }
     ]

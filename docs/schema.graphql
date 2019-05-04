@@ -56,7 +56,7 @@ type Mutation {
   registerDeposit(id: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
 
   """Update the state of the deposit identified by 'id'."""
-  updateState(id: UUID!, label: StateLabel!, description: String!): Deposit
+  updateState(id: UUID!, label: StateLabel!, description: String!, timestamp: DateTime!): Deposit
 }
 
 """
@@ -92,6 +92,7 @@ type State {
 
   """Additional information about the state."""
   description: String!
+  timestamp: DateTime!
 
   """List all deposits with the same state label."""
   deposit(orderBy: DepositOrder): [Deposit!]!
@@ -145,6 +146,9 @@ enum StateLabel {
 
   """Closed and being checked for validity."""
   FINALIZING
+
+  """Deposit upload has been completed."""
+  UPLOADED
 
   """Open for additional data."""
   DRAFT
