@@ -1,109 +1,139 @@
-# This file was generated based on ".graphqlconfig". Do not edit manually.
-
-schema {
-    query: Query
-    mutation: Mutation
-}
-
-"Contains all technical metadata about this deposit."
-type Deposit {
-    "The moment this deposit was created."
-    creationTimestamp: DateTime!
-    "Information about the depositor that submitted this deposit."
-    depositor: Depositor!
-    "The identifier of the deposit."
-    id: UUID!
-    "The state of the deposit."
-    state: State
-}
-
-"Information about the depositor that submitted this deposit."
-type Depositor {
-    "List all deposits originating from the same depositor."
-    deposit(orderBy: DepositOrder): [Deposit!]!
-    "The EASY account of the depositor."
-    depositorId: String!
-}
-
-"The root query for implementing GraphQL mutations."
-type Mutation {
-    "Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."
-    registerDeposit(creationTimestamp: DateTime!, depositorId: String!, id: UUID!): Deposit
-    "Update the state of the deposit identified by 'id'."
-    updateState(description: String!, id: UUID!, label: StateLabel!): Deposit
-}
-
-"The query root of easy-deposit-properties' GraphQL interface."
-type Query {
-    "Get the technical metadata of the deposit identified by 'id'."
-    deposit(id: UUID!): Deposit
-    "Select a depositor."
-    depositor(depositor: String!): Depositor!
-    "List all registered deposits."
-    deposits(orderBy: DepositOrder): [Deposit!]!
-    "Lists all deposits with the given state label."
-    depositsWithState(label: StateLabel!, orderBy: DepositOrder): [Deposit!]!
-}
-
-"The state of the deposit."
-type State {
-    "List all deposits with the same state label."
-    deposit(orderBy: DepositOrder): [Deposit!]!
-    "Additional information about the state."
-    description: String!
-    "The state label of the deposit."
-    label: StateLabel!
-}
-
-"Properties by which deposits can be ordered"
-enum DepositOrderField {
-    #Order deposits by creation timestamp
-    CREATION_TIMESTAMP
-    #Order deposits by depositId
-    DEPOSIT_ID
-}
-
-"Possible directions in which to order a list of items when provided an orderBy argument"
-enum OrderDirection {
-    #Specifies an ascending order for a given orderBy argumen.
-    ASC
-    #Specifies a descending order for a given orderBy argument
-    DESC
-}
-
-"The label identifying the state of a deposit."
-enum StateLabel {
-    #Was successfully archived in the data vault.
-    ARCHIVED
-    #Open for additional data.
-    DRAFT
-    #Failed to be archived because of some unexpected condition. It may be possible to manually fix this.
-    FAILED
-    #Was successfully archived in the Fedora Archive.
-    FEDORA_ARCHIVED
-    #Closed and being checked for validity.
-    FINALIZING
-    #Does not contain a valid bag.
-    INVALID
-    #Currently undergoing curation by the datamanagers.
-    IN_REVIEW
-    #Did not meet the requirements set by easy-ingest-flow for this type of deposit.
-    REJECTED
-    #Valid and waiting for processing by easy-ingest-flow, or being processed in it.
-    SUBMITTED
-}
-
-"Ordering options for deposits"
-input DepositOrder {
-    "The ordering direction"
-    direction: OrderDirection!
-    "The field to order deposit by"
-    field: DepositOrderField!
-}
-
-
-"A DateTime scalar type represents textual data, formatted as an ISO8601 date-time."
+"""
+A DateTime scalar type represents textual data, formatted as an ISO8601 date-time.
+"""
 scalar DateTime
 
-"The UUID scalar type represents textual data, formatted as a universally unique identifier."
+"""Contains all technical metadata about this deposit."""
+type Deposit {
+  """The identifier of the deposit."""
+  id: UUID!
+
+  """The moment this deposit was created."""
+  creationTimestamp: DateTime!
+
+  """The state of the deposit."""
+  state: State
+
+  """Information about the depositor that submitted this deposit."""
+  depositor: Depositor!
+}
+
+"""Information about the depositor that submitted this deposit."""
+type Depositor {
+  """The EASY account of the depositor."""
+  depositorId: String!
+
+  """List all deposits originating from the same depositor."""
+  deposits(orderBy: DepositOrder): [Deposit!]!
+
+  """
+  Get the technical metadata of the deposit identified by 'id' and submitted by this depositor.
+  """
+  deposit(id: UUID!): Deposit
+}
+
+"""Ordering options for deposits"""
+input DepositOrder {
+  """The field to order deposit by"""
+  field: DepositOrderField!
+
+  """The ordering direction"""
+  direction: OrderDirection!
+}
+
+"""Properties by which deposits can be ordered"""
+enum DepositOrderField {
+  """Order deposits by creation timestamp"""
+  CREATION_TIMESTAMP
+
+  """Order deposits by depositId"""
+  DEPOSIT_ID
+}
+
+"""The root query for implementing GraphQL mutations."""
+type Mutation {
+  """Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."""
+  registerDeposit(id: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
+
+  """Update the state of the deposit identified by 'id'."""
+  updateState(id: UUID!, label: StateLabel!, description: String!): Deposit
+}
+
+"""
+Possible directions in which to order a list of items when provided an orderBy argument
+"""
+enum OrderDirection {
+  """Specifies a descending order for a given orderBy argument"""
+  DESC
+
+  """Specifies an ascending order for a given orderBy argumen."""
+  ASC
+}
+
+"""The query root of easy-deposit-properties' GraphQL interface."""
+type Query {
+  """List all registered deposits."""
+  deposits(orderBy: DepositOrder): [Deposit!]!
+
+  """Get the technical metadata of the deposit identified by 'id'."""
+  deposit(id: UUID!): Deposit
+
+  """Select a depositor."""
+  depositor(depositor: String!): Depositor!
+
+  """Lists all deposits with the given state label."""
+  depositsWithState(label: StateLabel!, orderBy: DepositOrder): [Deposit!]!
+}
+
+"""The state of the deposit."""
+type State {
+  """The state label of the deposit."""
+  label: StateLabel!
+
+  """Additional information about the state."""
+  description: String!
+
+  """List all deposits with the same state label."""
+  deposit(orderBy: DepositOrder): [Deposit!]!
+}
+
+"""The label identifying the state of a deposit."""
+enum StateLabel {
+  """Was successfully archived in the Fedora Archive."""
+  FEDORA_ARCHIVED
+
+  """Was successfully archived in the data vault."""
+  ARCHIVED
+
+  """Currently undergoing curation by the datamanagers."""
+  IN_REVIEW
+
+  """
+  Failed to be archived because of some unexpected condition. It may be possible to manually fix this.
+  """
+  FAILED
+
+  """
+  Did not meet the requirements set by easy-ingest-flow for this type of deposit.
+  """
+  REJECTED
+
+  """
+  Valid and waiting for processing by easy-ingest-flow, or being processed in it.
+  """
+  SUBMITTED
+
+  """Does not contain a valid bag."""
+  INVALID
+
+  """Closed and being checked for validity."""
+  FINALIZING
+
+  """Open for additional data."""
+  DRAFT
+}
+
+"""
+The UUID scalar type represents textual data, formatted as a universally unique identifier.
+"""
 scalar UUID
