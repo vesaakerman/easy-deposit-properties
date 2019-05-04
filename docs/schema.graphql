@@ -83,9 +83,6 @@ type Query {
 
   """Lookup a state by its label."""
   state(label: StateLabel!): StateConnection!
-
-  """Lists all deposits with the given state label."""
-  depositsWithState(label: StateLabel!, orderBy: DepositOrder): [Deposit!]! @deprecated(reason: "replaced by 'state' and 'StateConnectionType'")
 }
 
 """The state of the deposit."""

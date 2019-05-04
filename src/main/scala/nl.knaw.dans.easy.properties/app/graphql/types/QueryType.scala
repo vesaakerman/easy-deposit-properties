@@ -52,14 +52,6 @@ trait QueryType {
     def state(label: StateLabel): StateConnection = {
       StateConnection(label)(repository)
     }
-
-    @GraphQLField
-    @GraphQLDescription("Lists all deposits with the given state label.")
-    @GraphQLDeprecated("replaced by 'state' and 'StateConnectionType'")
-    def depositsWithState(label: StateLabel, orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
-      val result = repository.getDepositsByState(label)
-      orderBy.fold(result)(order => result.sorted(order.ordering))
-    }
   }
 
   object Query {
