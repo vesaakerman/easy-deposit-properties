@@ -2,9 +2,17 @@
   "data": {
     "deposit": {
       "depositor": {
+        "depositorId": "user001",
         "deposits": [
           {
             "id": "00000000-0000-0000-0000-000000000001",
+            "state": {
+              "label": "SUBMITTED",
+              "description": "await processing"
+            }
+          },
+          {
+            "id": "00000000-0000-0000-0000-000000000004",
             "state": {
               "label": "SUBMITTED",
               "description": "await processing"
@@ -15,13 +23,6 @@
             "state": {
               "label": "FAILED",
               "description": "I did something wrong"
-            }
-          },
-          {
-            "id": "00000000-0000-0000-0000-000000000004",
-            "state": {
-              "label": "SUBMITTED",
-              "description": "await processing"
             }
           }
         ]

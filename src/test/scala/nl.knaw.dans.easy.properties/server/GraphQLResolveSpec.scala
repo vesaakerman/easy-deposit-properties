@@ -20,7 +20,7 @@ import java.util.UUID
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, State }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
@@ -86,8 +86,8 @@ class GraphQLResolveSpec extends TestSupportFixture
       .copyTo(graphqlExamplesDir)
   }
 
-  "graphql" should "resolve 'deposit.graphql' with 2 calls to the repository" in {
-    val input = graphqlExamplesDir / "deposit.graphql"
+  "graphql" should "resolve 'findDeposit/deposit.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "findDeposit" / "deposit.graphql"
 
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 returning Some(deposit1)
@@ -97,37 +97,8 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input.contentAsString)
   }
 
-  it should "resolve 'listAllDeposits/plain.graphql' with 2 calls to the repository" in {
-    val input = graphqlExamplesDir / "listAllDeposits" / "plain.graphql"
-
-    inSequence {
-      repository.getAllDeposits _ expects() returning Seq(deposit1, deposit2, deposit3)
-      repository.getStates _ expects Seq(depositId1, depositId2, depositId3) returning Seq(
-        depositId1 -> Some(state1),
-        depositId2 -> Some(state2),
-        depositId3 -> Some(state3),
-      )
-    }
-
-    runQuery(input.contentAsString)
-  }
-
-  it should "resolve 'listDepositsFromDepositor/plain.graphql' with 2 calls to the repository" in {
-    val input = graphqlExamplesDir / "listDepositsFromDepositor" / "plain.graphql"
-
-    inSequence {
-      repository.getDepositByUserId _ expects "user002" returning Seq(deposit2, deposit3)
-      repository.getStates _ expects Seq(depositId2, depositId3) returning Seq(
-        depositId2 -> Some(state2),
-        depositId3 -> Some(state3),
-      )
-    }
-
-    runQuery(input.contentAsString)
-  }
-
-  it should "resolve 'listDepositsWithSameDepositor/plain.graphql' with 3 calls to the repository" in {
-    val input = graphqlExamplesDir / "listDepositsWithSameDepositor" / "plain.graphql"
+  it should "resolve 'findDeposit/withSameDepositor/plain.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "findDeposit" / "withSameDepositor" / "plain.graphql"
     input.writeText(input.contentAsString.replace(depositId1.toString, depositId2.toString))
 
     inSequence {
@@ -142,8 +113,8 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input.contentAsString)
   }
 
-  it should "resolve 'listDepositsWithSameState/plain.graphql' with 3 calls to the repository" in {
-    val input = graphqlExamplesDir / "listDepositsWithSameState" / "plain.graphql"
+  it should "resolve 'findDeposit/withSameState/plain.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "findDeposit" / "withSameState" / "plain.graphql"
 
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 returning Some(deposit1)
@@ -154,7 +125,49 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input.contentAsString)
   }
 
-  it should "resolve '/listDepositsWithStatelistDepositsWithState.graphql' with 1 calls to the repository" in {
+  it should "resolve 'findDepositor/depositsWithSameDepositor/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "findDepositor" / "depositsWithSameDepositor" / "plain.graphql"
+
+    inSequence {
+      repository.getDepositByUserId _ expects "user002" returning Seq(deposit2, deposit3)
+      repository.getStates _ expects Seq(depositId2, depositId3) returning Seq(
+        depositId2 -> Some(state2),
+        depositId3 -> Some(state3),
+      )
+    }
+
+    runQuery(input.contentAsString)
+  }
+
+  it should "resolve 'findDepositor/depositWithDepositorAndId/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "findDepositor" / "depositWithDepositorAndId" / "plain.graphql"
+
+    inSequence {
+      (repository.getDeposit(_: DepositId, _: DepositorId)) expects (depositId3, "user002") returning Option(deposit3)
+      repository.getStates _ expects Seq(depositId3) returning Seq(
+        depositId3 -> Some(state3),
+      )
+    }
+
+    runQuery(input.contentAsString)
+  }
+
+  it should "resolve 'listDeposits/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "listDeposits" / "plain.graphql"
+
+    inSequence {
+      repository.getAllDeposits _ expects() returning Seq(deposit1, deposit2, deposit3)
+      repository.getStates _ expects Seq(depositId1, depositId2, depositId3) returning Seq(
+        depositId1 -> Some(state1),
+        depositId2 -> Some(state2),
+        depositId3 -> Some(state3),
+      )
+    }
+
+    runQuery(input.contentAsString)
+  }
+
+  it should "resolve 'listDepositsWithState/plain.graphql' with 1 calls to the repository" in {
     val input = graphqlExamplesDir / "listDepositsWithState" / "plain.graphql"
 
     inSequence {
