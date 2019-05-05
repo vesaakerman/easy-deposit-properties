@@ -60,9 +60,9 @@ trait ModelTypes extends DebugEnhancedLogging {
     DocumentField("timestamp", "The timestamp at which the deposit got into this state."),
     AddFields(
       Field(
-        name = "deposit",
+        name = "deposits",
         fieldType = ListType(DepositType),
-        description = Option("List all deposits with the same state current label."),
+        description = Option("List all deposits with the same current state label."),
         arguments = optDepositOrderArgument :: Nil,
         resolve = c => {
           val result = c.ctx.deposits.getDepositsByCurrentState(c.value.label)
@@ -72,7 +72,6 @@ trait ModelTypes extends DebugEnhancedLogging {
       ),
     ),
   )
-
   implicit val StateInputType: InputObjectType[State] = deriveInputObjectType(
     InputObjectTypeName("StateInput"),
     InputObjectTypeDescription("The state of a deposit"),

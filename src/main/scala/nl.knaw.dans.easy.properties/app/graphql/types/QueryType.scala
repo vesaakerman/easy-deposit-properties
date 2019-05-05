@@ -22,7 +22,7 @@ import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextOb
 import sangria.schema.ObjectType
 
 trait QueryType {
-  this: DepositorType with StateConnectionType with MetaTypes with ModelTypes with Scalars =>
+  this: MetaTypes with ModelTypes with Scalars =>
 
   @GraphQLDescription("The query root of easy-deposit-properties' GraphQL interface.")
   trait Query {
@@ -30,8 +30,17 @@ trait QueryType {
 
     @GraphQLField
     @GraphQLDescription("List all registered deposits.")
-    def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
-      val result = repository.getAllDeposits
+    def deposits(label: Option[StateLabel] = None,
+                 depositorId: Option[DepositorId] = None,
+                 orderBy: Option[DepositOrder] = None,
+                ): Seq[Deposit] = {
+      val result = (label, depositorId) match {
+        case (Some(state), Some(id)) => repository.getDepositsByDepositorAndCurrentState(id, state)
+        case (Some(state), None) => repository.getDepositsByCurrentState(state)
+        case (None, Some(id)) => repository.getDepositsByDepositor(id)
+        case (None, None) => repository.getAllDeposits
+      }
+
       orderBy.fold(result)(order => result.sorted(order.ordering))
     }
 
@@ -39,18 +48,6 @@ trait QueryType {
     @GraphQLDescription("Get the technical metadata of the deposit identified by 'id'.")
     def deposit(id: DepositId): Option[Deposit] = {
       repository.getDeposit(id)
-    }
-
-    @GraphQLField
-    @GraphQLDescription("Select a depositor.")
-    def depositor(id: DepositorId): Depositor = {
-      Depositor(id)(repository)
-    }
-
-    @GraphQLField
-    @GraphQLDescription("Lookup a state by its label.")
-    def state(label: StateLabel): StateConnection = {
-      StateConnection(label)(repository)
     }
   }
 

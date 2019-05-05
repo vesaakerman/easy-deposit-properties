@@ -1,0 +1,9 @@
+query ListDepositsFromDepositor {
+    deposits(depositorId: "user002", orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
+        id
+        state {
+            label
+            description
+        }
+    }
+}

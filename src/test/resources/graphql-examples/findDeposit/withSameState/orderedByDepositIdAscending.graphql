@@ -1,9 +1,0 @@
-query ListDepositsWithSameState {
-    deposit(id: "00000000-0000-0000-0000-000000000001") {
-        state {
-            deposit(orderBy: {field: DEPOSIT_ID, direction: ASC}) {
-                id
-            }
-        }
-    }
-}

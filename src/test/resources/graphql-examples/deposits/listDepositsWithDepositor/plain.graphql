@@ -1,0 +1,9 @@
+query ListDepositsFromDepositor {
+    deposits(depositorId: "user002") {
+        id
+        state {
+            label
+            description
+        }
+    }
+}

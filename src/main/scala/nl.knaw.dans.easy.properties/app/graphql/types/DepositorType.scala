@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
 import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveObjectType }
 import sangria.schema.ObjectType
 
@@ -32,10 +32,6 @@ trait DepositorType {
     @GraphQLField
     @GraphQLDescription("List all deposits originating from the same depositor.")
     def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit]
-
-    @GraphQLField
-    @GraphQLDescription("Get the technical metadata of the deposit identified by 'id' and submitted by this depositor.")
-    def deposit(id: DepositId): Option[Deposit]
   }
 
   object Depositor {
@@ -45,10 +41,6 @@ trait DepositorType {
       override def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
         val result = repo.getDepositsByDepositor(dp)
         orderBy.fold(result)(order => result.sorted(order.ordering))
-      }
-
-      override def deposit(id: DepositId): Option[Deposit] = {
-        repo.getDeposit(id, dp)
       }
     }
   }

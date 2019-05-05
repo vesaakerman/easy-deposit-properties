@@ -31,11 +31,6 @@ type Depositor {
 
   """List all deposits originating from the same depositor."""
   deposits(orderBy: DepositOrder): [Deposit!]!
-
-  """
-  Get the technical metadata of the deposit identified by 'id' and submitted by this depositor.
-  """
-  deposit(id: UUID!): Deposit
 }
 
 """Ordering options for deposits"""
@@ -79,16 +74,10 @@ enum OrderDirection {
 """The query root of easy-deposit-properties' GraphQL interface."""
 type Query {
   """List all registered deposits."""
-  deposits(orderBy: DepositOrder): [Deposit!]!
+  deposits(label: StateLabel, depositorId: String, orderBy: DepositOrder): [Deposit!]!
 
   """Get the technical metadata of the deposit identified by 'id'."""
   deposit(id: UUID!): Deposit
-
-  """Select a depositor."""
-  depositor(id: String!): Depositor!
-
-  """Lookup a state by its label."""
-  state(label: StateLabel!): StateConnection!
 }
 
 """The state of the deposit."""
@@ -102,28 +91,11 @@ type State {
   """The timestamp at which the deposit got into this state."""
   timestamp: DateTime!
 
-  """List all deposits with the same state current label."""
-  deposit(
+  """List all deposits with the same current state label."""
+  deposits(
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
   ): [Deposit!]!
-}
-
-"""Container for further querying with a given 'current state'."""
-type StateConnection {
-  """List all deposits that currently have this state."""
-  deposits(orderBy: DepositOrder): [Deposit!]!
-
-  """
-  Select all deposits that currently have this state and were submitted by the given depositor.
-  """
-  depositor(id: String!): StateDepositorConnection!
-}
-
-"""Container for further querying with a given state and depositorId."""
-type StateDepositorConnection {
-  """List all deposits with this state and depositor."""
-  deposits(orderBy: DepositOrder): [Deposit!]!
 }
 
 """The state of a deposit"""
