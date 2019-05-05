@@ -74,7 +74,7 @@ trait ModelTypes extends DebugEnhancedLogging {
   )
 
   implicit val StateInputType: InputObjectType[State] = deriveInputObjectType(
-    InputObjectTypeName("StateFieldsInput"),
+    InputObjectTypeName("StateInput"),
     InputObjectTypeDescription("The state of a deposit"),
     DocumentInputField("label", "The state label of the deposit."),
     DocumentInputField("description", "Additional information about the state."),

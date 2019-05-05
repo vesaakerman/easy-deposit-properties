@@ -62,7 +62,7 @@ type Mutation {
   registerDeposit(id: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
 
   """Update the state of the deposit identified by 'id'."""
-  updateState(id: UUID!, label: StateLabel!, description: String!, timestamp: DateTime!): Deposit
+  updateState(id: UUID!, state: StateInput!): Deposit
 }
 
 """
@@ -85,7 +85,7 @@ type Query {
   deposit(id: UUID!): Deposit
 
   """Select a depositor."""
-  depositor(depositor: String!): Depositor!
+  depositor(id: String!): Depositor!
 
   """Lookup a state by its label."""
   state(label: StateLabel!): StateConnection!
@@ -98,6 +98,8 @@ type State {
 
   """Additional information about the state."""
   description: String!
+
+  """The timestamp at which the deposit got into this state."""
   timestamp: DateTime!
 
   """List all deposits with the same state current label."""
@@ -122,6 +124,18 @@ type StateConnection {
 type StateDepositorConnection {
   """List all deposits with this state and depositor."""
   deposits(orderBy: DepositOrder): [Deposit!]!
+}
+
+"""The state of a deposit"""
+input StateInput {
+  """The state label of the deposit."""
+  label: StateLabel!
+
+  """Additional information about the state."""
+  description: String!
+
+  """The timestamp at which the deposit got into this state."""
+  timestamp: DateTime!
 }
 
 """The label identifying the state of a deposit."""
