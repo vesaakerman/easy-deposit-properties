@@ -43,8 +43,8 @@ trait QueryType {
 
     @GraphQLField
     @GraphQLDescription("Select a depositor.")
-    def depositor(depositor: DepositorId): Depositor = {
-      Depositor(depositor)(repository)
+    def depositor(id: DepositorId): Depositor = {
+      Depositor(id)(repository)
     }
 
     @GraphQLField

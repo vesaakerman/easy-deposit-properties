@@ -1,5 +1,5 @@
 query ListDepositsFromDepositor {
-    depositor(depositor: "user002") {
+    depositor(id: "user002") {
         deposits(orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
             id
             state {

@@ -1,5 +1,5 @@
 query ListDepositsFromDepositor {
-    depositor(depositor: "user002") {
+    depositor(id: "user002") {
         deposit(id: "00000000-0000-0000-0000-000000000003") {
             id
             creationTimestamp

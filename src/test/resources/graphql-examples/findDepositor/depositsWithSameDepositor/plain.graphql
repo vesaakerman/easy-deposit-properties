@@ -1,5 +1,5 @@
 query ListDepositsFromDepositor {
-    depositor(depositor: "user002") {
+    depositor(id: "user002") {
         deposits {
             id
             state {
