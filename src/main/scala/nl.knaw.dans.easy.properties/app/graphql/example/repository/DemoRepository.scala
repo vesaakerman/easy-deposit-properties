@@ -53,7 +53,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.values.filter(_.depositorId == depositorId).toSeq
   }
 
-  override def registerDeposit(deposit: Deposit): Option[Deposit] = {
+  override def addDeposit(deposit: Deposit): Option[Deposit] = {
     if (depositRepo contains deposit.id)
       Option.empty
     else {

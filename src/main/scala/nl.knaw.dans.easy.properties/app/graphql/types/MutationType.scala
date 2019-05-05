@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, State, Timestamp }
 import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextObjectType }
 import sangria.schema.ObjectType
 
@@ -29,8 +29,8 @@ trait MutationType {
 
     @GraphQLField
     @GraphQLDescription("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'.")
-    def registerDeposit(id: DepositId, creationTimestamp: Timestamp, depositorId: String): Option[Deposit] = {
-      repository.registerDeposit(Deposit(id, creationTimestamp, depositorId))
+    def addDeposit(id: DepositId, creationTimestamp: Timestamp, depositorId: DepositorId): Option[Deposit] = {
+      repository.addDeposit(Deposit(id, creationTimestamp, depositorId))
     }
 
     @GraphQLField

@@ -30,7 +30,7 @@ trait DepositRepository {
 
   def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit]
 
-  def registerDeposit(deposit: Deposit): Option[Deposit]
+  def addDeposit(deposit: Deposit): Option[Deposit]
 
   def getCurrentState(id: DepositId): Option[State]
 

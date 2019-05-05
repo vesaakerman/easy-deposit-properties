@@ -59,7 +59,7 @@ enum DepositOrderField {
 """The root query for implementing GraphQL mutations."""
 type Mutation {
   """Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."""
-  registerDeposit(id: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
+  addDeposit(id: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
 
   """Update the state of the deposit identified by 'id'."""
   updateState(id: UUID!, state: StateInput!): Deposit
