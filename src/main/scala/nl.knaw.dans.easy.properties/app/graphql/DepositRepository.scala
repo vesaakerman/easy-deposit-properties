@@ -24,10 +24,6 @@ trait DepositRepository {
 
   def getDeposit(id: DepositId): Option[Deposit]
 
-  def getDeposits(ids: Seq[DepositId]): Seq[(DepositId, Option[Deposit])]
-
-  def getDeposit(id: DepositId, depositorId: DepositorId): Option[Deposit]
-
   def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit]
 
   def addDeposit(deposit: Deposit): Option[Deposit]

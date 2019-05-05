@@ -47,10 +47,18 @@ trait ModelTypes extends DebugEnhancedLogging {
   implicit val allStatesHasId: HasId[(DepositId, Seq[State]), DepositId] = HasId { case (id, _) => id }
 
   val fetchCurrentStates = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ctx.deposits.getCurrentStates(ids)
+    ids match {
+      case Seq() => Seq.empty
+      case Seq(id) => Seq(id -> ctx.deposits.getCurrentState(id))
+      case _ => ctx.deposits.getCurrentStates(ids)
+    }
   })
   val fetchAllStates = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ctx.deposits.getAllStates(ids)
+    ids match {
+      case Seq() => Seq.empty
+      case Seq(id) => Seq(id -> ctx.deposits.getAllStates(id))
+      case _ => ctx.deposits.getAllStates(ids)
+    }
   })
 
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
