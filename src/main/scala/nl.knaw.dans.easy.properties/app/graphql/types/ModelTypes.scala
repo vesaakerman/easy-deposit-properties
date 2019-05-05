@@ -56,6 +56,7 @@ trait ModelTypes extends DebugEnhancedLogging {
     ObjectTypeDescription("The state of the deposit."),
     DocumentField("label", "The state label of the deposit."),
     DocumentField("description", "Additional information about the state."),
+    DocumentField("timestamp", "The timestamp at which the deposit got into this state."),
     AddFields(
       Field(
         name = "deposit",
