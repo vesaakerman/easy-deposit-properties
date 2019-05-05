@@ -1,0 +1,12 @@
+query ListDepositsWithStateAndAllPastStates {
+    state(label: ARCHIVED) {
+        deposits {
+            id
+            states {
+                label
+                description
+                timestamp
+            }
+        }
+    }
+}

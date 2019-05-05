@@ -1,0 +1,15 @@
+query ListAllStatesOfDepositsWithSameDepositor {
+    deposit(id: "00000000-0000-0000-0000-000000000001") {
+        depositor {
+            depositorId
+            deposits {
+                id
+                states {
+                    label
+                    description
+                    timestamp
+                }
+            }
+        }
+    }
+}

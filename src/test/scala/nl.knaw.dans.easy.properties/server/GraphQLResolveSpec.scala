@@ -94,26 +94,55 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
-      repository.getStates _ expects Seq(depositId1) once() returning Seq(depositId1 -> Some(state1))
+      repository.getCurrentStates _ expects Seq(depositId1) once() returning Seq(depositId1 -> Some(state1))
     }
 
-    runQuery(input.contentAsString)
+    runQuery(input)
+  }
+
+  it should "resolve 'findDeposit/allStatesOfDeposit/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "findDeposit" / "allStatesOfDeposit" / "plain.graphql"
+
+    inSequence {
+      (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
+      (repository.getAllStates(_: Seq[DepositId])) expects Seq(depositId1) once() returning Seq(
+        depositId1 -> Seq(state1, state2, state3),
+      )
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'findDeposit/allStatesOfDepositsWithSameDepositor/plain.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "findDeposit" / "allStatesOfDepositsWithSameDepositor" / "plain.graphql"
+
+    inSequence {
+      (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
+      repository.getDepositsByDepositor _ expects "user001" once() returning Seq(deposit1, deposit2)
+      (repository.getAllStates(_: Seq[DepositId])) expects Seq(depositId1, depositId2) once() returning Seq(
+        depositId1 -> Seq(state1, state2),
+        depositId2 -> Seq(state2, state3),
+      )
+    }
+
+    runQuery(input)
   }
 
   it should "resolve 'findDeposit/withSameDepositor/plain.graphql' with 3 calls to the repository" in {
     val input = graphqlExamplesDir / "findDeposit" / "withSameDepositor" / "plain.graphql"
-    input.writeText(input.contentAsString.replace(depositId1.toString, depositId2.toString))
+    assume(input.exists, s"input file does not exist: $input")
+    val query = input.contentAsString.replace(depositId1.toString, depositId2.toString)
 
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId2 once() returning Some(deposit2)
       repository.getDepositsByDepositor _ expects "user002" once() returning Seq(deposit2, deposit3)
-      repository.getStates _ expects Seq(depositId2, depositId3) once() returning Seq(
+      repository.getCurrentStates _ expects Seq(depositId2, depositId3) once() returning Seq(
         depositId2 -> Some(state2),
         depositId3 -> Some(state3),
       )
     }
 
-    runQuery(input.contentAsString)
+    runQuery(query)
   }
 
   it should "resolve 'findDeposit/withSameState/plain.graphql' with 3 calls to the repository" in {
@@ -121,11 +150,11 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
-      repository.getStates _ expects Seq(depositId1) once() returning Seq(depositId1 -> Some(state1))
-      repository.getDepositsByState _ expects StateLabel.ARCHIVED once() returning Seq(deposit1, deposit3)
+      repository.getCurrentStates _ expects Seq(depositId1) once() returning Seq(depositId1 -> Some(state1))
+      repository.getDepositsByCurrentState _ expects StateLabel.ARCHIVED once() returning Seq(deposit1, deposit3)
     }
 
-    runQuery(input.contentAsString)
+    runQuery(input)
   }
 
   it should "resolve 'findDepositor/depositsWithSameDepositor/plain.graphql' with 2 calls to the repository" in {
@@ -133,13 +162,13 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDepositsByDepositor _ expects "user002" once() returning Seq(deposit2, deposit3)
-      repository.getStates _ expects Seq(depositId2, depositId3) once() returning Seq(
+      repository.getCurrentStates _ expects Seq(depositId2, depositId3) once() returning Seq(
         depositId2 -> Some(state2),
         depositId3 -> Some(state3),
       )
     }
 
-    runQuery(input.contentAsString)
+    runQuery(input)
   }
 
   it should "resolve 'findDepositor/depositWithDepositorAndId/plain.graphql' with 2 calls to the repository" in {
@@ -147,12 +176,12 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       (repository.getDeposit(_: DepositId, _: DepositorId)) expects(depositId3, "user002") once() returning Option(deposit3)
-      repository.getStates _ expects Seq(depositId3) once() returning Seq(
+      repository.getCurrentStates _ expects Seq(depositId3) once() returning Seq(
         depositId3 -> Some(state3),
       )
     }
 
-    runQuery(input.contentAsString)
+    runQuery(input)
   }
 
   it should "resolve 'listDeposits/plain.graphql' with 2 calls to the repository" in {
@@ -160,45 +189,79 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getAllDeposits _ expects() once() returning Seq(deposit1, deposit2, deposit3)
-      repository.getStates _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+      repository.getCurrentStates _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId2 -> Some(state2),
         depositId3 -> Some(state3),
       )
     }
 
-    runQuery(input.contentAsString)
+    runQuery(input)
   }
 
-  it should "resolve 'state/listDeposits/plain.graphql' with 1 calls to the repository" in {
+  it should "resolve 'listDeposits/allStatesOfAllDeposits/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "listDeposits" / "allStatesOfAllDeposits" / "plain.graphql"
+
+    inSequence {
+      repository.getAllDeposits _ expects() once() returning Seq(deposit1, deposit2, deposit3)
+      (repository.getAllStates(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(state1, state2),
+        depositId2 -> Seq(state2, state3),
+        depositId3 -> Seq(state3, state1),
+      )
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'state/listDeposits/plain.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "state" / "listDeposits" / "plain.graphql"
 
     inSequence {
-      repository.getDepositsByState _ expects StateLabel.ARCHIVED once() returning Seq(deposit1, deposit3)
-      repository.getStates _ expects Seq(depositId1, depositId3) once() returning Seq(
+      repository.getDepositsByCurrentState _ expects StateLabel.ARCHIVED once() returning Seq(deposit1, deposit3)
+      repository.getCurrentStates _ expects Seq(depositId1, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId3 -> Some(state3),
       )
     }
 
-    runQuery(input.contentAsString)
+    runQuery(input)
   }
 
-  it should "resolve 'state/listDepositsWithDepositor/plain.graphql' with 1 calls to the repository" in {
+  it should "resolve 'state/listDepositsWithDepositor/plain.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "state" / "listDepositsWithDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDepositsByDepositorAndState _ expects("user001", StateLabel.ARCHIVED) once() returning Seq(deposit1, deposit3)
-      repository.getStates _ expects Seq(depositId1, depositId3) once() returning Seq(
+      repository.getDepositsByDepositorAndCurrentState _ expects("user001", StateLabel.ARCHIVED) once() returning Seq(deposit1, deposit3)
+      repository.getCurrentStates _ expects Seq(depositId1, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId3 -> Some(state3),
       )
     }
 
-    runQuery(input.contentAsString)
+    runQuery(input)
   }
 
-  private def runQuery(query: String) = {
+  it should "resolve 'state/listDepositsWithPastStates/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "state" / "listDepositsWithPastStates" / "plain.graphql"
+
+    inSequence {
+      repository.getDepositsByCurrentState _ expects StateLabel.ARCHIVED once() returning Seq(deposit1, deposit3)
+      (repository.getAllStates(_: Seq[DepositId])) expects Seq(depositId1, depositId3) once() returning Seq(
+        depositId1 -> Seq(state1, state2),
+        depositId3 -> Seq(state2, state3),
+      )
+    }
+
+    runQuery(input)
+  }
+
+  private def runQuery(graphQLFile: File): Unit = {
+    assume(graphQLFile.exists, s"input file does not exist: $graphQLFile")
+    runQuery(graphQLFile.contentAsString)
+  }
+
+  private def runQuery(query: String): Unit = {
     val inputBody = compact(render("query" -> query))
     post(uri = "/", body = inputBody.getBytes) {
       parse(body) \ "errors" match {

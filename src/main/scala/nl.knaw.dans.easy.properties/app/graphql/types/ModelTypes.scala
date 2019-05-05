@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.schema._
@@ -25,7 +26,7 @@ import sangria.schema._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait ModelTypes {
+trait ModelTypes extends DebugEnhancedLogging {
   this: DepositorType with MetaTypes with Scalars =>
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
@@ -41,10 +42,14 @@ trait ModelTypes {
     DocumentValue("FEDORA_ARCHIVED", "Was successfully archived in the Fedora Archive."),
     DocumentValue("ARCHIVED", "Was successfully archived in the data vault."),
   )
-  implicit val stateHasId: HasId[(DepositId, Option[State]), DepositId] = HasId { case (id, _) => id }
+  implicit val currentStateHasId: HasId[(DepositId, Option[State]), DepositId] = HasId { case (id, _) => id }
+  implicit val allStatesHasId: HasId[(DepositId, Seq[State]), DepositId] = HasId { case (id, _) => id }
 
-  val states = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => {
-    Future { ctx.deposits.getStates(ids) }
+  val fetchCurrentStates = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
+    ctx.deposits.getCurrentStates(ids)
+  })
+  val fetchAllStates = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
+    ctx.deposits.getAllStates(ids)
   })
 
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
@@ -55,11 +60,11 @@ trait ModelTypes {
       Field(
         name = "deposit",
         fieldType = ListType(DepositType),
-        description = Option("List all deposits with the same state label."),
-        arguments = Argument("orderBy", OptionInputType(DepositOrderInputType)) :: Nil,
+        description = Option("List all deposits with the same state current label."),
+        arguments = optDepositOrderArgument :: Nil,
         resolve = c => {
-          val result = c.ctx.deposits.getDepositsByState(c.value.label)
-          c.argOpt[DepositOrder]("orderBy")
+          val result = c.ctx.deposits.getDepositsByCurrentState(c.value.label)
+          c.arg(optDepositOrderArgument)
             .fold(result)(order => result.sorted(order.ordering))
         },
       ),
@@ -76,15 +81,27 @@ trait ModelTypes {
       Field(
         name = "state",
         fieldType = OptionType(StateType),
-        description = Option("The state of the deposit."),
-        resolve = c => DeferredValue(states.defer(c.value.id)).map { case (_, optState) => optState },
+        description = Option("The current state of the deposit."),
+        resolve = c => DeferredValue(fetchCurrentStates.defer(c.value.id)).map { case (_, optState) => optState },
+      ),
+      Field(
+        name = "states",
+        fieldType = ListType(StateType),
+        description = Option("List all states of the deposit."),
+        arguments = optStateOrderArgument :: Nil,
+        resolve = c => DeferredValue(fetchAllStates.defer(c.value.id))
+          .map {
+            case (_, states) =>
+              c.arg(optStateOrderArgument)
+                .fold(states)(order => states.sorted(order.ordering))
+          },
       ),
       Field(
         name = "depositor",
         fieldType = DepositorType,
         description = Option("Information about the depositor that submitted this deposit."),
         resolve = c => Depositor(c.value.depositorId)(c.ctx.deposits),
-      )
+      ),
     ),
   )
 }

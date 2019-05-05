@@ -24,21 +24,21 @@ import sangria.schema.ObjectType
 trait StateConnectionType {
   this: ModelTypes with MetaTypes =>
 
-  @GraphQLDescription("Container for further querying with a given state.")
+  @GraphQLDescription("Container for further querying with a given 'current state'.")
   trait StateConnection {
     @GraphQLField
-    @GraphQLDescription("List all deposits with this state.")
+    @GraphQLDescription("List all deposits that currently have this state.")
     def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit]
 
     @GraphQLField
-    @GraphQLDescription("Select all deposits with this state and which are submitted by the given depositor")
+    @GraphQLDescription("Select all deposits that currently have this state and were submitted by the given depositor.")
     def depositor(id: DepositorId): StateDepositorConnection
   }
 
   object StateConnection {
     def apply(label: StateLabel)(repo: DepositRepository): StateConnection = new StateConnection {
       override def deposits(orderBy: Option[DepositOrder]): Seq[Deposit] = {
-        val result = repo.getDepositsByState(label)
+        val result = repo.getDepositsByCurrentState(label)
         orderBy.fold(result)(order => result.sorted(order.ordering))
       }
 
@@ -59,7 +59,7 @@ trait StateConnectionType {
 
   object StateDepositorConnection {
     def apply(label: StateLabel, id: DepositorId)(repo: DepositRepository): StateDepositorConnection = (orderBy: Option[DepositOrder]) => {
-      val result = repo.getDepositsByDepositorAndState(id, label)
+      val result = repo.getDepositsByDepositorAndCurrentState(id, label)
       orderBy.fold(result)(order => result.sorted(order.ordering))
     }
   }

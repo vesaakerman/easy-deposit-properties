@@ -27,5 +27,8 @@ object GraphQLSchema extends QueryType with MutationType
   with Scalars {
 
   val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
-  val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(states)
+  val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(
+    fetchCurrentStates,
+    fetchAllStates,
+  )
 }

@@ -15,25 +15,14 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Timestamp, timestampOrdering }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
-import sangria.schema.{ EnumType, InputObjectType }
+import sangria.schema.{ Argument, EnumType, InputObjectType, OptionInputType }
 
 trait MetaTypes {
-
-  @GraphQLDescription("Properties by which deposits can be ordered")
-  object DepositOrderField extends Enumeration {
-    type DepositOrderField = Value
-
-    // @formatter:off
-    @GraphQLDescription("Order deposits by depositId")
-    val DEPOSIT_ID        : DepositOrderField = Value("DEPOSIT_ID")
-    @GraphQLDescription("Order deposits by creation timestamp")
-    val CREATION_TIMESTAMP: DepositOrderField = Value("CREATION_TIMESTAMP")
-    // @formatter:on
-  }
-  implicit val DepositOrderFieldType: EnumType[DepositOrderField.Value] = deriveEnumType()
 
   @GraphQLDescription("Possible directions in which to order a list of items when provided an orderBy argument")
   object OrderDirection extends Enumeration {
@@ -47,6 +36,19 @@ trait MetaTypes {
     // @formatter:on
   }
   implicit val OrderDirectionType: EnumType[OrderDirection.Value] = deriveEnumType()
+
+  @GraphQLDescription("Properties by which deposits can be ordered")
+  object DepositOrderField extends Enumeration {
+    type DepositOrderField = Value
+
+    // @formatter:off
+    @GraphQLDescription("Order deposits by depositId")
+    val DEPOSIT_ID        : DepositOrderField = Value("DEPOSIT_ID")
+    @GraphQLDescription("Order deposits by creation timestamp")
+    val CREATION_TIMESTAMP: DepositOrderField = Value("CREATION_TIMESTAMP")
+    // @formatter:on
+  }
+  implicit val DepositOrderFieldType: EnumType[DepositOrderField.Value] = deriveEnumType()
 
   case class DepositOrder(field: DepositOrderField.DepositOrderField,
                           direction: OrderDirection.OrderDirection) {
@@ -81,5 +83,74 @@ trait MetaTypes {
         direction = ad("direction").asInstanceOf[OrderDirection.Value],
       )
     }
+  }
+  val optDepositOrderArgument: Argument[Option[DepositOrder]] = {
+    Argument(
+      name = "orderBy",
+      argumentType = OptionInputType(DepositOrderInputType),
+      description = Some("Ordering options for the returned deposits."),
+      defaultValue = None,
+      fromInput = optionInput(inputObjectResultInput(DepositOrderFromInput)),
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
+  }
+
+  @GraphQLDescription("Properties by which states can be ordered")
+  object StateOrderField extends Enumeration {
+    type StateOrderField = Value
+
+    // @formatter:off
+    @GraphQLDescription("Order states by label")
+    val LABEL    : StateOrderField = Value("LABEL")
+    @GraphQLDescription("Order states by timestamp")
+    val TIMESTAMP: StateOrderField = Value("TIMESTAMP")
+    // @formatter:on
+  }
+  implicit val StateOrderFieldType: EnumType[StateOrderField.Value] = deriveEnumType()
+
+  case class StateOrder(field: StateOrderField.StateOrderField,
+                        direction: OrderDirection.OrderDirection) {
+    lazy val ordering: Ordering[State] = {
+      val orderByField: Ordering[State] = field match {
+        case StateOrderField.LABEL =>
+          Ordering[StateLabel].on(_.label)
+        case StateOrderField.TIMESTAMP =>
+          Ordering[Timestamp].on(_.timestamp)
+      }
+
+      direction match {
+        case OrderDirection.ASC => orderByField
+        case OrderDirection.DESC => orderByField.reverse
+      }
+    }
+  }
+  implicit val StateOrderInputType: InputObjectType[StateOrder] = deriveInputObjectType(
+    InputObjectTypeDescription("Ordering options for states"),
+    DocumentInputField("field", "The field to order state by"),
+    DocumentInputField("direction", "The ordering direction"),
+  )
+  implicit val StateOrderFromInput: FromInput[StateOrder] = new FromInput[StateOrder] {
+    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    override def fromResult(node: marshaller.Node): StateOrder = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      StateOrder(
+        field = ad("field").asInstanceOf[StateOrderField.Value],
+        direction = ad("direction").asInstanceOf[OrderDirection.Value],
+      )
+    }
+  }
+  val optStateOrderArgument: Argument[Option[StateOrder]] = {
+    Argument(
+      name = "orderBy",
+      argumentType = OptionInputType(StateOrderInputType),
+      description = Some("Ordering options for the returned states."),
+      defaultValue = None,
+      fromInput = optionInput(inputObjectResultInput(StateOrderFromInput)),
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
   }
 }

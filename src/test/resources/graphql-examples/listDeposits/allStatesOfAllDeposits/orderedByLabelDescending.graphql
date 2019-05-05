@@ -1,0 +1,10 @@
+query {
+    deposits(orderBy: {field: DEPOSIT_ID, direction: ASC}) {
+        id
+        states(orderBy: {field: LABEL, direction: DESC}) {
+            label
+            description
+            timestamp
+        }
+    }
+}

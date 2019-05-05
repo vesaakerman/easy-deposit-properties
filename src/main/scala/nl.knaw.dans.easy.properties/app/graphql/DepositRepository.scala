@@ -32,13 +32,21 @@ trait DepositRepository {
 
   def registerDeposit(deposit: Deposit): Option[Deposit]
 
-  def getState(id: DepositId): Option[State]
+  def getCurrentState(id: DepositId): Option[State]
 
-  def getStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])]
+  def getAllStates(id: DepositId): Seq[State]
+
+  def getCurrentStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])]
+
+  def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Seq[State])]
 
   def setState(id: DepositId, state: State): Option[Deposit]
 
-  def getDepositsByState(state: StateLabel): Seq[Deposit]
+  def getDepositsByCurrentState(state: StateLabel): Seq[Deposit]
 
-  def getDepositsByDepositorAndState(depositorId: DepositorId, state: StateLabel): Seq[Deposit]
+  def getDepositsByAllStates(state: StateLabel): Seq[Deposit]
+
+  def getDepositsByDepositorAndCurrentState(depositorId: DepositorId, state: StateLabel): Seq[Deposit]
+
+  def getDepositsByDepositorAndAllStates(depositorId: DepositorId, state: StateLabel): Seq[Deposit]
 }

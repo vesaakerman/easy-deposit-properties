@@ -11,8 +11,14 @@ type Deposit {
   """The moment this deposit was created."""
   creationTimestamp: DateTime!
 
-  """The state of the deposit."""
+  """The current state of the deposit."""
   state: State
+
+  """List all states of the deposit."""
+  states(
+    """Ordering options for the returned states."""
+    orderBy: StateOrder
+  ): [State!]!
 
   """Information about the depositor that submitted this deposit."""
   depositor: Depositor!
@@ -94,17 +100,20 @@ type State {
   description: String!
   timestamp: DateTime!
 
-  """List all deposits with the same state label."""
-  deposit(orderBy: DepositOrder): [Deposit!]!
+  """List all deposits with the same state current label."""
+  deposit(
+    """Ordering options for the returned deposits."""
+    orderBy: DepositOrder
+  ): [Deposit!]!
 }
 
-"""Container for further querying with a given state."""
+"""Container for further querying with a given 'current state'."""
 type StateConnection {
-  """List all deposits with this state."""
+  """List all deposits that currently have this state."""
   deposits(orderBy: DepositOrder): [Deposit!]!
 
   """
-  Select all deposits with this state and which are submitted by the given depositor
+  Select all deposits that currently have this state and were submitted by the given depositor.
   """
   depositor(id: String!): StateDepositorConnection!
 }
@@ -152,6 +161,24 @@ enum StateLabel {
 
   """Open for additional data."""
   DRAFT
+}
+
+"""Ordering options for states"""
+input StateOrder {
+  """The field to order state by"""
+  field: StateOrderField!
+
+  """The ordering direction"""
+  direction: OrderDirection!
+}
+
+"""Properties by which states can be ordered"""
+enum StateOrderField {
+  """Order states by timestamp"""
+  TIMESTAMP
+
+  """Order states by label"""
+  LABEL
 }
 
 """
