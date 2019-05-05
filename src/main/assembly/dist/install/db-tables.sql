@@ -11,13 +11,15 @@ CREATE TABLE State (
 
 INSERT INTO State (value)
 VALUES ('DRAFT'),
+       ('UPLOADED'),
        ('FINALIZING'),
        ('INVALID'),
        ('SUBMITTED'),
        ('REJECTED'),
        ('FAILED'),
-       ('STALLED'),
-       ('ARCHIVED');
+       ('IN_REVIEW'),
+       ('ARCHIVED'),
+       ('FEDORA_ARCHIVED');
 
 CREATE TABLE DepositState (
     depositId CHAR(36) NOT NULL,
