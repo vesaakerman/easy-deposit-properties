@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Timestamp }
 import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextObjectType }
 import sangria.schema.ObjectType
@@ -36,8 +35,8 @@ trait MutationType {
 
     @GraphQLField
     @GraphQLDescription("Update the state of the deposit identified by 'id'.")
-    def updateState(id: DepositId, label: StateLabel, description: String, timestamp: Timestamp): Option[Deposit] = {
-      repository.setState(id, State(label, description, timestamp))
+    def updateState(id: DepositId, state: State): Option[Deposit] = {
+      repository.setState(id, state)
     }
   }
 

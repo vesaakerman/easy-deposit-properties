@@ -17,10 +17,11 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Timestamp }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.schema._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -71,6 +72,27 @@ trait ModelTypes extends DebugEnhancedLogging {
       ),
     ),
   )
+
+  implicit val StateInputType: InputObjectType[State] = deriveInputObjectType(
+    InputObjectTypeName("StateFieldsInput"),
+    InputObjectTypeDescription("The state of a deposit"),
+    DocumentInputField("label", "The state label of the deposit."),
+    DocumentInputField("description", "Additional information about the state."),
+    DocumentInputField("timestamp", "The timestamp at which the deposit got into this state."),
+  )
+  implicit val StateFromInput: FromInput[State] = new FromInput[State] {
+    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    override def fromResult(node: marshaller.Node): State = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      State(
+        label = ad("label").asInstanceOf[StateLabel.Value],
+        description = ad("description").asInstanceOf[String],
+        timestamp = ad("timestamp").asInstanceOf[Timestamp],
+      )
+    }
+  }
 
   // lazy because we need it before being declared (in StateType)
   implicit lazy val DepositType: ObjectType[DataContext, Deposit] = deriveObjectType(
