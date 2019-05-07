@@ -21,7 +21,9 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Times
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
+import sangria.marshalling.FromInput.coercedScalaInput
+import sangria.marshalling.ToInput.ScalarToInput
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
 import sangria.schema._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -61,6 +63,31 @@ trait ModelTypes extends DebugEnhancedLogging {
     }
   })
 
+  @GraphQLDescription("Mark a query to only search through current states, or also to include past states.")
+  object StateFilter extends Enumeration {
+    type StateFilter = Value
+
+    // @formatter:off
+    @GraphQLDescription("Only search through current states.")
+    val LATEST: StateFilter = Value("LATEST")
+    @GraphQLDescription("Search through both current and past states.")
+    val ALL   : StateFilter = Value("ALL")
+    // @formatter:on
+  }
+  implicit val StateFilterType: EnumType[StateFilter.Value] = deriveEnumType()
+  implicit val StateFilterToInput: ToInput[StateFilter.Value, _] = new ScalarToInput[StateFilter.Value]
+  val stateFilterArgument: Argument[StateFilter.Value] = {
+    new Argument(
+      name = "stateFilter",
+      argumentType = StateFilterType,
+      description = Some("Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
+      defaultValue = Some(StateFilter.LATEST -> StateFilterToInput),
+      fromInput = coercedScalaInput,
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
+  }
+
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
     ObjectTypeDescription("The state of the deposit."),
     DocumentField("label", "The state label of the deposit."),
@@ -71,9 +98,12 @@ trait ModelTypes extends DebugEnhancedLogging {
         name = "deposits",
         fieldType = ListType(DepositType),
         description = Option("List all deposits with the same current state label."),
-        arguments = optDepositOrderArgument :: Nil,
+        arguments = optDepositOrderArgument :: stateFilterArgument :: Nil,
         resolve = c => {
-          val result = c.ctx.deposits.getDepositsByCurrentState(c.value.label)
+          val result = c.arg(stateFilterArgument) match {
+            case StateFilter.LATEST => c.ctx.deposits.getDepositsByCurrentState(c.value.label)
+            case StateFilter.ALL => c.ctx.deposits.getDepositsByAllStates(c.value.label)
+          }
           c.arg(optDepositOrderArgument)
             .fold(result)(order => result.sorted(order.ordering))
         },

@@ -31,7 +31,8 @@ trait DepositorType {
 
     @GraphQLField
     @GraphQLDescription("List all deposits originating from the same depositor.")
-    def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit]
+    def deposits(@GraphQLDescription("Ordering options for the returned deposits.")
+                 orderBy: Option[DepositOrder] = None): Seq[Deposit]
   }
 
   object Depositor {

@@ -30,7 +30,10 @@ type Depositor {
   depositorId: String!
 
   """List all deposits originating from the same depositor."""
-  deposits(orderBy: DepositOrder): [Deposit!]!
+  deposits(
+    """Ordering options for the returned deposits."""
+    orderBy: DepositOrder
+  ): [Deposit!]!
 }
 
 """Ordering options for deposits"""
@@ -74,10 +77,27 @@ enum OrderDirection {
 """The query root of easy-deposit-properties' GraphQL interface."""
 type Query {
   """List all registered deposits."""
-  deposits(state: StateLabel, depositorId: String, orderBy: DepositOrder): [Deposit!]!
+  deposits(
+    """If provided, only show deposits with this state."""
+    state: StateLabel
+
+    """
+    Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
+    """
+    stateFilter: StateFilter = LATEST
+
+    """If provided, only show deposits from this depositor."""
+    depositorId: String
+
+    """Ordering options for the returned deposits."""
+    orderBy: DepositOrder
+  ): [Deposit!]!
 
   """Get the technical metadata of the deposit identified by 'id'."""
-  deposit(id: UUID!): Deposit
+  deposit(
+    """The id for which to find the deposit"""
+    id: UUID!
+  ): Deposit
 }
 
 """The state of the deposit."""
@@ -95,7 +115,23 @@ type State {
   deposits(
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+
+    """
+    Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
+    """
+    stateFilter: StateFilter! = LATEST
   ): [Deposit!]!
+}
+
+"""
+Mark a query to only search through current states, or also to include past states.
+"""
+enum StateFilter {
+  """Search through both current and past states."""
+  ALL
+
+  """Only search through current states."""
+  LATEST
 }
 
 """The state of a deposit"""

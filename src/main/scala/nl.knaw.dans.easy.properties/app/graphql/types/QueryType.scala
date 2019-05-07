@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
-import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextObjectType }
+import sangria.macros.derive.{ GraphQLDefault, GraphQLDescription, GraphQLField, deriveContextObjectType }
 import sangria.schema.ObjectType
 
 trait QueryType {
@@ -30,15 +30,29 @@ trait QueryType {
 
     @GraphQLField
     @GraphQLDescription("List all registered deposits.")
-    def deposits(state: Option[StateLabel] = None,
+    def deposits(@GraphQLDescription("If provided, only show deposits with this state.")
+                 state: Option[StateLabel] = None,
+                 @GraphQLDefault(StateFilter.LATEST)
+                 @GraphQLDescription("Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).")
+                 stateFilter: StateFilter.StateFilter,
+                 @GraphQLDescription("If provided, only show deposits from this depositor.")
                  depositorId: Option[DepositorId] = None,
+                 @GraphQLDescription("Ordering options for the returned deposits.")
                  orderBy: Option[DepositOrder] = None,
                 ): Seq[Deposit] = {
       val result = (state, depositorId) match {
-        case (Some(label), Some(id)) => repository.getDepositsByDepositorAndCurrentState(id, label)
-        case (Some(label), None) => repository.getDepositsByCurrentState(label)
-        case (None, Some(id)) => repository.getDepositsByDepositor(id)
-        case (None, None) => repository.getAllDeposits
+        case (Some(label), Some(id)) if stateFilter == StateFilter.LATEST =>
+          repository.getDepositsByDepositorAndCurrentState(id, label)
+        case (Some(label), Some(id)) if stateFilter == StateFilter.ALL =>
+          repository.getDepositsByDepositorAndAllStates(id, label)
+        case (Some(label), None) if stateFilter == StateFilter.LATEST =>
+          repository.getDepositsByCurrentState(label)
+        case (Some(label), None) if stateFilter == StateFilter.ALL =>
+          repository.getDepositsByAllStates(label)
+        case (None, Some(id)) =>
+          repository.getDepositsByDepositor(id)
+        case (None, None) =>
+          repository.getAllDeposits
       }
 
       orderBy.fold(result)(order => result.sorted(order.ordering))
@@ -46,7 +60,8 @@ trait QueryType {
 
     @GraphQLField
     @GraphQLDescription("Get the technical metadata of the deposit identified by 'id'.")
-    def deposit(id: DepositId): Option[Deposit] = {
+    def deposit(@GraphQLDescription("The id for which to find the deposit")
+                id: DepositId): Option[Deposit] = {
       repository.getDeposit(id)
     }
   }
