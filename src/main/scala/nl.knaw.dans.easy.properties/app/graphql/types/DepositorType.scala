@@ -21,7 +21,7 @@ import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveObjectTyp
 import sangria.schema.ObjectType
 
 trait DepositorType {
-  this: MetaTypes with ModelTypes with Scalars =>
+  this: MetaTypes with DepositType with Scalars =>
 
   @GraphQLDescription("Information about the depositor that submitted this deposit.")
   trait Depositor {

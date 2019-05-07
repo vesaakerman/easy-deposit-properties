@@ -17,8 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Timestamp }
-import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import nl.knaw.dans.easy.properties.app.model.{ DepositId, State, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
@@ -29,8 +28,8 @@ import sangria.schema._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait ModelTypes extends DebugEnhancedLogging {
-  this: DepositorType with MetaTypes with Scalars =>
+trait StateType {
+  this: DepositorType with DepositType with MetaTypes with Scalars =>
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the state of a deposit."),
@@ -45,6 +44,7 @@ trait ModelTypes extends DebugEnhancedLogging {
     DocumentValue("FEDORA_ARCHIVED", "Was successfully archived in the Fedora Archive."),
     DocumentValue("ARCHIVED", "Was successfully archived in the data vault."),
   )
+
   implicit val currentStateHasId: HasId[(DepositId, Option[State]), DepositId] = HasId { case (id, _) => id }
   implicit val allStatesHasId: HasId[(DepositId, Seq[State]), DepositId] = HasId { case (id, _) => id }
 
@@ -75,9 +75,9 @@ trait ModelTypes extends DebugEnhancedLogging {
     // @formatter:on
   }
   implicit val StateFilterType: EnumType[StateFilter.Value] = deriveEnumType()
-  implicit val StateFilterToInput: ToInput[StateFilter.Value, _] = new ScalarToInput[StateFilter.Value]
+  implicit val StateFilterToInput: ToInput[StateFilter.Value, _] = new ScalarToInput
   val stateFilterArgument: Argument[StateFilter.Value] = {
-    new Argument(
+    Argument(
       name = "stateFilter",
       argumentType = StateFilterType,
       description = Some("Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
@@ -130,38 +130,4 @@ trait ModelTypes extends DebugEnhancedLogging {
       )
     }
   }
-
-  // lazy because we need it before being declared (in StateType)
-  implicit lazy val DepositType: ObjectType[DataContext, Deposit] = deriveObjectType(
-    ObjectTypeDescription("Contains all technical metadata about this deposit."),
-    DocumentField("id", "The identifier of the deposit."),
-    DocumentField("creationTimestamp", "The moment this deposit was created."),
-    ExcludeFields("depositorId"),
-    AddFields(
-      Field(
-        name = "state",
-        fieldType = OptionType(StateType),
-        description = Option("The current state of the deposit."),
-        resolve = c => DeferredValue(fetchCurrentStates.defer(c.value.id)).map { case (_, optState) => optState },
-      ),
-      Field(
-        name = "states",
-        fieldType = ListType(StateType),
-        description = Option("List all states of the deposit."),
-        arguments = optStateOrderArgument :: Nil,
-        resolve = c => DeferredValue(fetchAllStates.defer(c.value.id))
-          .map {
-            case (_, states) =>
-              c.arg(optStateOrderArgument)
-                .fold(states)(order => states.sorted(order.ordering))
-          },
-      ),
-      Field(
-        name = "depositor",
-        fieldType = DepositorType,
-        description = Option("Information about the depositor that submitted this deposit."),
-        resolve = c => Depositor(c.value.depositorId)(c.ctx.deposits),
-      ),
-    ),
-  )
 }

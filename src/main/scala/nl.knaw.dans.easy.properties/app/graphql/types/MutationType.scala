@@ -21,7 +21,7 @@ import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextOb
 import sangria.schema.ObjectType
 
 trait MutationType {
-  this: ModelTypes with Scalars =>
+  this: DepositType with StateType with Scalars =>
 
   @GraphQLDescription("The root query for implementing GraphQL mutations.")
   trait Mutation {

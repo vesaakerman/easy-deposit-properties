@@ -22,7 +22,8 @@ import sangria.schema._
 object GraphQLSchema extends QueryType with MutationType
   with MetaTypes
   with DepositorType
-  with ModelTypes
+  with DepositType
+  with StateType
   with Scalars {
 
   val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))

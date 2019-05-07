@@ -22,7 +22,7 @@ import sangria.macros.derive.{ GraphQLDefault, GraphQLDescription, GraphQLField,
 import sangria.schema.ObjectType
 
 trait QueryType {
-  this: MetaTypes with ModelTypes with Scalars =>
+  this: MetaTypes with DepositType with StateType with Scalars =>
 
   @GraphQLDescription("The query root of easy-deposit-properties' GraphQL interface.")
   trait Query {
