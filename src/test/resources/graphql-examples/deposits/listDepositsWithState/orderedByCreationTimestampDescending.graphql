@@ -1,5 +1,5 @@
 query ListDepositsWithState {
-    deposits(label: ARCHIVED, orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
+    deposits(state: ARCHIVED, orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
         id
         creationTimestamp
         depositor {

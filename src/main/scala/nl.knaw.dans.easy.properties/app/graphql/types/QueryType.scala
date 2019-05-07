@@ -30,13 +30,13 @@ trait QueryType {
 
     @GraphQLField
     @GraphQLDescription("List all registered deposits.")
-    def deposits(label: Option[StateLabel] = None,
+    def deposits(state: Option[StateLabel] = None,
                  depositorId: Option[DepositorId] = None,
                  orderBy: Option[DepositOrder] = None,
                 ): Seq[Deposit] = {
-      val result = (label, depositorId) match {
-        case (Some(state), Some(id)) => repository.getDepositsByDepositorAndCurrentState(id, state)
-        case (Some(state), None) => repository.getDepositsByCurrentState(state)
+      val result = (state, depositorId) match {
+        case (Some(label), Some(id)) => repository.getDepositsByDepositorAndCurrentState(id, label)
+        case (Some(label), None) => repository.getDepositsByCurrentState(label)
         case (None, Some(id)) => repository.getDepositsByDepositor(id)
         case (None, None) => repository.getAllDeposits
       }

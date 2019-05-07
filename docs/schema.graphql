@@ -74,7 +74,7 @@ enum OrderDirection {
 """The query root of easy-deposit-properties' GraphQL interface."""
 type Query {
   """List all registered deposits."""
-  deposits(label: StateLabel, depositorId: String, orderBy: DepositOrder): [Deposit!]!
+  deposits(state: StateLabel, depositorId: String, orderBy: DepositOrder): [Deposit!]!
 
   """Get the technical metadata of the deposit identified by 'id'."""
   deposit(id: UUID!): Deposit

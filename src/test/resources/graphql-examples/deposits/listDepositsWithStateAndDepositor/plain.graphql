@@ -1,5 +1,5 @@
 query ListDepositsWithStateAndDepositor {
-    deposits(label: ARCHIVED, depositorId: "user001") {
+    deposits(state: ARCHIVED, depositorId: "user001") {
         creationTimestamp
         depositor {
             depositorId
