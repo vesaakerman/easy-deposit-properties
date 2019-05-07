@@ -142,7 +142,7 @@ enum StateLabel {
   """Closed and being checked for validity."""
   FINALIZING
 
-  """Deposit upload has been completed."""
+  """Deposit uploaded, waiting to be finalized."""
   UPLOADED
 
   """Open for additional data."""
