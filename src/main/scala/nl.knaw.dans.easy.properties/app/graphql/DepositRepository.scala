@@ -28,6 +28,8 @@ trait DepositRepository {
 
   def addDeposit(deposit: Deposit): Option[Deposit]
 
+  def getStateById(id: String): Option[State]
+
   def getCurrentState(id: DepositId): Option[State]
 
   def getAllStates(id: DepositId): Seq[State]

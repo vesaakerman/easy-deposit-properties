@@ -1,56 +1,58 @@
 {
   "data": {
-    "deposits": [
-      {
-        "id": "00000000-0000-0000-0000-000000000005",
-        "depositor": {
-          "depositorId": "user002"
+    "deposits": {
+      "nodes": [
+        {
+          "depositId": "00000000-0000-0000-0000-000000000005",
+          "depositor": {
+            "depositorId": "user002"
+          },
+          "state": {
+            "label": "REJECTED",
+            "description": "deposit is rejected"
+          }
         },
-        "state": {
-          "label": "REJECTED",
-          "description": "deposit is rejected"
-        }
-      },
-      {
-        "id": "00000000-0000-0000-0000-000000000004",
-        "depositor": {
-          "depositorId": "user001"
+        {
+          "depositId": "00000000-0000-0000-0000-000000000004",
+          "depositor": {
+            "depositorId": "user001"
+          },
+          "state": {
+            "label": "ARCHIVED",
+            "description": "deposit is archived"
+          }
         },
-        "state": {
-          "label": "ARCHIVED",
-          "description": "deposit is archived"
-        }
-      },
-      {
-        "id": "00000000-0000-0000-0000-000000000003",
-        "depositor": {
-          "depositorId": "user002"
+        {
+          "depositId": "00000000-0000-0000-0000-000000000003",
+          "depositor": {
+            "depositorId": "user002"
+          },
+          "state": {
+            "label": "INVALID",
+            "description": "deposit is invalid"
+          }
         },
-        "state": {
-          "label": "INVALID",
-          "description": "deposit is invalid"
-        }
-      },
-      {
-        "id": "00000000-0000-0000-0000-000000000002",
-        "depositor": {
-          "depositorId": "user001"
+        {
+          "depositId": "00000000-0000-0000-0000-000000000002",
+          "depositor": {
+            "depositorId": "user001"
+          },
+          "state": {
+            "label": "ARCHIVED",
+            "description": "deposit is archived"
+          }
         },
-        "state": {
-          "label": "ARCHIVED",
-          "description": "deposit is archived"
+        {
+          "depositId": "00000000-0000-0000-0000-000000000001",
+          "depositor": {
+            "depositorId": "user001"
+          },
+          "state": {
+            "label": "ARCHIVED",
+            "description": "deposit is archived"
+          }
         }
-      },
-      {
-        "id": "00000000-0000-0000-0000-000000000001",
-        "depositor": {
-          "depositorId": "user001"
-        },
-        "state": {
-          "label": "ARCHIVED",
-          "description": "deposit is archived"
-        }
-      }
-    ]
+      ]
+    }
   }
 }

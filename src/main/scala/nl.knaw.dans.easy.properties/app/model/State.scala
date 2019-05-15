@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.model
 
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 
-case class State(label: StateLabel, description: String, timestamp: Timestamp)
+case class State(id: String, label: StateLabel, description: String, timestamp: Timestamp)
 
 object State {
 

@@ -15,36 +15,98 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
-import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, State, Timestamp }
-import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveContextObjectType }
-import sangria.schema.ObjectType
+import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, Timestamp }
+import sangria.marshalling.FromInput.coercedScalaInput
+import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
   this: DepositType with StateType with Scalars =>
 
-  @GraphQLDescription("The root query for implementing GraphQL mutations.")
-  trait Mutation {
-    val repository: DepositRepository
+  private val depositIdArgument: Argument[DepositId] = Argument(
+    name = "depositId",
+    description = None, // TODO fill in the documentation
+    defaultValue = None,
+    argumentType = UUIDType,
+    fromInput = coercedScalaInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val creationTimestampArgument: Argument[Timestamp] = Argument(
+    name = "creationTimestamp",
+    description = None, // TODO fill in the documentation
+    defaultValue = None,
+    argumentType = DateTimeType,
+    fromInput = coercedScalaInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val depositorIdArgument: Argument[DepositorId] = Argument(
+    name = "depositorId",
+    description = None, // TODO fill in the documentation
+    defaultValue = None,
+    argumentType = StringType,
+    fromInput = coercedScalaInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val stateArgument: Argument[InputState] = Argument(
+    name = "state",
+    description = None, // TODO fill in the documentation
+    defaultValue = None,
+    argumentType = StateInputType,
+    fromInput = InputStateFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
 
-    @GraphQLField
-    @GraphQLDescription("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'.")
-    def addDeposit(id: DepositId, creationTimestamp: Timestamp, depositorId: DepositorId): Option[Deposit] = {
-      repository.addDeposit(Deposit(id, creationTimestamp, depositorId))
-    }
+  private val addDepositField: Field[DataContext, Unit] = Field(
+    name = "addDeposit",
+    description = Some("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."),
+    arguments = List(
+      depositIdArgument,
+      creationTimestampArgument,
+      depositorIdArgument,
+    ),
+    fieldType = OptionType(DepositType),
+    resolve = addDeposit,
+  )
+  private val updateStateField: Field[DataContext, Unit] = Field(
+    name = "updateState",
+    description = Some("Update the state of the deposit identified by 'id'."),
+    arguments = List(
+      depositIdArgument,
+      stateArgument,
+    ),
+    fieldType = OptionType(DepositType),
+    resolve = updateState,
+  )
 
-    @GraphQLField
-    @GraphQLDescription("Update the state of the deposit identified by 'id'.")
-    def updateState(id: DepositId, state: State): Option[Deposit] = {
-      repository.setState(id, state)
-    }
+  private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
+    val repository = context.ctx.deposits
+
+    val id = context.arg(depositIdArgument)
+    val creationTimestamp = context.arg(creationTimestampArgument)
+    val depositorId = context.arg(depositorIdArgument)
+
+    repository.addDeposit(Deposit(id, creationTimestamp, depositorId))
   }
 
-  object Mutation {
-    def apply(repo: DepositRepository): Mutation = new Mutation {
-      override val repository: DepositRepository = repo
-    }
+  private def updateState(context: Context[DataContext, Unit]): Option[Deposit] = {
+    val repository = context.ctx.deposits
+
+    val id = context.arg(depositIdArgument)
+    val state = context.arg(stateArgument)
+
+    repository.setState(id, state.toState)
   }
 
-  implicit val MutationType: ObjectType[DataContext, Unit] = deriveContextObjectType[DataContext, Mutation, Unit](ctx => Mutation(ctx.deposits))
+  implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(
+    name = "Mutation",
+    description = "The root query for implementing GraphQL mutations.",
+    fields = fields[DataContext, Unit](
+      addDepositField,
+      updateStateField,
+    ),
+  )
 }

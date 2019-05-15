@@ -2,7 +2,9 @@ query ListDepositsWithSameState {
     deposit(id: "00000000-0000-0000-0000-000000000001") {
         state {
             deposits(orderBy: {field: DEPOSIT_ID, direction: DESC}) {
-                id
+                nodes {
+                    depositId
+                }
             }
         }
     }

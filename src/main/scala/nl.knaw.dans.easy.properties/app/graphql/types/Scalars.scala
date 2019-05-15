@@ -29,7 +29,7 @@ trait Scalars {
 
   case object UUIDCoercionViolation extends ValueCoercionViolation("UUID value expected")
 
-  def parseUUID(s: String): Either[Violation, UUID] = {
+  private def parseUUID(s: String): Either[Violation, UUID] = {
     Try { UUID.fromString(s) }.fold(_ => Left(UUIDCoercionViolation), Right(_))
   }
 
@@ -49,7 +49,7 @@ trait Scalars {
 
   case object DateCoercionViolation extends ValueCoercionViolation("Date value expected")
 
-  def parseDate(s: String): Either[Violation, DateTime] = {
+  private def parseDate(s: String): Either[Violation, DateTime] = {
     Try { new DateTime(s, DateTimeZone.UTC) }.fold(_ => Left(DateCoercionViolation), Right(_))
   }
 

@@ -1,0 +1,14 @@
+{
+  "data": {
+    "node": {
+      "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDI=",
+      "depositId": "00000000-0000-0000-0000-000000000002",
+      "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
+      "state": {
+        "label": "ARCHIVED",
+        "description": "deposit is archived",
+        "timestamp": "2019-02-02T03:03:00.000+01:00"
+      }
+    }
+  }
+}

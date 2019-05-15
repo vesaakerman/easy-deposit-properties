@@ -1,10 +1,14 @@
 query {
     deposits(orderBy: {field: DEPOSIT_ID, direction: ASC}) {
-        id
-        states {
-            label
-            description
-            timestamp
+        nodes {
+            depositId
+            states {
+                nodes {
+                    label
+                    description
+                    timestamp
+                }
+            }
         }
     }
 }

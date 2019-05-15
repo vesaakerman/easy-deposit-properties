@@ -3,29 +3,31 @@
     "deposit": {
       "depositor": {
         "depositorId": "user001",
-        "deposits": [
-          {
-            "id": "00000000-0000-0000-0000-000000000002",
-            "state": {
-              "label": "ARCHIVED",
-              "description": "deposit is archived"
+        "deposits": {
+          "nodes": [
+            {
+              "depositId": "00000000-0000-0000-0000-000000000002",
+              "state": {
+                "label": "ARCHIVED",
+                "description": "deposit is archived"
+              }
+            },
+            {
+              "depositId": "00000000-0000-0000-0000-000000000004",
+              "state": {
+                "label": "ARCHIVED",
+                "description": "deposit is archived"
+              }
+            },
+            {
+              "depositId": "00000000-0000-0000-0000-000000000001",
+              "state": {
+                "label": "ARCHIVED",
+                "description": "deposit is archived"
+              }
             }
-          },
-          {
-            "id": "00000000-0000-0000-0000-000000000004",
-            "state": {
-              "label": "ARCHIVED",
-              "description": "deposit is archived"
-            }
-          },
-          {
-            "id": "00000000-0000-0000-0000-000000000001",
-            "state": {
-              "label": "ARCHIVED",
-              "description": "deposit is archived"
-            }
-          }
-        ]
+          ]
+        }
       }
     }
   }

@@ -16,46 +16,72 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.Deposit
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId, State }
+import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import sangria.macros.derive._
-import sangria.schema._
+import sangria.relay.{ Connection, ConnectionArgs, Identifiable, Node }
+import sangria.schema.{ Context, DeferredValue, Field, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DepositType {
-  this: DepositorType with StateType with MetaTypes with Scalars =>
+  this: DepositorType with StateConnectionType with StateType with NodeType with MetaTypes with Scalars =>
+
+  private val stateField: Field[DataContext, Deposit] = Field(
+    name = "state",
+    fieldType = OptionType(StateType),
+    description = Option("The current state of the deposit."),
+    resolve = getCurrentState,
+  )
+  private val statesField: Field[DataContext, Deposit] = Field(
+    name = "states",
+    description = Option("List all states of the deposit."),
+    arguments = optStateOrderArgument :: Connection.Args.All,
+    fieldType = OptionType(stateConnectionType),
+    resolve = ctx => getAllStates(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+  )
+  private val depositorField: Field[DataContext, Deposit] = Field(
+    name = "depositor",
+    fieldType = DepositorType,
+    description = Option("Information about the depositor that submitted this deposit."),
+    resolve = getDepositor,
+  )
+
+  private def getCurrentState(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[State]] = {
+    val id = context.value.id
+
+    DeferredValue(fetchCurrentStates.defer(id)).map { case (_, optState) => optState }
+  }
+
+  private def getAllStates(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[State]] = {
+    val id = context.value.id
+    val orderBy = context.arg(optStateOrderArgument)
+
+    DeferredValue(fetchAllStates.defer(id))
+      .map { case (_, states) => orderBy.fold(states)(order => states.sorted(order.ordering)) }
+  }
+
+  private def getDepositor(context: Context[DataContext, Deposit]): DepositorId = {
+    context.value.depositorId
+  }
+
+  implicit object DepositIdentifiable extends Identifiable[Deposit] {
+    override def id(deposit: Deposit): String = deposit.id.toString
+  }
 
   // lazy because we need it before being declared (in StateType)
   implicit lazy val DepositType: ObjectType[DataContext, Deposit] = deriveObjectType(
     ObjectTypeDescription("Contains all technical metadata about this deposit."),
+    Interfaces[DataContext, Deposit](nodeInterface),
+    RenameField("id", "depositId"),
     DocumentField("id", "The identifier of the deposit."),
     DocumentField("creationTimestamp", "The moment this deposit was created."),
     ExcludeFields("depositorId"),
     AddFields(
-      Field(
-        name = "state",
-        fieldType = OptionType(StateType),
-        description = Option("The current state of the deposit."),
-        resolve = c => DeferredValue(fetchCurrentStates.defer(c.value.id)).map { case (_, optState) => optState },
-      ),
-      Field(
-        name = "states",
-        fieldType = ListType(StateType),
-        description = Option("List all states of the deposit."),
-        arguments = optStateOrderArgument :: Nil,
-        resolve = c => DeferredValue(fetchAllStates.defer(c.value.id))
-          .map {
-            case (_, states) =>
-              c.arg(optStateOrderArgument)
-                .fold(states)(order => states.sorted(order.ordering))
-          },
-      ),
-      Field(
-        name = "depositor",
-        fieldType = DepositorType,
-        description = Option("Information about the depositor that submitted this deposit."),
-        resolve = c => Depositor(c.value.depositorId)(c.ctx.deposits),
-      ),
+      Node.globalIdField[DataContext, Deposit],
+      stateField,
+      statesField,
+      depositorField,
     ),
   )
 }

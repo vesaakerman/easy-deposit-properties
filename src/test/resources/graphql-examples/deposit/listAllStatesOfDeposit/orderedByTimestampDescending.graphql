@@ -1,9 +1,12 @@
 query ListAllStatesOfDeposit {
     deposit(id: "00000000-0000-0000-0000-000000000001") {
         states(orderBy: {field: TIMESTAMP, direction: DESC}) {
-            label
-            description
-            timestamp
+            nodes {
+                id
+                label
+                description
+                timestamp
+            }
         }
     }
 }

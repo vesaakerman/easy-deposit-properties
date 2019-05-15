@@ -5,6 +5,7 @@ query Deposit {
         }
         creationTimestamp
         state {
+            id
             label
             description
             timestamp

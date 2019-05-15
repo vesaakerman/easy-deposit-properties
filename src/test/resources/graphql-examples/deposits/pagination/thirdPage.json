@@ -1,0 +1,14 @@
+{
+  "data": {
+    "deposits": {
+      "totalCount": 5,
+      "pageInfo": {
+        "hasNextPage": false,
+        "hasPreviousPage": false,
+        "startCursor": null,
+        "endCursor": null
+      },
+      "edges": []
+    }
+  }
+}

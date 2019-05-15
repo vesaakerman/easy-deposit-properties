@@ -15,21 +15,25 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
+import java.util.UUID
+
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ DepositId, State, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Timestamp }
+import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.marshalling.ToInput.ScalarToInput
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
-import sangria.schema._
+import sangria.relay.{ Connection, ConnectionArgs, Identifiable, Node }
+import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait StateType {
-  this: DepositorType with DepositType with MetaTypes with Scalars =>
+  this: DepositConnectionType with NodeType with MetaTypes with Scalars =>
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the state of a deposit."),
@@ -76,54 +80,76 @@ trait StateType {
   }
   implicit val StateFilterType: EnumType[StateFilter.Value] = deriveEnumType()
   implicit val StateFilterToInput: ToInput[StateFilter.Value, _] = new ScalarToInput
-  val stateFilterArgument: Argument[StateFilter.Value] = {
-    Argument(
-      name = "stateFilter",
-      argumentType = StateFilterType,
-      description = Some("Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
-      defaultValue = Some(StateFilter.LATEST -> StateFilterToInput),
-      fromInput = coercedScalaInput,
-      astDirectives = Vector.empty,
-      astNodes = Vector.empty,
-    )
+  private val stateFilterArgument: Argument[StateFilter.Value] = Argument(
+    name = "stateFilter",
+    argumentType = StateFilterType,
+    description = Some("Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
+    defaultValue = Some(StateFilter.LATEST -> StateFilterToInput),
+    fromInput = coercedScalaInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+
+  private val depositsField: Field[DataContext, State] = Field(
+    name = "deposits",
+    description = Some("List all deposits with the same current state label."),
+    arguments = List(
+      stateFilterArgument,
+      optDepositOrderArgument,
+    ) ++ Connection.Args.All,
+    fieldType = OptionType(depositConnectionType),
+    resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+  )
+
+  private def getDeposits(context: Context[DataContext, State]): Seq[Deposit] = {
+    val repository = context.ctx.deposits
+
+    val label = context.value.label
+    val stateFilter = context.arg(stateFilterArgument)
+    val orderBy = context.arg(optDepositOrderArgument)
+
+    val result = stateFilter match {
+      case StateFilter.LATEST => repository.getDepositsByCurrentState(label)
+      case StateFilter.ALL => repository.getDepositsByAllStates(label)
+    }
+
+    orderBy.fold(result)(order => result.sorted(order.ordering))
   }
 
-  implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
+  implicit object StateIdentifiable extends Identifiable[State] {
+    override def id(state: State): String = state.id
+  }
+
+  implicit lazy val StateType: ObjectType[DataContext, State] = deriveObjectType(
     ObjectTypeDescription("The state of the deposit."),
+    Interfaces[DataContext, State](nodeInterface),
+    ExcludeFields("id"),
     DocumentField("label", "The state label of the deposit."),
     DocumentField("description", "Additional information about the state."),
     DocumentField("timestamp", "The timestamp at which the deposit got into this state."),
     AddFields(
-      Field(
-        name = "deposits",
-        fieldType = ListType(DepositType),
-        description = Option("List all deposits with the same current state label."),
-        arguments = optDepositOrderArgument :: stateFilterArgument :: Nil,
-        resolve = c => {
-          val result = c.arg(stateFilterArgument) match {
-            case StateFilter.LATEST => c.ctx.deposits.getDepositsByCurrentState(c.value.label)
-            case StateFilter.ALL => c.ctx.deposits.getDepositsByAllStates(c.value.label)
-          }
-          c.arg(optDepositOrderArgument)
-            .fold(result)(order => result.sorted(order.ordering))
-        },
-      ),
+      Node.globalIdField[DataContext, State],
+      depositsField,
     ),
   )
-  implicit val StateInputType: InputObjectType[State] = deriveInputObjectType(
-    InputObjectTypeName("StateInput"),
+
+  case class InputState(label: StateLabel.Value, description: String, timestamp: Timestamp) {
+    def toState: State = State(UUID.randomUUID().toString, label, description, timestamp)
+  }
+  implicit val StateInputType: InputObjectType[InputState] = deriveInputObjectType(
+    InputObjectTypeName("InputState"),
     InputObjectTypeDescription("The state of a deposit"),
     DocumentInputField("label", "The state label of the deposit."),
     DocumentInputField("description", "Additional information about the state."),
     DocumentInputField("timestamp", "The timestamp at which the deposit got into this state."),
   )
-  implicit val StateFromInput: FromInput[State] = new FromInput[State] {
+  implicit val InputStateFromInput: FromInput[InputState] = new FromInput[InputState] {
     override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
 
-    override def fromResult(node: marshaller.Node): State = {
+    override def fromResult(node: marshaller.Node): InputState = {
       val ad = node.asInstanceOf[Map[String, Any]]
 
-      State(
+      InputState(
         label = ad("label").asInstanceOf[StateLabel.Value],
         description = ad("description").asInstanceOf[String],
         timestamp = ad("timestamp").asInstanceOf[Timestamp],

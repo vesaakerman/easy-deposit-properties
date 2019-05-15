@@ -1,0 +1,20 @@
+query {
+    deposit(id: "00000000-0000-0000-0000-000000000001") {
+        states(first: 4 after: "YXJyYXljb25uZWN0aW9uOjM=") {
+            totalCount
+            pageInfo {
+                startCursor
+                endCursor
+                hasNextPage
+                hasPreviousPage
+            }
+            edges {
+                node {
+                    label
+                    description
+                    timestamp
+                }
+            }
+        }
+    }
+}

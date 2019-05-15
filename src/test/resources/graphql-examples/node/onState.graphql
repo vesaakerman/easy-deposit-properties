@@ -1,0 +1,16 @@
+query {
+    node(id: "U3RhdGU6MTU=") {
+        ... on State {
+            id
+            label
+            description
+            timestamp
+            deposits(stateFilter: ALL) {
+                nodes {
+                    id
+                    depositId
+                }
+            }
+        }
+    }
+}

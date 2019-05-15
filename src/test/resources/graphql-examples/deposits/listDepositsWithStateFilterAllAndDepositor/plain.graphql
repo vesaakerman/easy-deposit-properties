@@ -1,12 +1,14 @@
 query ListDepositsWithStateAndDepositor {
     deposits(state: DRAFT, stateFilter: ALL, depositorId: "user001") {
-        id
-        creationTimestamp
-        depositor {
-            depositorId
-        }
-        state {
-            description
+        nodes {
+            depositId
+            creationTimestamp
+            depositor {
+                depositorId
+            }
+            state {
+                description
+            }
         }
     }
 }

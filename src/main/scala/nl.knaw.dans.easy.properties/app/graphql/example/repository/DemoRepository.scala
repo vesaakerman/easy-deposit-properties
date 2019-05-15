@@ -52,6 +52,10 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     }
   }
 
+  override def getStateById(id: String): Option[State] = {
+    stateRepo.values.toStream.flatten.find(_.id == id)
+  }
+
   override def getCurrentState(id: DepositId): Option[State] = {
     trace(id)
     stateRepo.get(id).map(_.maxBy(_.timestamp))
@@ -109,7 +113,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
     val deposits = depositRepo.filter { case (_, deposit) => deposit.depositorId == depositorId }
     getCurrentStates(deposits.keys.toSeq)
-      .collect { case (depositId, Some(State(`label`, _, _))) => deposits.get(depositId) }
+      .collect { case (depositId, Some(State(_, `label`, _, _))) => deposits.get(depositId) }
       .flatten
   }
 

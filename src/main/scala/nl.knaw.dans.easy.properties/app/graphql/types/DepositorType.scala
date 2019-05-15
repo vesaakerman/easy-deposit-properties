@@ -15,36 +15,45 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
-import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
+import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
-import sangria.macros.derive.{ GraphQLDescription, GraphQLField, deriveObjectType }
-import sangria.schema.ObjectType
+import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import sangria.relay.{ Connection, ConnectionArgs }
+import sangria.schema.{ Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait DepositorType {
-  this: MetaTypes with DepositType with Scalars =>
+  this: NodeType with MetaTypes with DepositConnectionType =>
 
-  @GraphQLDescription("Information about the depositor that submitted this deposit.")
-  trait Depositor {
-    @GraphQLField
-    @GraphQLDescription("The EASY account of the depositor.")
-    def depositorId: DepositorId
+  private val depositorIdField: Field[DataContext, DepositorId] = Field(
+    name = "depositorId",
+    description = Some("The EASY account of the depositor."),
+    fieldType = StringType,
+    resolve = ctx => ctx.value,
+  )
+  private val depositsField: Field[DataContext, DepositorId] = Field(
+    name = "deposits",
+    description = Some("List all deposits originating from the same depositor."),
+    arguments = List(optDepositOrderArgument) ++ Connection.Args.All,
+    fieldType = OptionType(depositConnectionType),
+    resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+  )
 
-    @GraphQLField
-    @GraphQLDescription("List all deposits originating from the same depositor.")
-    def deposits(@GraphQLDescription("Ordering options for the returned deposits.")
-                 orderBy: Option[DepositOrder] = None): Seq[Deposit]
+  private def getDeposits(context: Context[DataContext, DepositorId]): Seq[Deposit] = {
+    val repository = context.ctx.deposits
+
+    val depositorId = context.value
+    val orderBy = context.arg(optDepositOrderArgument)
+
+    val result = repository.getDepositsByDepositor(depositorId)
+    orderBy.fold(result)(order => result.sorted(order.ordering))
   }
 
-  object Depositor {
-    def apply(dp: DepositorId)(repo: DepositRepository): Depositor = new Depositor {
-      override def depositorId: DepositorId = dp
-
-      override def deposits(orderBy: Option[DepositOrder] = None): Seq[Deposit] = {
-        val result = repo.getDepositsByDepositor(dp)
-        orderBy.fold(result)(order => result.sorted(order.ordering))
-      }
-    }
-  }
-
-  implicit val DepositorType: ObjectType[DataContext, Depositor] = deriveObjectType()
+  implicit val DepositorType: ObjectType[DataContext, DepositorId] = ObjectType(
+    name = "Depositor",
+    description = "Information about the depositor that submitted this deposit.",
+    fields = fields[DataContext, DepositorId](
+      depositorIdField,
+      depositsField,
+    ),
+  )
 }

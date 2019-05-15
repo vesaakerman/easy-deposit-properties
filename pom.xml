@@ -123,6 +123,11 @@
         </dependency>
         <dependency>
             <groupId>org.sangria-graphql</groupId>
+            <artifactId>sangria-relay_2.12</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sangria-graphql</groupId>
             <artifactId>sangria-json4s-native_2.12</artifactId>
             <version>1.0.0</version>
         </dependency>

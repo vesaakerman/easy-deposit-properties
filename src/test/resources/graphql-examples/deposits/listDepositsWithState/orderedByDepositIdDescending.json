@@ -1,36 +1,38 @@
 {
   "data": {
-    "deposits": [
-      {
-        "id": "00000000-0000-0000-0000-000000000004",
-        "creationTimestamp": "2019-04-04T00:00:00.000+02:00",
-        "depositor": {
-          "depositorId": "user001"
+    "deposits": {
+      "nodes": [
+        {
+          "depositId": "00000000-0000-0000-0000-000000000004",
+          "creationTimestamp": "2019-04-04T00:00:00.000+02:00",
+          "depositor": {
+            "depositorId": "user001"
+          },
+          "state": {
+            "description": "deposit is archived"
+          }
         },
-        "state": {
-          "description": "deposit is archived"
-        }
-      },
-      {
-        "id": "00000000-0000-0000-0000-000000000002",
-        "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
-        "depositor": {
-          "depositorId": "user001"
+        {
+          "depositId": "00000000-0000-0000-0000-000000000002",
+          "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
+          "depositor": {
+            "depositorId": "user001"
+          },
+          "state": {
+            "description": "deposit is archived"
+          }
         },
-        "state": {
-          "description": "deposit is archived"
+        {
+          "depositId": "00000000-0000-0000-0000-000000000001",
+          "creationTimestamp": "2019-01-01T00:00:00.000+01:00",
+          "depositor": {
+            "depositorId": "user001"
+          },
+          "state": {
+            "description": "deposit is archived"
+          }
         }
-      },
-      {
-        "id": "00000000-0000-0000-0000-000000000001",
-        "creationTimestamp": "2019-01-01T00:00:00.000+01:00",
-        "depositor": {
-          "depositorId": "user001"
-        },
-        "state": {
-          "description": "deposit is archived"
-        }
-      }
-    ]
+      ]
+    }
   }
 }

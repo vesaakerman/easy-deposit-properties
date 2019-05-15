@@ -52,16 +52,19 @@ trait GraphQLResolveSpecTestObjects {
     depositorId = "user002",
   )
   val state1 = State(
+    id = "1",
     label = StateLabel.ARCHIVED,
     description = "your deposit is submitted",
     timestamp = DateTime.now(),
   )
   val state2 = State(
+    id = "2",
     label = StateLabel.DRAFT,
     description = "your deposit is in draft",
     timestamp = DateTime.now(),
   )
   val state3 = State(
+    id = "3",
     label = StateLabel.ARCHIVED,
     description = "your deposit is submitted",
     timestamp = DateTime.now(),
@@ -147,6 +150,39 @@ class GraphQLResolveSpec extends TestSupportFixture
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       repository.getCurrentState _ expects depositId1 once() returning Some(state1)
       repository.getDepositsByAllStates _ expects StateLabel.ARCHIVED once() returning Seq(deposit1, deposit3)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/statePagination/firstPage.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "statePagination" / "firstPage.graphql"
+
+    inSequence {
+      repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
+      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3, state1, state2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/statePagination/secondPage.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "statePagination" / "secondPage.graphql"
+
+    inSequence {
+      repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
+      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3, state1, state2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/statePagination/thirdPage.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "statePagination" / "thirdPage.graphql"
+
+    inSequence {
+      repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
+      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3, state1, state2)
     }
 
     runQuery(input)
@@ -242,11 +278,63 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listDepositsWithStateFilterAllAndDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDepositsByDepositorAndAllStates _ expects ("user001", StateLabel.DRAFT) once() returning Seq(deposit1, deposit3)
+      repository.getDepositsByDepositorAndAllStates _ expects("user001", StateLabel.DRAFT) once() returning Seq(deposit1, deposit3)
       repository.getCurrentStates _ expects Seq(depositId1, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId3 -> Some(state3),
       )
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/pagination/firstPage.graphql' with 1 call to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "pagination" / "firstPage.graphql"
+
+    inSequence {
+      repository.getAllDeposits _ expects () once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/pagination/secondPage.graphql' with 1 call to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "pagination" / "secondPage.graphql"
+
+    inSequence {
+      repository.getAllDeposits _ expects () once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/pagination/thirdPage.graphql' with 1 call to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "pagination" / "thirdPage.graphql"
+
+    inSequence {
+      repository.getAllDeposits _ expects () once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'node/onDeposit.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "node" / "onDeposit.graphql"
+
+    inSequence {
+      repository.getDeposit _ expects depositId2 once() returning Some(deposit2)
+      repository.getCurrentState _ expects depositId2 once() returning Some(state2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'node/onState.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "node" / "onState.graphql"
+
+    inSequence {
+      repository.getStateById _ expects "15" once() returning Some(state2)
+      repository.getDepositsByAllStates _ expects StateLabel.DRAFT once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)

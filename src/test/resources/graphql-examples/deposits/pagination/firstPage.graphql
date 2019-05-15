@@ -1,0 +1,17 @@
+query {
+    deposits(first: 3) {
+        totalCount
+        pageInfo {
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                depositId
+                creationTimestamp
+            }
+        }
+    }
+}

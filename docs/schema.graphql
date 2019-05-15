@@ -4,12 +4,15 @@ A DateTime scalar type represents textual data, formatted as an ISO8601 date-tim
 scalar DateTime
 
 """Contains all technical metadata about this deposit."""
-type Deposit {
+type Deposit implements Node {
   """The identifier of the deposit."""
-  id: UUID!
+  depositId: UUID!
 
   """The moment this deposit was created."""
   creationTimestamp: DateTime!
+
+  """The ID of an object"""
+  id: ID!
 
   """The current state of the deposit."""
   state: State
@@ -18,10 +21,38 @@ type Deposit {
   states(
     """Ordering options for the returned states."""
     orderBy: StateOrder
-  ): [State!]!
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): StateConnection
 
   """Information about the depositor that submitted this deposit."""
   depositor: Depositor!
+}
+
+"""A connection to a list of items."""
+type DepositConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [DepositEdge]
+
+  """Identifies the total count of items in the connection."""
+  totalCount: Int!
+
+  """A list of nodes."""
+  nodes: [Deposit!]!
+}
+
+"""An edge in a connection."""
+type DepositEdge {
+  """The item at the end of the edge."""
+  node: Deposit!
+
+  """A cursor for use in pagination."""
+  cursor: String!
 }
 
 """Information about the depositor that submitted this deposit."""
@@ -33,7 +64,11 @@ type Depositor {
   deposits(
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
-  ): [Deposit!]!
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): DepositConnection
 }
 
 """Ordering options for deposits"""
@@ -54,13 +89,31 @@ enum DepositOrderField {
   DEPOSIT_ID
 }
 
+"""The state of a deposit"""
+input InputState {
+  """The state label of the deposit."""
+  label: StateLabel!
+
+  """Additional information about the state."""
+  description: String!
+
+  """The timestamp at which the deposit got into this state."""
+  timestamp: DateTime!
+}
+
 """The root query for implementing GraphQL mutations."""
 type Mutation {
   """Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."""
-  addDeposit(id: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
+  addDeposit(depositId: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
 
   """Update the state of the deposit identified by 'id'."""
-  updateState(id: UUID!, state: StateInput!): Deposit
+  updateState(depositId: UUID!, state: InputState!): Deposit
+}
+
+"""An object with an ID"""
+interface Node {
+  """The id of the object."""
+  id: ID!
 }
 
 """
@@ -74,8 +127,29 @@ enum OrderDirection {
   ASC
 }
 
+"""Information about pagination in a connection."""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
 """The query root of easy-deposit-properties' GraphQL interface."""
 type Query {
+  """Get the technical metadata of the deposit identified by 'id'."""
+  deposit(
+    """The id for which to find the deposit"""
+    id: UUID!
+  ): Deposit
+
   """List all registered deposits."""
   deposits(
     """If provided, only show deposits with this state."""
@@ -84,24 +158,34 @@ type Query {
     """
     Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
     """
-    stateFilter: StateFilter = LATEST
+    stateFilter: StateFilter! = LATEST
 
     """If provided, only show deposits from this depositor."""
     depositorId: String
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
-  ): [Deposit!]!
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): DepositConnection
 
-  """Get the technical metadata of the deposit identified by 'id'."""
-  deposit(
-    """The id for which to find the deposit"""
-    id: UUID!
-  ): Deposit
+  """Fetches an object given its ID"""
+  node(
+    """The ID of an object"""
+    id: ID!
+  ): Node
+
+  """Fetches objects given their IDs"""
+  nodes(
+    """The IDs of objects"""
+    ids: [ID!]!
+  ): [Node]!
 }
 
 """The state of the deposit."""
-type State {
+type State implements Node {
   """The state label of the deposit."""
   label: StateLabel!
 
@@ -111,16 +195,47 @@ type State {
   """The timestamp at which the deposit got into this state."""
   timestamp: DateTime!
 
+  """The ID of an object"""
+  id: ID!
+
   """List all deposits with the same current state label."""
   deposits(
-    """Ordering options for the returned deposits."""
-    orderBy: DepositOrder
-
     """
     Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
     """
     stateFilter: StateFilter! = LATEST
-  ): [Deposit!]!
+
+    """Ordering options for the returned deposits."""
+    orderBy: DepositOrder
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): DepositConnection
+}
+
+"""A connection to a list of items."""
+type StateConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [StateEdge]
+
+  """Identifies the total count of items in the connection."""
+  totalCount: Int!
+
+  """A list of nodes."""
+  nodes: [State!]!
+}
+
+"""An edge in a connection."""
+type StateEdge {
+  """The item at the end of the edge."""
+  node: State!
+
+  """A cursor for use in pagination."""
+  cursor: String!
 }
 
 """
@@ -132,18 +247,6 @@ enum StateFilter {
 
   """Only search through current states."""
   LATEST
-}
-
-"""The state of a deposit"""
-input StateInput {
-  """The state label of the deposit."""
-  label: StateLabel!
-
-  """Additional information about the state."""
-  description: String!
-
-  """The timestamp at which the deposit got into this state."""
-  timestamp: DateTime!
 }
 
 """The label identifying the state of a deposit."""
