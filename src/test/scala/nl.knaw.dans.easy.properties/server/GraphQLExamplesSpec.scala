@@ -63,6 +63,8 @@ class GraphQLExamplesSpec extends TestSupportFixture
         val inputBody = compact(render("query" -> graphQLExample.contentAsString))
         val expectedOutput = writePretty(parse(expectedJsonOutput.contentAsString))
 
+        repository.resetRepository()
+
         post(uri = "/", body = inputBody.getBytes) {
           body shouldBe expectedOutput
           status shouldBe 200

@@ -107,7 +107,7 @@ type Mutation {
   addDeposit(depositId: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
 
   """Update the state of the deposit identified by 'id'."""
-  updateState(depositId: UUID!, state: InputState!): Deposit
+  updateState(depositId: UUID!, state: InputState!): State
 }
 
 """An object with an ID"""

@@ -1,0 +1,13 @@
+{
+  "data": {
+    "addDeposit": {
+      "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDY=",
+      "depositId": "00000000-0000-0000-0000-000000000006",
+      "creationTimestamp": "2019-05-15T21:36:00.000Z",
+      "depositor": {
+        "depositorId": "archie001"
+      },
+      "state": null
+    }
+  }
+}

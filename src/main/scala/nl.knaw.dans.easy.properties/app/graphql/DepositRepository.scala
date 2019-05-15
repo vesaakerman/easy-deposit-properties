@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql
 
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, InputState, State }
 
 trait DepositRepository {
 
@@ -38,7 +38,7 @@ trait DepositRepository {
 
   def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Seq[State])]
 
-  def setState(id: DepositId, state: State): Option[Deposit]
+  def setState(id: DepositId, state: InputState): Option[State]
 
   def getDepositsByCurrentState(state: StateLabel): Seq[Deposit]
 

@@ -76,14 +76,18 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     ids.map(id => id -> stateRepo.getOrElse(id, Seq.empty))
   }
 
-  override def setState(id: DepositId, state: State): Option[Deposit] = {
+  override def setState(id: DepositId, state: InputState): Option[State] = {
     if (depositRepo contains id) {
-      if (stateRepo contains id)
-        stateRepo.update(id, stateRepo(id) :+ state)
-      else
-        stateRepo += (id -> Seq(state))
+      val InputState(label, description, timestamp) = state
+      val stateId = id.toString.last + stateRepo.collectFirst { case (`id`, states) => states }.fold(0)(_.maxBy(_.id).id.last.toInt + 1).toString
+      val newState = State(stateId, label, description, timestamp)
 
-      depositRepo.get(id)
+      if (stateRepo contains id)
+        stateRepo.update(id, stateRepo(id) :+ newState)
+      else
+        stateRepo += (id -> Seq(newState))
+
+      Some(newState)
     }
     else Option.empty
   }

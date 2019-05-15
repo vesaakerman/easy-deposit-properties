@@ -15,19 +15,17 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
-import java.util.UUID
-
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State, Timestamp }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.State.StateLabel
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
+import sangria.marshalling.ToInput
 import sangria.marshalling.ToInput.ScalarToInput
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
 import sangria.relay.{ Connection, ConnectionArgs, Identifiable, Node }
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
+import sangria.schema.{ Argument, Context, EnumType, Field, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -132,28 +130,4 @@ trait StateType {
       depositsField,
     ),
   )
-
-  case class InputState(label: StateLabel.Value, description: String, timestamp: Timestamp) {
-    def toState: State = State(UUID.randomUUID().toString, label, description, timestamp)
-  }
-  implicit val StateInputType: InputObjectType[InputState] = deriveInputObjectType(
-    InputObjectTypeName("InputState"),
-    InputObjectTypeDescription("The state of a deposit"),
-    DocumentInputField("label", "The state label of the deposit."),
-    DocumentInputField("description", "Additional information about the state."),
-    DocumentInputField("timestamp", "The timestamp at which the deposit got into this state."),
-  )
-  implicit val InputStateFromInput: FromInput[InputState] = new FromInput[InputState] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): InputState = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      InputState(
-        label = ad("label").asInstanceOf[StateLabel.Value],
-        description = ad("description").asInstanceOf[String],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
 }

@@ -25,6 +25,7 @@ object GraphQLSchema extends Scalars
   with DepositConnectionType
   with MetaTypes
   with DepositorType
+  with InputStateType
   with StateType
   with DepositType
   with QueryType

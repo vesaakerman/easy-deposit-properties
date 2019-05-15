@@ -16,12 +16,12 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, InputState, State, Timestamp }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
-  this: DepositType with StateType with Scalars =>
+  this: DepositType with StateType with InputStateType with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
     name = "depositId",
@@ -78,7 +78,7 @@ trait MutationType {
       depositIdArgument,
       stateArgument,
     ),
-    fieldType = OptionType(DepositType),
+    fieldType = OptionType(StateType),
     resolve = updateState,
   )
 
@@ -92,13 +92,13 @@ trait MutationType {
     repository.addDeposit(Deposit(id, creationTimestamp, depositorId))
   }
 
-  private def updateState(context: Context[DataContext, Unit]): Option[Deposit] = {
+  private def updateState(context: Context[DataContext, Unit]): Option[State] = {
     val repository = context.ctx.deposits
 
-    val id = context.arg(depositIdArgument)
+    val depositId = context.arg(depositIdArgument)
     val state = context.arg(stateArgument)
 
-    repository.setState(id, state.toState)
+    repository.setState(depositId, state)
   }
 
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(

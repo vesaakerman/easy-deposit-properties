@@ -67,19 +67,36 @@ class DemoRepositoryImpl extends DemoRepository {
   private val state52 = State("52", StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 5, 5, 2, 2, timeZone))
   private val state53 = State("53", StateLabel.REJECTED, "deposit is rejected", new DateTime(2019, 5, 5, 3, 3, timeZone))
 
-  override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map(
-    depositId1 -> deposit1,
-    depositId2 -> deposit2,
-    depositId3 -> deposit3,
-    depositId4 -> deposit4,
-    depositId5 -> deposit5,
-  )
+  override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
 
-  override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map(
-    depositId1 -> Seq(state10, state11, state12, state13, state14, state15),
-    depositId2 -> Seq(state20, state21, state22, state23),
-    depositId3 -> Seq(state30, state31, state32),
-    depositId4 -> Seq(state40, state41, state42),
-    depositId5 -> Seq(state50, state51, state52, state53),
-  )
+  override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty
+
+  resetRepository()
+
+  def resetRepository(): mutable.Map[DepositId, Seq[State]] = {
+    resetDepositRepo()
+    resetStateRepo()
+  }
+
+  def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
+    depositRepo.clear()
+    depositRepo ++= Map(
+      depositId1 -> deposit1,
+      depositId2 -> deposit2,
+      depositId3 -> deposit3,
+      depositId4 -> deposit4,
+      depositId5 -> deposit5,
+    )
+  }
+
+  def resetStateRepo(): mutable.Map[DepositId, Seq[State]] = {
+    stateRepo.clear()
+    stateRepo ++= Map(
+      depositId1 -> Seq(state10, state11, state12, state13, state14, state15),
+      depositId2 -> Seq(state20, state21, state22, state23),
+      depositId3 -> Seq(state30, state31, state32),
+      depositId4 -> Seq(state40, state41, state42),
+      depositId5 -> Seq(state50, state51, state52, state53),
+    )
+  }
 }
