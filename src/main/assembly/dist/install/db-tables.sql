@@ -5,8 +5,7 @@ CREATE TABLE Deposit (
 );
 
 CREATE TABLE State (
-    stateId SMALLSERIAL PRIMARY KEY,
-    value VARCHAR(64) NOT NULL,
+    value VARCHAR(64) NOT NULL PRIMARY KEY,
 );
 
 INSERT INTO State (value)
@@ -22,17 +21,17 @@ VALUES ('DRAFT'),
        ('FEDORA_ARCHIVED');
 
 CREATE TABLE DepositState (
+    stateId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
-    stateId SMALLSERIAL NOT NULL,
+    state VARCHAR(64) NOT NULL,
     description TEXT NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (stateId) REFERENCES State (stateId),
+    FOREIGN KEY (state) REFERENCES State (value),
 );
 
 CREATE TABLE IngestStep (
-    stepId SMALLSERIAL PRIMARY KEY,
-    value VARCHAR(64) NOT NULL,
+    value VARCHAR(64) NOT NULL PRIMARY KEY,
 );
 
 INSERT INTO IngestStep (value)
@@ -43,18 +42,18 @@ VALUES ('VALIDATE'),
        ('BAGSTORE'),
        ('BAGINDEX'),
        ('SOLR4FILES');
-       
+
 CREATE TABLE DepositIngestStep (
+    stepId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
-    stepId SMALLSERIAL NOT NULL,
+    step VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (stepId) REFERENCES IngestStep (stepId),
+    FOREIGN KEY (step) REFERENCES IngestStep (value),
 );
 
 CREATE TABLE Identifier (
-    identifierId SMALLSERIAL PRIMARY KEY,
-    value VARCHAR(64) NOT NULL,
+    value VARCHAR(64) NOT NULL PRIMARY KEY,
 );
 
 INSERT INTO Identifier (value)
@@ -64,17 +63,17 @@ VALUES ('doi'),
        ('bag-store');
 
 CREATE TABLE DepositIdentifier (
+    identifierId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
-    identifierId SMALLSERIAL NOT NULL,
+    identifier VARCHAR(64) NOT NULL,
     identifierValue VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (identifierId) REFERENCES Identifier (identifierId),
+    FOREIGN KEY (identifier) REFERENCES Identifier (value),
 );
 
 CREATE TABLE DoiEventType (
-    doiEventId SMALLSERIAL PRIMARY KEY,
-    value VARCHAR(64) NOT NULL,
+    value VARCHAR(64) NOT NULL PRIMARY KEY,
 );
 
 INSERT INTO DoiEventType (value)
@@ -82,15 +81,17 @@ VALUES ('registered'),
        ('action');
 
 CREATE TABLE DepositDoiEvent (
+    doiEventId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
-    doiEventId SMALLSERIAL NOT NULL,
+    doiEvent VARCHAR(64) NOT NULL,
     value VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (doiEventId) REFERENCES DoiEventType (doiEventId),
+    FOREIGN KEY (doiEvent) REFERENCES DoiEventType (value),
 );
 
 CREATE TABLE DepositCurator (
+    curatorId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     datamanagerUserId VARCHAR(64) NOT NULL,
     datamanagerEmail TEXT NOT NULL,
@@ -99,8 +100,7 @@ CREATE TABLE DepositCurator (
 );
 
 CREATE TABLE CurationType (
-    curationId SMALLSERIAL PRIMARY KEY,
-    value VARCHAR(64) NOT NULL,
+    value VARCHAR(64) NOT NULL PRIMARY KEY,
 );
 
 INSERT INTO CurationType (value)
@@ -109,15 +109,17 @@ VALUES ('is-new-version'),
        ('curation-performed');
 
 CREATE TABLE DepositCurationEvent (
+    curationEventId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
-    curationId SMALLSERIAL NOT NULL,
+    curationType VARCHAR(64) NOT NULL,
     value VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (curationId) REFERENCES CurationType (curationId),
+    FOREIGN KEY (curationType) REFERENCES CurationType (value),
 );
 
 CREATE TABLE DepositSpringfield (
+    springfieldId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     domain VARCHAR(32) NOT NULL,
     user VARCHAR(32) NOT NULL,
@@ -128,6 +130,7 @@ CREATE TABLE DepositSpringfield (
 );
 
 CREATE TABLE DepositClientMessageContentType (
+    clientMessageContentTypeId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     contentType VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
