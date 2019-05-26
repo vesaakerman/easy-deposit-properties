@@ -1,0 +1,10 @@
+{
+    identifier(type: DOI, value: "10.5072/dans-a1b-cde2") {
+        type
+        value
+        timestamp
+        deposit {
+            depositId
+        }
+    }
+}

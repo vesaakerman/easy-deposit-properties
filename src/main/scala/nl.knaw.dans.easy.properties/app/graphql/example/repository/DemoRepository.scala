@@ -17,6 +17,8 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepFilter, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State, StateFilter }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -28,6 +30,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   val depositRepo: mutable.Map[DepositId, Deposit]
   val stateRepo: mutable.Map[DepositId, Seq[State]]
   val stepRepo: mutable.Map[DepositId, Seq[IngestStep]]
+  val identifierRepo: mutable.Map[(DepositId, IdentifierType), Identifier]
 
   override def getAllDeposits: Seq[Deposit] = {
     trace(())
@@ -91,6 +94,8 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     }
   }
 
+  //
+
   override def getStateById(id: String): Option[State] = {
     trace(id)
     stateRepo.values.toStream.flatten.find(_.id == id)
@@ -140,11 +145,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   override def getDepositByStateId(id: String): Option[Deposit] = {
     trace(id)
     stateRepo
-      .collectFirst {
-        case (depositId, states) if states.exists(_.id == id) => depositId
-      }
+      .collectFirst { case (depositId, states) if states.exists(_.id == id) => depositId }
       .flatMap(depositRepo.get)
   }
+
+  //
 
   override def getIngestStepById(id: String): Option[IngestStep] = {
     trace(id)
@@ -180,7 +185,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
         .collectFirst { case (`id`, steps) => steps }
         .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
         .toString
-      val newStep = ingestStep.IngestStep(stepId, step, timestamp)
+      val newStep = IngestStep(stepId, step, timestamp)
 
       if (stepRepo contains id)
         stepRepo.update(id, stepRepo(id) :+ newStep)
@@ -195,9 +200,69 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   override def getDepositByIngestStepId(id: String): Option[Deposit] = {
     trace(id)
     stepRepo
-      .collectFirst {
-        case (depositId, steps) if steps.exists(_.id == id) => depositId
+      .collectFirst { case (depositId, steps) if steps.exists(_.id == id) => depositId }
+      .flatMap(depositRepo.get)
+  }
+
+  //
+
+  override def getIdentifierById(id: String): Option[Identifier] = {
+    trace(id)
+    identifierRepo.values.toStream.find(_.id == id)
+  }
+
+  override def getIdentifier(id: DepositId, idType: IdentifierType): Option[Identifier] = {
+    trace(id)
+    identifierRepo.get(id -> idType)
+  }
+
+  override def getIdentifier(idType: IdentifierType, idValue: String): Option[Identifier] = {
+    trace(idType, idValue)
+    identifierRepo.values.toStream.find(identifier => identifier.idType == idType && identifier.idValue == idValue)
+  }
+
+  override def getIdentifiers(id: DepositId): Seq[Identifier] = {
+    trace(id)
+    identifierRepo.collect { case ((`id`, _), identifiers) => identifiers }.toSeq
+  }
+
+  override def getIdentifiersForTypes(ids: Seq[(DepositId, IdentifierType)]): Seq[((DepositId, IdentifierType), Option[Identifier])] = {
+    trace(ids)
+    ids.map {
+      case key @ (depositId, idType) => key -> identifierRepo.get(depositId -> idType)
+    }
+  }
+
+  override def getIdentifiers(ids: Seq[DepositId]): Seq[(DepositId, Seq[Identifier])] = {
+    trace(ids)
+    ids.map(depositId => depositId -> identifierRepo.collect { case ((`depositId`, _), identifier) => identifier }.toSeq)
+  }
+
+  override def addIdentifier(id: DepositId, identifier: InputIdentifier): Option[Identifier] = {
+    trace(id, identifier)
+    if (depositRepo contains id) {
+      val InputIdentifier(idType, idValue, timestamp) = identifier
+
+      val identifierId = id.toString.last + identifierRepo
+        .collect { case ((`id`, _), ident) => ident }
+        .maxByOption(_.id).fold(0)(_.id.last.toInt + 1)
+        .toString
+      val newIdentifier = Identifier(identifierId, idType, idValue, timestamp)
+
+      if (identifierRepo contains(id, idType))
+        Option.empty
+      else {
+        identifierRepo += ((id, idType) -> newIdentifier)
+        Some(newIdentifier)
       }
+    }
+    else Option.empty
+  }
+
+  override def getDepositByIdentifierId(id: String): Option[Deposit] = {
+    trace(id)
+    identifierRepo
+      .collectFirst { case ((depositId, _), identifier) if identifier.id == id => depositId }
       .flatMap(depositRepo.get)
   }
 }

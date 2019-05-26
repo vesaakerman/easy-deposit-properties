@@ -1,0 +1,8 @@
+mutation {
+    addIdentifier(depositId: "00000000-0000-0000-0000-000000000006", identifier: {type: BAG_STORE, value: "00000000-0000-0000-0000-000000000006", timestamp: "2019-05-26T23:09:00.000+02:00"}) {
+        id
+        type
+        value
+        timestamp
+    }
+}

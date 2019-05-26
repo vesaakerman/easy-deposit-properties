@@ -16,6 +16,8 @@
 package nl.knaw.dans.easy.properties.app.graphql
 
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State }
 
@@ -32,6 +34,8 @@ trait DepositRepository {
 
   def addDeposit(deposit: Deposit): Option[Deposit]
 
+  //
+
   def getStateById(id: String): Option[State]
 
   def getCurrentState(id: DepositId): Option[State]
@@ -46,6 +50,8 @@ trait DepositRepository {
 
   def getDepositByStateId(id: String): Option[Deposit]
 
+  //
+
   def getIngestStepById(id: String): Option[IngestStep]
 
   def getCurrentIngestStep(id: DepositId): Option[IngestStep]
@@ -59,4 +65,22 @@ trait DepositRepository {
   def setIngestStep(id: DepositId, step: InputIngestStep): Option[IngestStep]
 
   def getDepositByIngestStepId(id: String): Option[Deposit]
+
+  //
+
+  def getIdentifierById(id: String): Option[Identifier]
+
+  def getIdentifier(id: DepositId, idType: IdentifierType): Option[Identifier]
+
+  def getIdentifier(idType: IdentifierType, idValue: String): Option[Identifier]
+
+  def getIdentifiers(id: DepositId): Seq[Identifier]
+
+  def getIdentifiersForTypes(ids: Seq[(DepositId, IdentifierType)]): Seq[((DepositId, IdentifierType), Option[Identifier])]
+
+  def getIdentifiers(ids: Seq[DepositId]): Seq[(DepositId, Seq[Identifier])]
+
+  def addIdentifier(id: DepositId, identifier: InputIdentifier): Option[Identifier]
+
+  def getDepositByIdentifierId(id: String): Option[Deposit]
 }

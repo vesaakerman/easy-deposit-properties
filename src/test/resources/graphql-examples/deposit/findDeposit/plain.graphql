@@ -15,5 +15,11 @@ query Deposit {
             step
             timestamp
         }
+        identifiers {
+            id
+            type
+            value
+            timestamp
+        }
     }
 }

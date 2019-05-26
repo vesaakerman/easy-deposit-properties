@@ -42,6 +42,15 @@ type Deposit implements Node {
 
   """Information about the depositor that submitted this deposit."""
   depositor: Depositor!
+
+  """Return the identifier of the given type related to this deposit"""
+  identifier(
+    """Find the identifier with this specific type."""
+    type: IdentifierType!
+  ): Identifier
+
+  """List the identifiers related to this deposit"""
+  identifiers: [Identifier!]!
 }
 
 """A connection to a list of items."""
@@ -130,6 +139,41 @@ input DepositStateFilter {
   Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
   """
   filter: StateFilter = LATEST
+}
+
+"""An identifier related to a deposit."""
+type Identifier implements Node {
+  """The type of identifier."""
+  type: IdentifierType!
+
+  """The value of the identifier."""
+  value: String!
+
+  """The timestamp at which the identifier got added to this deposit."""
+  timestamp: DateTime!
+
+  """The ID of an object"""
+  id: ID!
+
+  """
+  Returns the deposit that is associated with this particular ingest step
+  """
+  deposit: Deposit
+}
+
+"""The type of the identifier."""
+enum IdentifierType {
+  """The bagstore identifier."""
+  BAG_STORE
+
+  """The Fedora identifier."""
+  FEDORA
+
+  """The 'urn:nbn' identifier."""
+  URN
+
+  """The doi identifier."""
+  DOI
 }
 
 """The ingest step of the deposit."""
@@ -246,6 +290,18 @@ enum IngestStepOrderField {
   STEP
 }
 
+"""An identifier related to a deposit."""
+input InputIdentifier {
+  """The type of identifier."""
+  type: IdentifierType!
+
+  """The value of the identifier."""
+  value: String!
+
+  """The timestamp at which the identifier got added to this deposit."""
+  timestamp: DateTime!
+}
+
 """The ingest step of a deposit"""
 input InputIngestStep {
   """The label of the ingest step."""
@@ -270,13 +326,43 @@ input InputState {
 """The root query for implementing GraphQL mutations."""
 type Mutation {
   """Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."""
-  addDeposit(depositId: UUID!, creationTimestamp: DateTime!, depositorId: String!): Deposit
+  addDeposit(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The timestamp at which this deposit was created."""
+    creationTimestamp: DateTime!
+
+    """The depositor that submits this deposit."""
+    depositorId: String!
+  ): Deposit
 
   """Update the state of the deposit identified by 'id'."""
-  updateState(depositId: UUID!, state: InputState!): State
+  updateState(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The deposit's state to be updated."""
+    state: InputState!
+  ): State
 
   """Update the ingest step of the deposit identified by 'id'."""
-  updateIngestStep(depositId: UUID!, ingestStep: InputIngestStep!): IngestStep
+  updateIngestStep(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The ingest step to be updated."""
+    ingestStep: InputIngestStep!
+  ): IngestStep
+
+  """Add an identifier to the deposit identified by 'id'."""
+  addIdentifier(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The identifier to be added."""
+    identifier: InputIdentifier!
+  ): Identifier
 }
 
 """An object with an ID"""
@@ -340,6 +426,15 @@ type Query {
     """If provided, only show deposits from this depositor."""
     id: String
   ): Depositor
+
+  """Find an identifier with the given type and value."""
+  identifier(
+    """The type of identifier to be found."""
+    type: IdentifierType!
+
+    """The value of the identifier to be found."""
+    value: String!
+  ): Identifier
 
   """Fetches an object given its ID"""
   node(

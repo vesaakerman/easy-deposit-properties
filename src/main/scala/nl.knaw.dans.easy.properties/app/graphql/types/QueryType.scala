@@ -17,13 +17,14 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
 
 trait QueryType {
-  this: MetaTypes with DepositType with DepositorType with StateType with IngestStepType with NodeType with Scalars =>
+  this: MetaTypes with DepositType with DepositorType with StateType with IngestStepType with IdentifierType with NodeType with Scalars =>
 
   private val depositorIdArgument: Argument[Option[DepositorId]] = Argument(
     name = "id",
@@ -39,6 +40,24 @@ trait QueryType {
     description = Some("The id for which to find the deposit"),
     defaultValue = None,
     argumentType = UUIDType,
+    fromInput = coercedScalaInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
+    name = "type",
+    description = Some("The type of identifier to be found."),
+    defaultValue = None,
+    argumentType = IdentifierTypeType,
+    fromInput = coercedScalaInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val identifierValueArgument: Argument[String] = Argument(
+    name = "value",
+    description = Some("The value of the identifier to be found."),
+    defaultValue = None,
+    argumentType = StringType,
     fromInput = coercedScalaInput,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
@@ -71,6 +90,16 @@ trait QueryType {
     fieldType = OptionType(DepositorType),
     resolve = getDepositor,
   )
+  private val identifierField: Field[DataContext, Unit] = Field(
+    name = "identifier",
+    description = Some("Find an identifier with the given type and value."),
+    arguments = List(
+      identifierTypeArgument,
+      identifierValueArgument,
+    ),
+    fieldType = OptionType(IdentifierObjectType),
+    resolve = getIdentifier,
+  )
 
   private def getDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
     val repository = context.ctx.deposits
@@ -99,6 +128,15 @@ trait QueryType {
     context.arg(depositorIdArgument)
   }
 
+  private def getIdentifier(context: Context[DataContext, Unit]): Option[Identifier] = {
+    val repository = context.ctx.deposits
+
+    val identifierType = context.arg(identifierTypeArgument)
+    val identifierValue = context.arg(identifierValueArgument)
+
+    repository.getIdentifier(identifierType, identifierValue)
+  }
+
   implicit val QueryType: ObjectType[DataContext, Unit] = ObjectType(
     name = "Query",
     description = "The query root of easy-deposit-properties' GraphQL interface.",
@@ -106,6 +144,7 @@ trait QueryType {
       depositField,
       depositsField,
       depositorField,
+      identifierField,
       nodeField,
       nodesField,
     ),

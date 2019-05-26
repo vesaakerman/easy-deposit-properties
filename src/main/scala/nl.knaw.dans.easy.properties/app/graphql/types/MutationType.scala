@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, Timestamp }
@@ -23,11 +24,11 @@ import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
-  this: DepositType with StateType with IngestStepType with Scalars =>
+  this: DepositType with StateType with IngestStepType with IdentifierType with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
     name = "depositId",
-    description = None, // TODO fill in the documentation
+    description = Some("The deposit's identifier."),
     defaultValue = None,
     argumentType = UUIDType,
     fromInput = coercedScalaInput,
@@ -36,7 +37,7 @@ trait MutationType {
   )
   private val creationTimestampArgument: Argument[Timestamp] = Argument(
     name = "creationTimestamp",
-    description = None, // TODO fill in the documentation
+    description = Some("The timestamp at which this deposit was created."),
     defaultValue = None,
     argumentType = DateTimeType,
     fromInput = coercedScalaInput,
@@ -45,7 +46,7 @@ trait MutationType {
   )
   private val depositorIdArgument: Argument[DepositorId] = Argument(
     name = "depositorId",
-    description = None, // TODO fill in the documentation
+    description = Some("The depositor that submits this deposit."),
     defaultValue = None,
     argumentType = StringType,
     fromInput = coercedScalaInput,
@@ -54,7 +55,7 @@ trait MutationType {
   )
   private val stateArgument: Argument[InputState] = Argument(
     name = "state",
-    description = None, // TODO fill in the documentation
+    description = Some("The deposit's state to be updated."),
     defaultValue = None,
     argumentType = InputStateType,
     fromInput = InputStateFromInput,
@@ -63,10 +64,19 @@ trait MutationType {
   )
   private val ingestStepArgument: Argument[InputIngestStep] = Argument(
     name = "ingestStep",
-    description = None, // TODO fill in the documentation
+    description = Some("The ingest step to be updated."),
     defaultValue = None,
     argumentType = IngestStepInputType,
     fromInput = InputIngestStepFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val identifierArgument: Argument[InputIdentifier] = Argument(
+    name = "identifier",
+    description = Some("The identifier to be added."),
+    defaultValue = None,
+    argumentType = InputIdentifierType,
+    fromInput = InputIdentifierFromInput,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
@@ -102,6 +112,16 @@ trait MutationType {
     fieldType = OptionType(IngestStepType),
     resolve = updateIngestStep,
   )
+  private val addIdentifierField: Field[DataContext, Unit] = Field(
+    name = "addIdentifier",
+    description = Some("Add an identifier to the deposit identified by 'id'."),
+    arguments = List(
+      depositIdArgument,
+      identifierArgument,
+    ),
+    fieldType = OptionType(IdentifierObjectType),
+    resolve = addIdentifier,
+  )
 
   private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
     val repository = context.ctx.deposits
@@ -131,6 +151,15 @@ trait MutationType {
     repository.setIngestStep(depositId, ingestStep)
   }
 
+  private def addIdentifier(context: Context[DataContext, Unit]): Option[Identifier] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val identifier = context.arg(identifierArgument)
+
+    repository.addIdentifier(depositId, identifier)
+  }
+
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(
     name = "Mutation",
     description = "The root query for implementing GraphQL mutations.",
@@ -138,6 +167,7 @@ trait MutationType {
       addDepositField,
       updateStateField,
       updateIngestStepField,
+      addIdentifierField,
     ),
   )
 }

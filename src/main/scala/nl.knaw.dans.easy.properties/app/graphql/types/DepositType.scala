@@ -17,17 +17,29 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.state.State
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay._
-import sangria.schema.{ Context, DeferredValue, Field, ObjectType, OptionType }
+import sangria.schema.{ Argument, Context, DeferredValue, Field, ListType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DepositType {
-  this: DepositorType with StateType with IngestStepType with NodeType with MetaTypes with Scalars =>
+  this: DepositorType with StateType with IngestStepType with IdentifierType with NodeType with MetaTypes with Scalars =>
+
+  private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
+    name = "type",
+    argumentType = IdentifierTypeType,
+    description = Some("Find the identifier with this specific type."),
+    defaultValue = None,
+    fromInput = coercedScalaInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
 
   private val stateField: Field[DataContext, Deposit] = Field(
     name = "state",
@@ -60,6 +72,19 @@ trait DepositType {
     fieldType = DepositorType,
     description = Option("Information about the depositor that submitted this deposit."),
     resolve = getDepositor,
+  )
+  private val identifierField: Field[DataContext, Deposit] = Field(
+    name = "identifier",
+    description = Some("Return the identifier of the given type related to this deposit"),
+    arguments = List(identifierTypeArgument),
+    fieldType = OptionType(IdentifierObjectType),
+    resolve = getIdentifier,
+  )
+  private val identifiersField: Field[DataContext, Deposit] = Field(
+    name = "identifiers",
+    description = Some("List the identifiers related to this deposit"),
+    fieldType = ListType(IdentifierObjectType),
+    resolve = getIdentifiers,
   )
 
   private def getCurrentState(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[State]] = {
@@ -94,6 +119,21 @@ trait DepositType {
     context.value.depositorId
   }
 
+  private def getIdentifier(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Identifier]] = {
+    val depositId = context.value.id
+    val idType = context.arg(identifierTypeArgument)
+
+    DeferredValue(fetchIdentifiersByType.defer(depositId -> idType))
+      .map { case (_, identifier) => identifier }
+  }
+
+  private def getIdentifiers(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[Identifier]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchIdentifiersByDepositId.defer(depositId))
+      .map { case (_, identifiers) => identifiers }
+  }
+
   implicit object DepositIdentifiable extends Identifiable[Deposit] {
     override def id(deposit: Deposit): String = deposit.id.toString
   }
@@ -113,6 +153,8 @@ trait DepositType {
       ingestStepField,
       ingestStepsField,
       depositorField,
+      identifierField,
+      identifiersField,
     ),
   )
 

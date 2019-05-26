@@ -1,0 +1,13 @@
+query {
+    node(id: "SWRlbnRpZmllcjoxMg==") {
+        ... on Identifier {
+            id
+            type
+            value
+            timestamp
+            deposit {
+                depositId
+            }
+        }
+    }
+}

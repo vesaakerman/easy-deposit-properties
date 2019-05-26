@@ -22,6 +22,7 @@ import sangria.schema._
 object GraphQLSchema extends Scalars
   with NodeType
   with MetaTypes
+  with IdentifierType
   with IngestStepType
   with StateType
   with DepositorType
@@ -33,5 +34,6 @@ object GraphQLSchema extends Scalars
   val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(
     fetchCurrentStates, fetchAllStates,
     fetchCurrentIngestSteps, fetchAllIngestSteps,
+    fetchIdentifiersByDepositId, fetchIdentifiersByType,
   )
 }

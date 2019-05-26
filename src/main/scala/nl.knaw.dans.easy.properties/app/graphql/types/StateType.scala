@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.state.StateFilter.StateFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, state }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
@@ -188,7 +188,7 @@ trait StateType {
     override def fromResult(node: marshaller.Node): InputState = {
       val ad = node.asInstanceOf[Map[String, Any]]
 
-      state.InputState(
+      InputState(
         label = ad("label").asInstanceOf[StateLabel],
         description = ad("description").asInstanceOf[String],
         timestamp = ad("timestamp").asInstanceOf[Timestamp],

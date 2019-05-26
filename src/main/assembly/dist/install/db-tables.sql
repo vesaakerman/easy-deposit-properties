@@ -70,6 +70,7 @@ CREATE TABLE DepositIdentifier (
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
     FOREIGN KEY (identifier) REFERENCES Identifier (value),
+--    TODO add uniqueness constraint on (depositId, identifier)
 );
 
 CREATE TABLE DoiEventType (

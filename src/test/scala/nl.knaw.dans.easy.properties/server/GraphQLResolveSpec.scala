@@ -19,9 +19,11 @@ import java.util.UUID
 
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepFilter, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, State, StateFilter, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, ingestStep }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
@@ -75,14 +77,32 @@ trait GraphQLResolveSpecTestObjects {
     step = IngestStepLabel.VALIDATE,
     timestamp = DateTime.now(),
   )
-  val step2 = ingestStep.IngestStep(
+  val step2 = IngestStep(
     id = "2",
     step = IngestStepLabel.FEDORA,
     timestamp = DateTime.now(),
   )
-  val step3 = ingestStep.IngestStep(
+  val step3 = IngestStep(
     id = "3",
     step = IngestStepLabel.COMPLETED,
+    timestamp = DateTime.now(),
+  )
+  val identifier1 = Identifier(
+    id = "1",
+    idType = IdentifierType.URN,
+    idValue = "abcdef",
+    timestamp = DateTime.now(),
+  )
+  val identifier2 = Identifier(
+    id = "2",
+    idType = IdentifierType.DOI,
+    idValue = "123456",
+    timestamp = DateTime.now(),
+  )
+  val identifier3 = Identifier(
+    id = "3",
+    idType = IdentifierType.FEDORA,
+    idValue = "easy-dataset:1",
     timestamp = DateTime.now(),
   )
 }
@@ -108,7 +128,7 @@ class GraphQLResolveSpec extends TestSupportFixture
       .copyTo(graphqlExamplesDir)
   }
 
-  "graphql" should "resolve 'deposit/findDeposit/plain.graphql' with 2 calls to the repository" in {
+  "graphql" should "resolve 'deposit/findDeposit/plain.graphql' with 4 calls to the repository" in {
     val input = graphqlExamplesDir / "deposit" / "findDeposit" / "plain.graphql"
 
     inSequence {
@@ -116,7 +136,22 @@ class GraphQLResolveSpec extends TestSupportFixture
       inAnyOrder {
         repository.getCurrentState _ expects depositId1 once() returning Some(state1)
         repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
+        (repository.getIdentifiers(_: DepositId)) expects depositId1 once() returning Seq(identifier1, identifier2)
       }
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/findIdentifierWithType/plain.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "findIdentifierWithType" / "plain.graphql"
+
+    inSequence {
+      (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
+      repository.getIdentifiersForTypes _ expects Seq((depositId1, IdentifierType.DOI), (depositId1, IdentifierType.BAG_STORE)) once() returning Seq(
+        (depositId1, IdentifierType.DOI) -> Some(identifier2),
+        (depositId1, IdentifierType.BAG_STORE) -> Some(identifier1),
+      )
     }
 
     runQuery(input)
@@ -471,6 +506,17 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
+  it should "resolve 'identifier/findWithTypeAndValue/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "identifier" / "findWithTypeAndValue" / "plain.graphql"
+
+    inSequence {
+      (repository.getIdentifier(_: IdentifierType, _: String)) expects(IdentifierType.DOI, "10.5072/dans-a1b-cde2") once() returning Some(identifier2)
+      repository.getDepositByIdentifierId _ expects identifier2.id once() returning Some(deposit1)
+    }
+
+    runQuery(input)
+  }
+
   it should "resolve 'node/onDeposit.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "node" / "onDeposit.graphql"
 
@@ -482,7 +528,18 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
-  it should "resolve 'node/onIngestStep.graphql' with 2 calls to the repository" in {
+  it should "resolve 'node/onIdentifier.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "node" / "onIdentifier.graphql"
+
+    inSequence {
+      repository.getIdentifierById _ expects "12" once() returning Some(identifier2)
+      repository.getDepositByIdentifierId _ expects identifier2.id once() returning Some(deposit1)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'node/onIngestStep.graphql' with 3 calls to the repository" in {
     val input = graphqlExamplesDir / "node" / "onIngestStep.graphql"
 
     inSequence {
