@@ -17,9 +17,9 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State, StateFilter, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.state.StateFilter.StateFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
+import nl.knaw.dans.easy.properties.app.model.state._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, state }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
@@ -145,10 +145,9 @@ trait StateType {
     val stateFilter = context.arg(stateFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = stateFilter match {
-      case StateFilter.LATEST => repository.getDepositsByCurrentState(label)
-      case StateFilter.ALL => repository.getDepositsByAllStates(label)
-    }
+    val result = repository.getDeposits(
+      stateFilter = Some(DepositStateFilter(label, stateFilter))
+    )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))
   }

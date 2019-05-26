@@ -144,10 +144,9 @@ trait IngestStepType {
     val stepFilter = context.arg(ingestStepFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = stepFilter match {
-      case IngestStepFilter.LATEST => repository.getDepositsByCurrentIngestStep(step)
-      case IngestStepFilter.ALL => repository.getDepositsByAllIngestSteps(step)
-    }
+    val result = repository.getDeposits(
+      ingestStepFilter = Some(DepositIngestStepFilter(step, stepFilter))
+    )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))
   }

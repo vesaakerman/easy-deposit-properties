@@ -16,11 +16,9 @@
 package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
-import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
+import nl.knaw.dans.easy.properties.app.model._
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepFilter, InputIngestStep }
-import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State, StateFilter }
-import nl.knaw.dans.easy.properties.app.model.{ ingestStep, _ }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.collection.mutable
@@ -81,12 +79,6 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   override def getDeposit(id: DepositId): Option[Deposit] = {
     trace(id)
     depositRepo.get(id)
-  }
-
-  @deprecated
-  override def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit] = {
-    trace(depositorId)
-    depositRepo.values.filter(_.depositorId == depositorId).toSeq
   }
 
   override def addDeposit(deposit: Deposit): Option[Deposit] = {
@@ -154,48 +146,6 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatMap(depositRepo.get)
   }
 
-  @deprecated
-  override def getDepositsByCurrentState(label: StateLabel): Seq[Deposit] = {
-    trace(label)
-    stateRepo
-      .collect {
-        case (depositId, states) if states.maxByOption(_.timestamp).exists(_.label == label) => depositId
-      }
-      .toSeq
-      .flatMap(depositRepo.get)
-  }
-
-  @deprecated
-  override def getDepositsByAllStates(label: StateLabel): Seq[Deposit] = {
-    trace(label)
-    stateRepo
-      .collect {
-        case (depositId, states) if states.exists(_.label == label) => depositId
-      }
-      .toSeq
-      .flatMap(depositRepo.get)
-  }
-
-  @deprecated
-  override def getDepositsByDepositorAndCurrentState(depositorId: DepositorId, label: StateLabel): Seq[Deposit] = {
-    trace(depositorId, label)
-
-    val deposits = depositRepo.filter { case (_, deposit) => deposit.depositorId == depositorId }
-    getCurrentStates(deposits.keys.toSeq)
-      .collect { case (depositId, Some(State(_, `label`, _, _))) => deposits.get(depositId) }
-      .flatten
-  }
-
-  @deprecated
-  override def getDepositsByDepositorAndAllStates(depositorId: DepositorId, label: StateLabel): Seq[Deposit] = {
-    trace(depositorId, label)
-
-    val deposits = depositRepo.filter { case (_, deposit) => deposit.depositorId == depositorId }
-    getAllStates(deposits.keys.toSeq)
-      .collect { case (depositId, states) if states.exists(_.label == label) => deposits.get(depositId) }
-      .flatten
-  }
-
   override def getIngestStepById(id: String): Option[IngestStep] = {
     trace(id)
     stepRepo.values.toStream.flatten.find(_.id == id)
@@ -248,28 +198,6 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .collectFirst {
         case (depositId, steps) if steps.exists(_.id == id) => depositId
       }
-      .flatMap(depositRepo.get)
-  }
-
-  @deprecated
-  override def getDepositsByCurrentIngestStep(label: IngestStepLabel): Seq[Deposit] = {
-    trace(label)
-    stepRepo
-      .collect {
-        case (depositId, steps) if steps.maxByOption(_.timestamp).exists(_.step == label) => depositId
-      }
-      .toSeq
-      .flatMap(depositRepo.get)
-  }
-
-  @deprecated
-  override def getDepositsByAllIngestSteps(label: IngestStepLabel): Seq[Deposit] = {
-    trace(label)
-    stepRepo
-      .collect {
-        case (depositId, steps) if steps.exists(_.step == label) => depositId
-      }
-      .toSeq
       .flatMap(depositRepo.get)
   }
 }

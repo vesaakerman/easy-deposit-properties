@@ -17,7 +17,6 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, StateFilter }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
 import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Context, Field, ObjectType, OptionType, StringType, fields }
@@ -51,14 +50,11 @@ trait DepositorType {
     val ingestStepInput = context.arg(depositIngestStepFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = stateInput match {
-      case Some(DepositStateFilter(label, StateFilter.LATEST)) =>
-        repository.getDepositsByDepositorAndCurrentState(depositorId, label)
-      case Some(DepositStateFilter(label, StateFilter.ALL)) =>
-        repository.getDepositsByDepositorAndAllStates(depositorId, label)
-      case None =>
-        repository.getDepositsByDepositor(depositorId)
-    }
+    val result = repository.getDeposits(
+      depositorId = Some(depositorId),
+      stateFilter = stateInput,
+      ingestStepFilter = ingestStepInput,
+    )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))
   }
