@@ -88,6 +88,13 @@ trait StateType {
     astNodes = Vector.empty,
   )
 
+  private val depositField: Field[DataContext, State] = Field(
+    name = "deposit",
+    description = Some("Returns the deposit that is associated with this particular ingest step"),
+    fieldType = OptionType(DepositType),
+    resolve = getDepositByState,
+  )
+
   private val depositsField: Field[DataContext, State] = Field(
     name = "deposits",
     description = Some("List all deposits with the same current state label."),
@@ -98,6 +105,14 @@ trait StateType {
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
   )
+
+  private def getDepositByState(context: Context[DataContext, State]): Option[Deposit] = {
+    val repository = context.ctx.deposits
+
+    val stepId = context.value.id
+
+    repository.getDepositByStateId(stepId)
+  }
 
   private def getDeposits(context: Context[DataContext, State]): Seq[Deposit] = {
     val repository = context.ctx.deposits
@@ -127,6 +142,7 @@ trait StateType {
     DocumentField("timestamp", "The timestamp at which the deposit got into this state."),
     AddFields(
       Node.globalIdField[DataContext, State],
+      depositField,
       depositsField,
     ),
   )

@@ -100,6 +100,15 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     else Option.empty
   }
 
+  override def getDepositByStateId(id: String): Option[Deposit] = {
+    trace(id)
+    stateRepo
+      .collectFirst {
+        case (depositId, states) if states.exists(_.id == id) => depositId
+      }
+      .flatMap(depositRepo.get)
+  }
+
   override def getDepositsByCurrentState(label: StateLabel): Seq[Deposit] = {
     trace(label)
     stateRepo
