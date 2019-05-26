@@ -20,8 +20,8 @@ import java.util.UUID
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, IngestStep, State }
+import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, IngestStep, state }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing

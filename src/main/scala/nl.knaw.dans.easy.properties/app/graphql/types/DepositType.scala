@@ -17,7 +17,8 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId, IngestStep, State }
+import nl.knaw.dans.easy.properties.app.model.state.State
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId, IngestStep }
 import sangria.macros.derive._
 import sangria.relay._
 import sangria.schema.{ Context, DeferredValue, Field, ObjectType, OptionType }

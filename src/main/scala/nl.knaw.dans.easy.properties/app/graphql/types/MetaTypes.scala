@@ -16,8 +16,9 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel.StepLabel
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, IngestStep, State, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.state.State
+import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, IngestStep, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }

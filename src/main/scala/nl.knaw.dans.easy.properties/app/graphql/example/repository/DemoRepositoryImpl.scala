@@ -18,8 +18,8 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 import java.util.{ TimeZone, UUID }
 
 import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import org.joda.time.{ DateTime, DateTimeZone }
 
 import scala.collection.mutable

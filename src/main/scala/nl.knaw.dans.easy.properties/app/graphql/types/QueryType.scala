@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, StateFilter }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay.{ Connection, ConnectionArgs }
@@ -55,7 +56,7 @@ trait QueryType {
     name = "deposits",
     description = Some("List all registered deposits."),
     arguments = List(
-      stateInputArgument,
+      depositStateFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -82,13 +83,13 @@ trait QueryType {
   private def getDeposits(context: Context[DataContext, Unit]): Seq[Deposit] = {
     val repository = context.ctx.deposits
 
-    val stateInput = context.arg(stateInputArgument)
+    val stateInput = context.arg(depositStateFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = stateInput match {
-      case Some(StateInput(label, StateFilter.LATEST)) =>
+      case Some(DepositStateFilter(label, StateFilter.LATEST)) =>
         repository.getDepositsByCurrentState(label)
-      case Some(StateInput(label, StateFilter.ALL)) =>
+      case Some(DepositStateFilter(label, StateFilter.ALL)) =>
         repository.getDepositsByAllStates(label)
       case None =>
         repository.getAllDeposits

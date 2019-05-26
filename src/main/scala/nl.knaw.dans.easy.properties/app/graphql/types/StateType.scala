@@ -17,9 +17,10 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, InputState, State, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State, StateFilter, StateLabel }
+import nl.knaw.dans.easy.properties.app.model.state.StateFilter.StateFilter
+import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, state }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
@@ -33,6 +34,13 @@ import scala.concurrent.Future
 
 trait StateType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
+
+  implicit val StateFilterType: EnumType[StateFilter] = deriveEnumType(
+    EnumTypeDescription("Mark a query to only search through current states, or also to include past states."),
+    DocumentValue("LATEST", "Only search through current states."),
+    DocumentValue("ALL", "Search through both current and past states."),
+  )
+  implicit val StateFilterToInput: ToInput[StateFilter, _] = new ScalarToInput
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the state of a deposit."),
@@ -66,20 +74,25 @@ trait StateType {
     }
   })
 
-  @GraphQLDescription("Mark a query to only search through current states, or also to include past states.")
-  object StateFilter extends Enumeration {
-    type StateFilter = Value
+  implicit val DepositStateFilterType: InputObjectType[DepositStateFilter] = deriveInputObjectType(
+    InputObjectTypeDescription("The label and filter to be used in searching for deposits"),
+    DocumentInputField("label", "If provided, only show deposits with this state."),
+    DocumentInputField("filter", "Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
+  )
+  implicit val DepositStateFilterFromInput: FromInput[DepositStateFilter] = new FromInput[DepositStateFilter] {
+    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
 
-    // @formatter:off
-    @GraphQLDescription("Only search through current states.")
-    val LATEST: StateFilter = Value("LATEST")
-    @GraphQLDescription("Search through both current and past states.")
-    val ALL   : StateFilter = Value("ALL")
-    // @formatter:on
+    def fromResult(node: marshaller.Node): DepositStateFilter = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      DepositStateFilter(
+        label = ad("label").asInstanceOf[StateLabel],
+        filter = ad("filter").asInstanceOf[Option[StateFilter]].getOrElse(StateFilter.LATEST),
+      )
+    }
   }
-  implicit val StateFilterType: EnumType[StateFilter.Value] = deriveEnumType()
-  implicit val StateFilterToInput: ToInput[StateFilter.Value, _] = new ScalarToInput
-  private val stateFilterArgument: Argument[StateFilter.Value] = Argument(
+
+  private val stateFilterArgument: Argument[StateFilter] = Argument(
     name = "stateFilter",
     argumentType = StateFilterType,
     description = Some("Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
@@ -88,32 +101,13 @@ trait StateType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-
-  case class StateInput(label: StateLabel, filter: StateFilter.Value = StateFilter.LATEST)
-  implicit val StateInputType: InputObjectType[StateInput] = deriveInputObjectType(
-    InputObjectTypeDescription("The label and filter to be used in searching for deposits"),
-    DocumentInputField("label", "If provided, only show deposits with this state."),
-    DocumentInputField("filter", "Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
-  )
-  implicit val StateInputFromInput: FromInput[StateInput] = new FromInput[StateInput] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): StateInput = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      StateInput(
-        label = ad("label").asInstanceOf[StateLabel],
-        filter = ad("filter").asInstanceOf[Option[StateFilter.Value]].getOrElse(StateFilter.LATEST),
-      )
-    }
-  }
-  val stateInputArgument: Argument[Option[StateInput]] = {
+  val depositStateFilterArgument: Argument[Option[DepositStateFilter]] = {
     Argument(
       name = "state",
-      argumentType = OptionInputType(StateInputType),
+      argumentType = OptionInputType(DepositStateFilterType),
       description = Some("List only those deposits that have this specified label."),
       defaultValue = None,
-      fromInput = optionInput(inputObjectResultInput(StateInputFromInput)),
+      fromInput = optionInput(inputObjectResultInput(DepositStateFilterFromInput)),
       astDirectives = Vector.empty,
       astNodes = Vector.empty,
     )
@@ -125,7 +119,6 @@ trait StateType {
     fieldType = OptionType(DepositType),
     resolve = getDepositByState,
   )
-
   private val depositsField: Field[DataContext, State] = Field(
     name = "deposits",
     description = Some("List all deposits with the same current state label."),
@@ -196,8 +189,8 @@ trait StateType {
     override def fromResult(node: marshaller.Node): InputState = {
       val ad = node.asInstanceOf[Map[String, Any]]
 
-      InputState(
-        label = ad("label").asInstanceOf[StateLabel.Value],
+      state.InputState(
+        label = ad("label").asInstanceOf[StateLabel],
         description = ad("description").asInstanceOf[String],
         timestamp = ad("timestamp").asInstanceOf[Timestamp],
       )
