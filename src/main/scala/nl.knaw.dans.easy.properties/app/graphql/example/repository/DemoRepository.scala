@@ -17,10 +17,10 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
-import nl.knaw.dans.easy.properties.app.model.{ ingestStep, _ }
-import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
-import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepFilter, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
+import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State, StateFilter }
+import nl.knaw.dans.easy.properties.app.model.{ ingestStep, _ }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.collection.mutable
@@ -36,11 +36,54 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.values.toSeq
   }
 
+  def getDeposits(depositorId: Option[DepositorId] = Option.empty,
+                  stateFilter: Option[DepositStateFilter] = Option.empty,
+                  ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
+                 ): Seq[Deposit] = {
+    trace(depositorId, stateFilter, ingestStepFilter)
+
+    val deposits = getAllDeposits
+
+    val fromDepositor = depositorId match {
+      case Some(depositor) => deposits.withFilter(_.depositorId == depositor)
+      case None => deposits.withFilter(_ => true)
+    }
+
+    val withState = stateFilter match {
+      case Some(DepositStateFilter(label, filter)) =>
+        fromDepositor.withFilter(d => {
+          val states = stateRepo.getOrElse(d.id, Seq.empty)
+          val selectedStates = filter match {
+            case StateFilter.LATEST => states.maxByOption(_.timestamp).toSeq
+            case StateFilter.ALL => states
+          }
+          selectedStates.exists(_.label == label)
+        })
+      case None => fromDepositor
+    }
+
+    val withIngestStep = ingestStepFilter match {
+      case Some(DepositIngestStepFilter(step, filter)) =>
+        withState.withFilter(d => {
+          val steps = stepRepo.getOrElse(d.id, Seq.empty)
+          val selectedSteps = filter match {
+            case IngestStepFilter.LATEST => steps.maxByOption(_.timestamp).toSeq
+            case IngestStepFilter.ALL => steps
+          }
+          selectedSteps.exists(_.step == step)
+        })
+      case None => withState
+    }
+
+    withIngestStep.map(identity)
+  }
+
   override def getDeposit(id: DepositId): Option[Deposit] = {
     trace(id)
     depositRepo.get(id)
   }
 
+  @deprecated
   override def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit] = {
     trace(depositorId)
     depositRepo.values.filter(_.depositorId == depositorId).toSeq
@@ -111,6 +154,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatMap(depositRepo.get)
   }
 
+  @deprecated
   override def getDepositsByCurrentState(label: StateLabel): Seq[Deposit] = {
     trace(label)
     stateRepo
@@ -121,6 +165,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatMap(depositRepo.get)
   }
 
+  @deprecated
   override def getDepositsByAllStates(label: StateLabel): Seq[Deposit] = {
     trace(label)
     stateRepo
@@ -131,6 +176,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatMap(depositRepo.get)
   }
 
+  @deprecated
   override def getDepositsByDepositorAndCurrentState(depositorId: DepositorId, label: StateLabel): Seq[Deposit] = {
     trace(depositorId, label)
 
@@ -140,6 +186,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatten
   }
 
+  @deprecated
   override def getDepositsByDepositorAndAllStates(depositorId: DepositorId, label: StateLabel): Seq[Deposit] = {
     trace(depositorId, label)
 
@@ -204,6 +251,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatMap(depositRepo.get)
   }
 
+  @deprecated
   override def getDepositsByCurrentIngestStep(label: IngestStepLabel): Seq[Deposit] = {
     trace(label)
     stepRepo
@@ -214,6 +262,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatMap(depositRepo.get)
   }
 
+  @deprecated
   override def getDepositsByAllIngestSteps(label: IngestStepLabel): Seq[Deposit] = {
     trace(label)
     stepRepo

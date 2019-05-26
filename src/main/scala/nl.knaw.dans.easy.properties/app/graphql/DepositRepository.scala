@@ -15,18 +15,29 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
-import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel.StepLabel
 import nl.knaw.dans.easy.properties.app.model._
-import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
+import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State, StateFilter }
 
 trait DepositRepository {
 
   def getAllDeposits: Seq[Deposit]
 
+  def getDeposits(depositorId: Option[DepositorId] = Option.empty,
+                  stateFilter: Option[DepositStateFilter] = Option.empty,
+                  ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
+                 ): Seq[Deposit]
+
   def getDeposit(id: DepositId): Option[Deposit]
 
-  def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit]
+  @deprecated
+  def getDepositsByDepositor(depositorId: DepositorId): Seq[Deposit] = {
+    getDeposits(
+      depositorId = Some(depositorId),
+    )
+  }
 
   def addDeposit(deposit: Deposit): Option[Deposit]
 
@@ -44,13 +55,35 @@ trait DepositRepository {
 
   def getDepositByStateId(id: String): Option[Deposit]
 
-  def getDepositsByCurrentState(state: StateLabel): Seq[Deposit]
+  @deprecated
+  def getDepositsByCurrentState(state: StateLabel): Seq[Deposit] = {
+    getDeposits(
+      stateFilter = Some(DepositStateFilter(state, filter = StateFilter.LATEST))
+    )
+  }
 
-  def getDepositsByAllStates(state: StateLabel): Seq[Deposit]
+  @deprecated
+  def getDepositsByAllStates(state: StateLabel): Seq[Deposit] = {
+    getDeposits(
+      stateFilter = Some(DepositStateFilter(state, filter = StateFilter.ALL))
+    )
+  }
 
-  def getDepositsByDepositorAndCurrentState(depositorId: DepositorId, state: StateLabel): Seq[Deposit]
+  @deprecated
+  def getDepositsByDepositorAndCurrentState(depositorId: DepositorId, state: StateLabel): Seq[Deposit] = {
+    getDeposits(
+      depositorId = Some(depositorId),
+      stateFilter = Some(DepositStateFilter(state, filter = StateFilter.LATEST)),
+    )
+  }
 
-  def getDepositsByDepositorAndAllStates(depositorId: DepositorId, state: StateLabel): Seq[Deposit]
+  @deprecated
+  def getDepositsByDepositorAndAllStates(depositorId: DepositorId, state: StateLabel): Seq[Deposit] = {
+    getDeposits(
+      depositorId = Some(depositorId),
+      stateFilter = Some(DepositStateFilter(state, filter = StateFilter.LATEST)),
+    )
+  }
 
   def getIngestStepById(id: String): Option[IngestStep]
 
@@ -66,7 +99,9 @@ trait DepositRepository {
 
   def getDepositByIngestStepId(id: String): Option[Deposit]
 
-  def getDepositsByCurrentIngestStep(label: StepLabel): Seq[Deposit]
+  @deprecated
+  def getDepositsByCurrentIngestStep(label: IngestStepLabel): Seq[Deposit]
 
-  def getDepositsByAllIngestSteps(label: StepLabel): Seq[Deposit]
+  @deprecated
+  def getDepositsByAllIngestSteps(label: IngestStepLabel): Seq[Deposit]
 }
