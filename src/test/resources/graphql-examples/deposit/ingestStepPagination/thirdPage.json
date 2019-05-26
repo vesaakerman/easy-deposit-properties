@@ -1,0 +1,17 @@
+{
+  "data": {
+    "deposit": {
+      "ingestSteps": {
+        "totalCount": 7,
+        "pageInfo": {
+          "startCursor": null,
+          "endCursor": null,
+          "hasNextPage": false,
+          "hasPreviousPage": false
+        },
+        "edges": [
+        ]
+      }
+    }
+  }
+}

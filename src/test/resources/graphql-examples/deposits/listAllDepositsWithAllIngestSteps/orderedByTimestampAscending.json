@@ -1,0 +1,103 @@
+{
+  "data": {
+    "deposits": {
+      "nodes": [
+        {
+          "depositId": "00000000-0000-0000-0000-000000000001",
+          "ingestSteps": {
+            "nodes": [
+              {
+                "step": "VALIDATE",
+                "timestamp": "2019-01-01T04:05:00.000+01:00"
+              },
+              {
+                "step": "PID_GENERATOR",
+                "timestamp": "2019-01-01T04:06:00.000+01:00"
+              },
+              {
+                "step": "FEDORA",
+                "timestamp": "2019-01-01T04:07:00.000+01:00"
+              },
+              {
+                "step": "SPRINGFIELD",
+                "timestamp": "2019-01-01T04:08:00.000+01:00"
+              },
+              {
+                "step": "BAGSTORE",
+                "timestamp": "2019-01-01T04:09:00.000+01:00"
+              },
+              {
+                "step": "SOLR4FILES",
+                "timestamp": "2019-01-01T04:10:00.000+01:00"
+              },
+              {
+                "step": "COMPLETED",
+                "timestamp": "2019-01-01T04:11:00.000+01:00"
+              }
+            ]
+          }
+        },
+        {
+          "depositId": "00000000-0000-0000-0000-000000000002",
+          "ingestSteps": {
+            "nodes": [
+              {
+                "step": "VALIDATE",
+                "timestamp": "2019-02-02T02:05:00.000+01:00"
+              },
+              {
+                "step": "PID_GENERATOR",
+                "timestamp": "2019-02-02T02:06:00.000+01:00"
+              },
+              {
+                "step": "FEDORA",
+                "timestamp": "2019-02-02T02:07:00.000+01:00"
+              },
+              {
+                "step": "SPRINGFIELD",
+                "timestamp": "2019-02-02T02:08:00.000+01:00"
+              },
+              {
+                "step": "BAGSTORE",
+                "timestamp": "2019-02-02T02:09:00.000+01:00"
+              },
+              {
+                "step": "SOLR4FILES",
+                "timestamp": "2019-02-02T02:10:00.000+01:00"
+              },
+              {
+                "step": "COMPLETED",
+                "timestamp": "2019-02-02T02:11:00.000+01:00"
+              }
+            ]
+          }
+        },
+        {
+          "depositId": "00000000-0000-0000-0000-000000000003",
+          "ingestSteps": {
+            "nodes": [
+            ]
+          }
+        },
+        {
+          "depositId": "00000000-0000-0000-0000-000000000004",
+          "ingestSteps": {
+            "nodes": [
+            ]
+          }
+        },
+        {
+          "depositId": "00000000-0000-0000-0000-000000000005",
+          "ingestSteps": {
+            "nodes": [
+              {
+                "step": "VALIDATE",
+                "timestamp": "2019-05-05T04:05:00.000+02:00"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

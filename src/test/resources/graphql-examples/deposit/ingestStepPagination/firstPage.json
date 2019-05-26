@@ -1,0 +1,41 @@
+{
+  "data": {
+    "deposit": {
+      "ingestSteps": {
+        "totalCount": 7,
+        "pageInfo": {
+          "startCursor": "YXJyYXljb25uZWN0aW9uOjA=",
+          "endCursor": "YXJyYXljb25uZWN0aW9uOjM=",
+          "hasNextPage": true,
+          "hasPreviousPage": false
+        },
+        "edges": [
+          {
+            "node": {
+              "step": "VALIDATE",
+              "timestamp": "2019-01-01T04:05:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "step": "PID_GENERATOR",
+              "timestamp": "2019-01-01T04:06:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "step": "FEDORA",
+              "timestamp": "2019-01-01T04:07:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "step": "SPRINGFIELD",
+              "timestamp": "2019-01-01T04:08:00.000+01:00"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

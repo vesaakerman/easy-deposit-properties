@@ -19,8 +19,9 @@ import java.util.UUID
 
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
+import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, IngestStep, State }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
@@ -69,6 +70,21 @@ trait GraphQLResolveSpecTestObjects {
     description = "your deposit is submitted",
     timestamp = DateTime.now(),
   )
+  val step1 = IngestStep(
+    id = "1",
+    step = StepLabel.VALIDATE,
+    timestamp = DateTime.now(),
+  )
+  val step2 = IngestStep(
+    id = "2",
+    step = StepLabel.FEDORA,
+    timestamp = DateTime.now(),
+  )
+  val step3 = IngestStep(
+    id = "3",
+    step = StepLabel.COMPLETED,
+    timestamp = DateTime.now(),
+  )
 }
 
 class GraphQLResolveSpec extends TestSupportFixture
@@ -98,6 +114,51 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       repository.getCurrentState _ expects depositId1 once() returning Some(state1)
+      repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/ingestStepPagination/firstPage.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "ingestStepPagination" / "firstPage.graphql"
+
+    inSequence {
+      repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
+      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3, step1, step2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/ingestStepPagination/secondPage.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "ingestStepPagination" / "secondPage.graphql"
+
+    inSequence {
+      repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
+      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3, step1, step2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/ingestStepPagination/thirdPage.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "ingestStepPagination" / "thirdPage.graphql"
+
+    inSequence {
+      repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
+      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3, step1, step2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/listAllIngestStepsOfDeposit/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "listAllIngestStepsOfDeposit" / "plain.graphql"
+
+    inSequence {
+      (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
+      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3)
     }
 
     runQuery(input)
@@ -109,6 +170,18 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/listDepositsWithIngestStepFilterAll/plain.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "listDepositsWithIngestStepFilterAll" / "plain.graphql"
+
+    inSequence {
+      (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
+      repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
+      repository.getDepositsByAllIngestSteps _ expects StepLabel.VALIDATE once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)
@@ -129,6 +202,18 @@ class GraphQLResolveSpec extends TestSupportFixture
     }
 
     runQuery(query)
+  }
+
+  it should "resolve 'deposit/listDepositsWithSameIngestStep/plain.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "listDepositsWithSameIngestStep" / "plain.graphql"
+
+    inSequence {
+      (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
+      repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
+      repository.getDepositsByCurrentIngestStep _ expects StepLabel.VALIDATE once() returning Seq(deposit1, deposit3)
+    }
+
+    runQuery(input)
   }
 
   it should "resolve 'deposit/listDepositsWithSameState/plain.graphql' with 3 calls to the repository" in {
@@ -155,7 +240,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
-  it should "resolve 'deposit/statePagination/firstPage.graphql' with 3 calls to the repository" in {
+  it should "resolve 'deposit/statePagination/firstPage.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "deposit" / "statePagination" / "firstPage.graphql"
 
     inSequence {
@@ -166,7 +251,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
-  it should "resolve 'deposit/statePagination/secondPage.graphql' with 3 calls to the repository" in {
+  it should "resolve 'deposit/statePagination/secondPage.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "deposit" / "statePagination" / "secondPage.graphql"
 
     inSequence {
@@ -177,7 +262,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
-  it should "resolve 'deposit/statePagination/thirdPage.graphql' with 3 calls to the repository" in {
+  it should "resolve 'deposit/statePagination/thirdPage.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "deposit" / "statePagination" / "thirdPage.graphql"
 
     inSequence {
@@ -187,6 +272,8 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     runQuery(input)
   }
+
+  ///
 
   it should "resolve 'deposits/listDepositsWithDepositor/plain.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "deposits" / "listDepositsWithDepositor" / "plain.graphql"
@@ -211,6 +298,26 @@ class GraphQLResolveSpec extends TestSupportFixture
         depositId1 -> Some(state1),
         depositId2 -> Some(state2),
         depositId3 -> Some(state3),
+      )
+      repository.getCurrentIngestSteps _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(step1),
+        depositId2 -> Some(step2),
+        depositId3 -> Some(step3),
+      )
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/listAllDepositsWithAllIngestSteps/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "listAllDepositsWithAllIngestSteps" / "plain.graphql"
+
+    inSequence {
+      repository.getAllDeposits _ expects() once() returning Seq(deposit1, deposit2, deposit3)
+      (repository.getAllIngestSteps(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(step1, step2),
+        depositId2 -> Seq(step2, step3),
+        depositId3 -> Seq(step3, step1),
       )
     }
 
@@ -292,7 +399,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "pagination" / "firstPage.graphql"
 
     inSequence {
-      repository.getAllDeposits _ expects () once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+      repository.getAllDeposits _ expects() once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
     }
 
     runQuery(input)
@@ -302,7 +409,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "pagination" / "secondPage.graphql"
 
     inSequence {
-      repository.getAllDeposits _ expects () once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+      repository.getAllDeposits _ expects() once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
     }
 
     runQuery(input)
@@ -312,7 +419,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "pagination" / "thirdPage.graphql"
 
     inSequence {
-      repository.getAllDeposits _ expects () once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+      repository.getAllDeposits _ expects() once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
     }
 
     runQuery(input)
@@ -324,6 +431,18 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposit _ expects depositId2 once() returning Some(deposit2)
       repository.getCurrentState _ expects depositId2 once() returning Some(state2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'node/onIngestStep.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "node" / "onIngestStep.graphql"
+
+    inSequence {
+      repository.getIngestStepById _ expects "10" once() returning Some(step1)
+      repository.getDepositByIngestStepId _ expects step1.id once() returning Some(deposit1)
+      repository.getDepositsByAllIngestSteps _ expects StepLabel.VALIDATE returning Seq(deposit1, deposit2)
     }
 
     runQuery(input)

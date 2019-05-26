@@ -9,7 +9,12 @@
           },
           "state": {
             "label": "ARCHIVED",
-            "description": "deposit is archived"
+            "description": "deposit is archived",
+            "timestamp": "2019-02-02T03:03:00.000+01:00"
+          },
+          "ingestStep": {
+            "step": "COMPLETED",
+            "timestamp": "2019-02-02T02:11:00.000+01:00"
           }
         },
         {
@@ -19,7 +24,12 @@
           },
           "state": {
             "label": "REJECTED",
-            "description": "deposit is rejected"
+            "description": "deposit is rejected",
+            "timestamp": "2019-05-05T03:03:00.000+02:00"
+          },
+          "ingestStep": {
+            "step": "VALIDATE",
+            "timestamp": "2019-05-05T04:05:00.000+02:00"
           }
         },
         {
@@ -29,8 +39,10 @@
           },
           "state": {
             "label": "ARCHIVED",
-            "description": "deposit is archived"
-          }
+            "description": "deposit is archived",
+            "timestamp": "2019-04-04T02:02:00.000+02:00"
+          },
+          "ingestStep": null
         },
         {
           "depositId": "00000000-0000-0000-0000-000000000001",
@@ -39,7 +51,12 @@
           },
           "state": {
             "label": "ARCHIVED",
-            "description": "deposit is archived"
+            "description": "deposit is archived",
+            "timestamp": "2019-01-01T05:05:00.000+01:00"
+          },
+          "ingestStep": {
+            "step": "COMPLETED",
+            "timestamp": "2019-01-01T04:11:00.000+01:00"
           }
         },
         {
@@ -49,8 +66,10 @@
           },
           "state": {
             "label": "INVALID",
-            "description": "deposit is invalid"
-          }
+            "description": "deposit is invalid",
+            "timestamp": "2019-03-03T02:02:00.000+01:00"
+          },
+          "ingestStep": null
         }
       ]
     }

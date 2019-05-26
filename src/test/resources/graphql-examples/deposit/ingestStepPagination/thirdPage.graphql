@@ -1,0 +1,19 @@
+query {
+    deposit(id: "00000000-0000-0000-0000-000000000001") {
+        ingestSteps(first: 4 after: "YXJyYXljb25uZWN0aW9uOjY=") {
+            totalCount
+            pageInfo {
+                startCursor
+                endCursor
+                hasNextPage
+                hasPreviousPage
+            }
+            edges {
+                node {
+                    step
+                    timestamp
+                }
+            }
+        }
+    }
+}

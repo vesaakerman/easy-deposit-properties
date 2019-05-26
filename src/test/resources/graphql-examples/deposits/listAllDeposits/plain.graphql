@@ -8,6 +8,11 @@ query ListAllDeposits {
             state {
                 label
                 description
+                timestamp
+            }
+            ingestStep {
+                step
+                timestamp
             }
         }
     }

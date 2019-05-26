@@ -8,6 +8,11 @@ query ListAllDepositsOrderedByDepositIdDescending {
             state {
                 label
                 description
+                timestamp
+            }
+            ingestStep {
+                step
+                timestamp
             }
         }
     }

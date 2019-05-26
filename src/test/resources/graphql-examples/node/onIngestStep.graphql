@@ -1,0 +1,16 @@
+query {
+    node(id: "SW5nZXN0U3RlcDoxMA==") {
+        ... on IngestStep {
+            step
+            timestamp
+            deposit {
+                depositId
+            }
+            deposits(ingestStepFilter: ALL, orderBy: {field: DEPOSIT_ID, direction: ASC}) {
+                nodes {
+                    depositId
+                }
+            }
+        }
+    }
+}

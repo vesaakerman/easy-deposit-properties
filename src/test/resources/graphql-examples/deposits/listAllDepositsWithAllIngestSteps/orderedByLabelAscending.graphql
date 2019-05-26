@@ -1,0 +1,13 @@
+query {
+    deposits(orderBy: {field: DEPOSIT_ID, direction: ASC}) {
+        nodes {
+            depositId
+            ingestSteps(orderBy: {field: STEP, direction: ASC}) {
+                nodes {
+                    step
+                    timestamp
+                }
+            }
+        }
+    }
+}

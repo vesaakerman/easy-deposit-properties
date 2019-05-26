@@ -1,0 +1,35 @@
+{
+  "data": {
+    "deposit": {
+      "ingestSteps": {
+        "totalCount": 7,
+        "pageInfo": {
+          "startCursor": "YXJyYXljb25uZWN0aW9uOjQ=",
+          "endCursor": "YXJyYXljb25uZWN0aW9uOjY=",
+          "hasNextPage": false,
+          "hasPreviousPage": false
+        },
+        "edges": [
+          {
+            "node": {
+              "step": "BAGSTORE",
+              "timestamp": "2019-01-01T04:09:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "step": "SOLR4FILES",
+              "timestamp": "2019-01-01T04:10:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "step": "COMPLETED",
+              "timestamp": "2019-01-01T04:11:00.000+01:00"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

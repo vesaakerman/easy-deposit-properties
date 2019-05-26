@@ -10,5 +10,10 @@ query Deposit {
             description
             timestamp
         }
+        ingestStep {
+            id
+            step
+            timestamp
+        }
     }
 }
