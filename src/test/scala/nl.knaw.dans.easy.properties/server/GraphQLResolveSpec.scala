@@ -19,9 +19,9 @@ import java.util.UUID
 
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
-import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, IngestStep, state }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, ingestStep }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
@@ -72,17 +72,17 @@ trait GraphQLResolveSpecTestObjects {
   )
   val step1 = IngestStep(
     id = "1",
-    step = StepLabel.VALIDATE,
+    step = IngestStepLabel.VALIDATE,
     timestamp = DateTime.now(),
   )
-  val step2 = IngestStep(
+  val step2 = ingestStep.IngestStep(
     id = "2",
-    step = StepLabel.FEDORA,
+    step = IngestStepLabel.FEDORA,
     timestamp = DateTime.now(),
   )
-  val step3 = IngestStep(
+  val step3 = ingestStep.IngestStep(
     id = "3",
-    step = StepLabel.COMPLETED,
+    step = IngestStepLabel.COMPLETED,
     timestamp = DateTime.now(),
   )
 }
@@ -183,7 +183,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
-      repository.getDepositsByAllIngestSteps _ expects StepLabel.VALIDATE once() returning Seq(deposit1, deposit3)
+      repository.getDepositsByAllIngestSteps _ expects IngestStepLabel.VALIDATE once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)
@@ -212,7 +212,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
-      repository.getDepositsByCurrentIngestStep _ expects StepLabel.VALIDATE once() returning Seq(deposit1, deposit3)
+      repository.getDepositsByCurrentIngestStep _ expects IngestStepLabel.VALIDATE once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)
@@ -444,7 +444,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getIngestStepById _ expects "10" once() returning Some(step1)
       repository.getDepositByIngestStepId _ expects step1.id once() returning Some(deposit1)
-      repository.getDepositsByAllIngestSteps _ expects StepLabel.VALIDATE returning Seq(deposit1, deposit2)
+      repository.getDepositsByAllIngestSteps _ expects IngestStepLabel.VALIDATE returning Seq(deposit1, deposit2)
     }
 
     runQuery(input)

@@ -17,15 +17,17 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, IngestStep, InputIngestStep, Timestamp }
-import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel
+import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepFilter.IngestStepFilter
+import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepFilter, IngestStepLabel, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
 import sangria.marshalling.ToInput.ScalarToInput
-import sangria.relay.{ Connection, ConnectionArgs, ConnectionDefinition, Identifiable, Node }
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
+import sangria.relay._
+import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -33,7 +35,14 @@ import scala.concurrent.Future
 trait IngestStepType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
 
-  implicit val StepLabelType: EnumType[StepLabel.Value] = deriveEnumType(
+  implicit val IngestStepFilterType: EnumType[IngestStepFilter] = deriveEnumType(
+    EnumTypeDescription("Mark a query to only search through current ingest steps, or also to include past ingest steps."),
+    DocumentValue("LATEST", "Only search through current ingest steps."),
+    DocumentValue("ALL", "Search through both current and past ingest steps.")
+  )
+  implicit val IngestStepFilterToInput: ToInput[IngestStepFilter, _] = new ScalarToInput
+
+  implicit val StepLabelType: EnumType[IngestStepLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the ingest step."),
     DocumentValue("VALIDATE", "Started validating the deposit."),
     DocumentValue("PID_GENERATOR", "Persistent identifiers are being generated for this deposit."),
@@ -63,20 +72,7 @@ trait IngestStepType {
     }
   })
 
-  @GraphQLDescription("Mark a query to only search through current ingest steps, or also to include past ingest steps.")
-  object IngestStepFilter extends Enumeration {
-    type IngestStepFilter = Value
-
-    // @formatter:off
-    @GraphQLDescription("Only search through current ingest steps.")
-    val LATEST: IngestStepFilter = Value("LATEST")
-    @GraphQLDescription("Search through both current and past ingest steps.")
-    val ALL   : IngestStepFilter = Value("ALL")
-    // @formatter:on
-  }
-  implicit val IngestStepFilterType: EnumType[IngestStepFilter.Value] = deriveEnumType()
-  implicit val IngestStepFilterToInput: ToInput[IngestStepFilter.Value, _] = new ScalarToInput
-  private val ingestStepFilterArgument: Argument[IngestStepFilter.Value] = Argument(
+  private val ingestStepFilterArgument: Argument[IngestStepFilter] = Argument(
     name = "ingestStepFilter",
     argumentType = IngestStepFilterType,
     description = Some("Determine whether to search in current ingest steps (`LATEST`, default) or all current and past ingest steps (`ALL`)."),
@@ -162,7 +158,7 @@ trait IngestStepType {
       val ad = node.asInstanceOf[Map[String, Any]]
 
       InputIngestStep(
-        step = ad("step").asInstanceOf[StepLabel.Value],
+        step = ad("step").asInstanceOf[IngestStepLabel],
         timestamp = ad("timestamp").asInstanceOf[Timestamp],
       )
     }

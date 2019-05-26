@@ -17,8 +17,8 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import java.util.{ TimeZone, UUID }
 
-import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel
-import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.{ ingestStep, _ }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import org.joda.time.{ DateTime, DateTimeZone }
 
@@ -68,23 +68,23 @@ class DemoRepositoryImpl extends DemoRepository {
   private val state52 = State("52", StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 5, 5, 2, 2, timeZone))
   private val state53 = State("53", StateLabel.REJECTED, "deposit is rejected", new DateTime(2019, 5, 5, 3, 3, timeZone))
 
-  private val step10 = IngestStep("10", StepLabel.VALIDATE, new DateTime(2019, 1, 1, 4, 5, timeZone))
-  private val step11 = IngestStep("11", StepLabel.PID_GENERATOR, new DateTime(2019, 1, 1, 4, 6, timeZone))
-  private val step12 = IngestStep("12", StepLabel.FEDORA, new DateTime(2019, 1, 1, 4, 7, timeZone))
-  private val step13 = IngestStep("13", StepLabel.SPRINGFIELD, new DateTime(2019, 1, 1, 4, 8, timeZone))
-  private val step14 = IngestStep("14", StepLabel.BAGSTORE, new DateTime(2019, 1, 1, 4, 9, timeZone))
-  private val step15 = IngestStep("15", StepLabel.SOLR4FILES, new DateTime(2019, 1, 1, 4, 10, timeZone))
-  private val step16 = IngestStep("16", StepLabel.COMPLETED, new DateTime(2019, 1, 1, 4, 11, timeZone))
+  private val step10 = IngestStep("10", IngestStepLabel.VALIDATE, new DateTime(2019, 1, 1, 4, 5, timeZone))
+  private val step11 = ingestStep.IngestStep("11", IngestStepLabel.PID_GENERATOR, new DateTime(2019, 1, 1, 4, 6, timeZone))
+  private val step12 = ingestStep.IngestStep("12", IngestStepLabel.FEDORA, new DateTime(2019, 1, 1, 4, 7, timeZone))
+  private val step13 = ingestStep.IngestStep("13", IngestStepLabel.SPRINGFIELD, new DateTime(2019, 1, 1, 4, 8, timeZone))
+  private val step14 = ingestStep.IngestStep("14", IngestStepLabel.BAGSTORE, new DateTime(2019, 1, 1, 4, 9, timeZone))
+  private val step15 = ingestStep.IngestStep("15", IngestStepLabel.SOLR4FILES, new DateTime(2019, 1, 1, 4, 10, timeZone))
+  private val step16 = ingestStep.IngestStep("16", IngestStepLabel.COMPLETED, new DateTime(2019, 1, 1, 4, 11, timeZone))
 
-  private val step20 = IngestStep("20", StepLabel.VALIDATE, new DateTime(2019, 2, 2, 2, 5, timeZone))
-  private val step21 = IngestStep("21", StepLabel.PID_GENERATOR, new DateTime(2019, 2, 2, 2, 6, timeZone))
-  private val step22 = IngestStep("22", StepLabel.FEDORA, new DateTime(2019, 2, 2, 2, 7, timeZone))
-  private val step23 = IngestStep("23", StepLabel.SPRINGFIELD, new DateTime(2019, 2, 2, 2, 8, timeZone))
-  private val step24 = IngestStep("24", StepLabel.BAGSTORE, new DateTime(2019, 2, 2, 2, 9, timeZone))
-  private val step25 = IngestStep("25", StepLabel.SOLR4FILES, new DateTime(2019, 2, 2, 2, 10, timeZone))
-  private val step26 = IngestStep("26", StepLabel.COMPLETED, new DateTime(2019, 2, 2, 2, 11, timeZone))
+  private val step20 = ingestStep.IngestStep("20", IngestStepLabel.VALIDATE, new DateTime(2019, 2, 2, 2, 5, timeZone))
+  private val step21 = ingestStep.IngestStep("21", IngestStepLabel.PID_GENERATOR, new DateTime(2019, 2, 2, 2, 6, timeZone))
+  private val step22 = ingestStep.IngestStep("22", IngestStepLabel.FEDORA, new DateTime(2019, 2, 2, 2, 7, timeZone))
+  private val step23 = ingestStep.IngestStep("23", IngestStepLabel.SPRINGFIELD, new DateTime(2019, 2, 2, 2, 8, timeZone))
+  private val step24 = ingestStep.IngestStep("24", IngestStepLabel.BAGSTORE, new DateTime(2019, 2, 2, 2, 9, timeZone))
+  private val step25 = ingestStep.IngestStep("25", IngestStepLabel.SOLR4FILES, new DateTime(2019, 2, 2, 2, 10, timeZone))
+  private val step26 = ingestStep.IngestStep("26", IngestStepLabel.COMPLETED, new DateTime(2019, 2, 2, 2, 11, timeZone))
 
-  private val step50 = IngestStep("50", StepLabel.VALIDATE, new DateTime(2019, 5, 5, 4, 5, timeZone))
+  private val step50 = ingestStep.IngestStep("50", IngestStepLabel.VALIDATE, new DateTime(2019, 5, 5, 4, 5, timeZone))
 
   override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
   override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty

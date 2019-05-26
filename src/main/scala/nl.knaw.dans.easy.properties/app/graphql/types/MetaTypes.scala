@@ -15,10 +15,11 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
-import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel.StepLabel
+import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
+import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.state.State
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, IngestStep, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
@@ -174,7 +175,7 @@ trait MetaTypes {
     lazy val ordering: Ordering[IngestStep] = {
       val orderByField: Ordering[IngestStep] = field match {
         case IngestStepOrderField.STEP =>
-          Ordering[StepLabel].on(_.step)
+          Ordering[IngestStepLabel].on(_.step)
         case IngestStepOrderField.TIMESTAMP =>
           Ordering[Timestamp].on(_.timestamp)
       }

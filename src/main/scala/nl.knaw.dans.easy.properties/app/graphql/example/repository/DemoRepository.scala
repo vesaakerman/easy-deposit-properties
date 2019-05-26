@@ -16,8 +16,9 @@
 package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
-import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel.StepLabel
-import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
+import nl.knaw.dans.easy.properties.app.model.{ ingestStep, _ }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -182,7 +183,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
         .collectFirst { case (`id`, steps) => steps }
         .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
         .toString
-      val newStep = IngestStep(stepId, step, timestamp)
+      val newStep = ingestStep.IngestStep(stepId, step, timestamp)
 
       if (stepRepo contains id)
         stepRepo.update(id, stepRepo(id) :+ newStep)
@@ -203,7 +204,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatMap(depositRepo.get)
   }
 
-  override def getDepositsByCurrentIngestStep(label: StepLabel): Seq[Deposit] = {
+  override def getDepositsByCurrentIngestStep(label: IngestStepLabel): Seq[Deposit] = {
     trace(label)
     stepRepo
       .collect {
@@ -213,7 +214,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .flatMap(depositRepo.get)
   }
 
-  override def getDepositsByAllIngestSteps(label: StepLabel): Seq[Deposit] = {
+  override def getDepositsByAllIngestSteps(label: IngestStepLabel): Seq[Deposit] = {
     trace(label)
     stepRepo
       .collect {

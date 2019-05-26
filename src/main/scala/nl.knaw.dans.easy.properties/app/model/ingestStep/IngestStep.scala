@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.model
+package nl.knaw.dans.easy.properties.app.model.ingestStep
 
-import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel.StepLabel
+import nl.knaw.dans.easy.properties.app.model.Timestamp
+import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 
-case class InputIngestStep(step: StepLabel, timestamp: Timestamp)
+case class IngestStep(id: String, step: IngestStepLabel, timestamp: Timestamp)
