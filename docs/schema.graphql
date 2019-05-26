@@ -27,6 +27,19 @@ type Deposit implements Node {
     last: Int
   ): StateConnection
 
+  """The current ingest step of the deposit."""
+  ingestStep: IngestStep
+
+  """List all ingest steps of the deposit."""
+  ingestSteps(
+    """Ordering options for the returned ingest steps."""
+    orderBy: IngestStepOrder
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): IngestStepConnection
+
   """Information about the depositor that submitted this deposit."""
   depositor: Depositor!
 }
@@ -89,6 +102,100 @@ enum DepositOrderField {
   DEPOSIT_ID
 }
 
+"""The ingest step of the deposit."""
+type IngestStep implements Node {
+  """The label of the ingest step."""
+  step: StepLabel!
+
+  """The timestamp at which the deposit got into this ingest step."""
+  timestamp: DateTime!
+
+  """The ID of an object"""
+  id: ID!
+
+  """
+  Returns the deposit that is associated with this particular ingest step
+  """
+  deposit: Deposit
+
+  """List all deposits with the same current ingest step."""
+  deposits(
+    """
+    Determine whether to search in current ingest steps (`LATEST`, default) or all current and past ingest steps (`ALL`).
+    """
+    ingestStepFilter: IngestStepFilter! = LATEST
+
+    """Ordering options for the returned deposits."""
+    orderBy: DepositOrder
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): DepositConnection
+}
+
+"""A connection to a list of items."""
+type IngestStepConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [IngestStepEdge]
+
+  """Identifies the total count of items in the connection."""
+  totalCount: Int!
+
+  """A list of nodes."""
+  nodes: [IngestStep!]!
+}
+
+"""An edge in a connection."""
+type IngestStepEdge {
+  """The item at the end of the edge."""
+  node: IngestStep!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""
+Mark a query to only search through current ingest steps, or also to include past ingest steps.
+"""
+enum IngestStepFilter {
+  """Search through both current and past ingest steps."""
+  ALL
+
+  """Only search through current ingest steps."""
+  LATEST
+}
+
+"""Ordering options for ingest steps"""
+input IngestStepOrder {
+  """The field to order ingest steps by"""
+  field: IngestStepOrderField!
+
+  """The ordering direction"""
+  direction: OrderDirection!
+}
+
+"""Properties by which ingest steps can be ordered"""
+enum IngestStepOrderField {
+  """Order ingest steps by timestamp"""
+  TIMESTAMP
+
+  """Order ingest steps by step"""
+  STEP
+}
+
+"""The ingest step of a deposit"""
+input InputIngestStep {
+  """The label of the ingest step."""
+  step: StepLabel!
+
+  """The timestamp at which the deposit got into this ingest step."""
+  timestamp: DateTime!
+}
+
 """The state of a deposit"""
 input InputState {
   """The state label of the deposit."""
@@ -108,6 +215,9 @@ type Mutation {
 
   """Update the state of the deposit identified by 'id'."""
   updateState(depositId: UUID!, state: InputState!): State
+
+  """Update the ingest step of the deposit identified by 'id'."""
+  updateIngestStep(depositId: UUID!, ingestStep: InputIngestStep!): IngestStep
 }
 
 """An object with an ID"""
@@ -197,6 +307,11 @@ type State implements Node {
 
   """The ID of an object"""
   id: ID!
+
+  """
+  Returns the deposit that is associated with this particular ingest step
+  """
+  deposit: Deposit
 
   """List all deposits with the same current state label."""
   deposits(
@@ -304,6 +419,35 @@ enum StateOrderField {
 
   """Order states by label"""
   LABEL
+}
+
+"""The label identifying the ingest step."""
+enum StepLabel {
+  """The ingest process of this deposit has completed."""
+  COMPLETED
+
+  """The file content of the deposit's payload is being index."""
+  SOLR4FILES
+
+  """Indexing the archival copy and its relation to other bags."""
+  BAGINDEX
+
+  """Creating an archival copy of the deposit for storage in the vault."""
+  BAGSTORE
+
+  """
+  Dissemination copies of the audio/video files in the deposit are being made in Springfield.
+  """
+  SPRINGFIELD
+
+  """A dissemination copy of the deposit is being made in Fedora."""
+  FEDORA
+
+  """Persistent identifiers are being generated for this deposit."""
+  PID_GENERATOR
+
+  """Started validating the deposit."""
+  VALIDATE
 }
 
 """
