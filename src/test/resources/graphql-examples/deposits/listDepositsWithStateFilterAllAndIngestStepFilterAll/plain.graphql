@@ -1,0 +1,14 @@
+query ListDepositsWithState {
+    deposits(state: {label: REJECTED, filter: ALL}, ingestStep: {label: VALIDATE, filter: ALL}) {
+        nodes {
+            depositId
+            creationTimestamp
+            depositor {
+                depositorId
+            }
+            state {
+                label
+            }
+        }
+    }
+}
