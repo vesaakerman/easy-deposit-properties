@@ -45,6 +45,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   }
 
   override def addDeposit(deposit: Deposit): Option[Deposit] = {
+    trace(deposit)
     if (depositRepo contains deposit.id)
       Option.empty
     else {
@@ -54,12 +55,13 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   }
 
   override def getStateById(id: String): Option[State] = {
+    trace(id)
     stateRepo.values.toStream.flatten.find(_.id == id)
   }
 
   override def getCurrentState(id: DepositId): Option[State] = {
     trace(id)
-    stateRepo.get(id).map(_.maxBy(_.timestamp))
+    stateRepo.get(id).flatMap(_.maxByOption(_.timestamp))
   }
 
   override def getAllStates(id: DepositId): Seq[State] = {
@@ -69,7 +71,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   override def getCurrentStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])] = {
     trace(ids)
-    ids.map(id => id -> stateRepo.get(id).map(_.maxBy(_.timestamp)))
+    ids.map(id => id -> stateRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
   }
 
   override def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Seq[State])] = {
@@ -78,9 +80,14 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   }
 
   override def setState(id: DepositId, state: InputState): Option[State] = {
+    trace(id, state)
     if (depositRepo contains id) {
       val InputState(label, description, timestamp) = state
-      val stateId = id.toString.last + stateRepo.collectFirst { case (`id`, states) => states }.fold(0)(_.maxBy(_.id).id.last.toInt + 1).toString
+
+      val stateId = id.toString.last + stateRepo
+        .collectFirst { case (`id`, states) => states }
+        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
+        .toString
       val newState = State(stateId, label, description, timestamp)
 
       if (stateRepo contains id)
@@ -97,7 +104,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     trace(label)
     stateRepo
       .collect {
-        case (depositId, states) if states.maxBy(_.timestamp).label == label => depositId
+        case (depositId, states) if states.maxByOption(_.timestamp).exists(_.label == label) => depositId
       }
       .toSeq
       .flatMap(depositRepo.get)
