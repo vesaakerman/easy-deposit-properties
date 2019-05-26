@@ -75,7 +75,7 @@ trait StateType {
   })
 
   implicit val DepositStateFilterType: InputObjectType[DepositStateFilter] = deriveInputObjectType(
-    InputObjectTypeDescription("The label and filter to be used in searching for deposits"),
+    InputObjectTypeDescription("The label and filter to be used in searching for deposits by state"),
     DocumentInputField("label", "If provided, only show deposits with this state."),
     DocumentInputField("filter", "Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
   )
@@ -105,7 +105,7 @@ trait StateType {
     Argument(
       name = "state",
       argumentType = OptionInputType(DepositStateFilterType),
-      description = Some("List only those deposits that have this specified label."),
+      description = Some("List only those deposits that have this specified state label."),
       defaultValue = None,
       fromInput = optionInput(inputObjectResultInput(DepositStateFilterFromInput)),
       astDirectives = Vector.empty,

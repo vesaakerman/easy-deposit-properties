@@ -24,7 +24,7 @@ import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
 
 trait QueryType {
-  this: MetaTypes with DepositType with DepositorType with StateType with NodeType with Scalars =>
+  this: MetaTypes with DepositType with DepositorType with StateType with IngestStepType with NodeType with Scalars =>
 
   private val depositorIdArgument: Argument[Option[DepositorId]] = Argument(
     name = "id",
@@ -57,6 +57,7 @@ trait QueryType {
     description = Some("List all registered deposits."),
     arguments = List(
       depositStateFilterArgument,
+      depositIngestStepFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -84,6 +85,7 @@ trait QueryType {
     val repository = context.ctx.deposits
 
     val stateInput = context.arg(depositStateFilterArgument)
+    val ingestStepInput = context.arg(depositIngestStepFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = stateInput match {

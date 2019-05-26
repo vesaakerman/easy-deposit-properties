@@ -19,15 +19,15 @@ import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepFilter.IngestStepFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
-import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepFilter, IngestStepLabel, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.ingestStep._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
-import sangria.marshalling.FromInput.coercedScalaInput
+import sangria.marshalling.FromInput.{ coercedScalaInput, inputObjectResultInput, optionInput }
 import sangria.marshalling.ToInput.ScalarToInput
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
 import sangria.relay._
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
+import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -72,6 +72,24 @@ trait IngestStepType {
     }
   })
 
+  implicit val DepositIngestStepFilterType: InputObjectType[DepositIngestStepFilter] = deriveInputObjectType(
+    InputObjectTypeDescription("The label and filter to be used in searching for deposits by ingest step"),
+    DocumentInputField("label", "If provided, only show deposits with this state."),
+    DocumentInputField("filter", "Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
+  )
+  implicit val DepositIngestStepFilterFromInput: FromInput[DepositIngestStepFilter] = new FromInput[DepositIngestStepFilter] {
+    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    def fromResult(node: marshaller.Node): DepositIngestStepFilter = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      DepositIngestStepFilter(
+        label = ad("label").asInstanceOf[IngestStepLabel],
+        filter = ad("filter").asInstanceOf[Option[IngestStepFilter]].getOrElse(IngestStepFilter.LATEST),
+      )
+    }
+  }
+
   private val ingestStepFilterArgument: Argument[IngestStepFilter] = Argument(
     name = "ingestStepFilter",
     argumentType = IngestStepFilterType,
@@ -81,6 +99,17 @@ trait IngestStepType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  val depositIngestStepFilterArgument: Argument[Option[DepositIngestStepFilter]] = {
+    Argument(
+      name = "ingestStep",
+      argumentType = OptionInputType(DepositIngestStepFilterType),
+      description = Some("List only those deposits that have this specified ingest step label."),
+      defaultValue = None,
+      fromInput = optionInput(inputObjectResultInput(DepositIngestStepFilterFromInput)),
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
+  }
 
   private val depositField: Field[DataContext, IngestStep] = Field(
     name = "deposit",

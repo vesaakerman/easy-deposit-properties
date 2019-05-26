@@ -23,7 +23,7 @@ import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait DepositorType {
-  this: DepositType with StateType with NodeType with MetaTypes =>
+  this: DepositType with StateType with IngestStepType with NodeType with MetaTypes =>
 
   private val depositorIdField: Field[DataContext, DepositorId] = Field(
     name = "depositorId",
@@ -36,6 +36,7 @@ trait DepositorType {
     description = Some("List all deposits originating from the same depositor."),
     arguments = List(
       depositStateFilterArgument,
+      depositIngestStepFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -47,6 +48,7 @@ trait DepositorType {
 
     val depositorId = context.value
     val stateInput = context.arg(depositStateFilterArgument)
+    val ingestStepInput = context.arg(depositIngestStepFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = stateInput match {
