@@ -1,5 +1,5 @@
 query ListDepositsWithState {
-    deposits(state: DRAFT, stateFilter: ALL) {
+    deposits(state: {label: DRAFT, filter: ALL}) {
         nodes {
             depositId
             creationTimestamp

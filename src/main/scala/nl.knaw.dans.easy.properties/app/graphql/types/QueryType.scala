@@ -16,36 +16,17 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
 
 trait QueryType {
-  this: MetaTypes with DepositType with StateType with NodeType with Scalars =>
+  this: MetaTypes with DepositType with DepositorType with StateType with NodeType with Scalars =>
 
-  private val stateArgument: Argument[Option[StateLabel]] = Argument(
-    name = "state",
-    description = Some("If provided, only show deposits with this state."),
-    defaultValue = None,
-    argumentType = OptionInputType(StateLabelType),
-    fromInput = coercedScalaInput,
-    astDirectives = Vector.empty,
-    astNodes = Vector.empty,
-  )
-  private val stateFilterArgument: Argument[StateFilter.StateFilter] = Argument(
-    name = "stateFilter",
-    description = Some("Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
-    argumentType = StateFilterType,
-    defaultValue = Some(StateFilter.LATEST -> StateFilterToInput),
-    fromInput = coercedScalaInput,
-    astDirectives = Vector.empty,
-    astNodes = Vector.empty,
-  )
   private val depositorIdArgument: Argument[Option[DepositorId]] = Argument(
-    name = "depositorId",
+    name = "id",
     description = Some("If provided, only show deposits from this depositor."),
     defaultValue = None,
     argumentType = OptionInputType(StringType),
@@ -74,13 +55,20 @@ trait QueryType {
     name = "deposits",
     description = Some("List all registered deposits."),
     arguments = List(
-      stateArgument,
-      stateFilterArgument,
-      depositorIdArgument,
+      stateInputArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+  )
+  private val depositorField: Field[DataContext, Unit] = Field(
+    name = "depositor",
+    description = Some("Get the technical metadata related to this depositor."),
+    arguments = List(
+      depositorIdArgument,
+    ),
+    fieldType = OptionType(DepositorType),
+    resolve = getDepositor,
   )
 
   private def getDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
@@ -94,26 +82,22 @@ trait QueryType {
   private def getDeposits(context: Context[DataContext, Unit]): Seq[Deposit] = {
     val repository = context.ctx.deposits
 
-    val state = context.arg(stateArgument)
-    val stateFilter = context.arg(stateFilterArgument)
-    val depositorId = context.arg(depositorIdArgument)
+    val stateInput = context.arg(stateInputArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = (state, depositorId) match {
-      case (Some(label), Some(id)) if stateFilter == StateFilter.LATEST =>
-        repository.getDepositsByDepositorAndCurrentState(id, label)
-      case (Some(label), Some(id)) if stateFilter == StateFilter.ALL =>
-        repository.getDepositsByDepositorAndAllStates(id, label)
-      case (Some(label), None) if stateFilter == StateFilter.LATEST =>
+    val result = stateInput match {
+      case Some(StateInput(label, StateFilter.LATEST)) =>
         repository.getDepositsByCurrentState(label)
-      case (Some(label), None) if stateFilter == StateFilter.ALL =>
+      case Some(StateInput(label, StateFilter.ALL)) =>
         repository.getDepositsByAllStates(label)
-      case (None, Some(id)) =>
-        repository.getDepositsByDepositor(id)
-      case (None, None) =>
+      case None =>
         repository.getAllDeposits
     }
     orderBy.fold(result)(order => result.sorted(order.ordering))
+  }
+
+  private def getDepositor(context: Context[DataContext, Unit]): Option[DepositorId] = {
+    context.arg(depositorIdArgument)
   }
 
   implicit val QueryType: ObjectType[DataContext, Unit] = ObjectType(
@@ -122,6 +106,7 @@ trait QueryType {
     fields = fields[DataContext, Unit](
       depositField,
       depositsField,
+      depositorField,
       nodeField,
       nodesField,
     ),

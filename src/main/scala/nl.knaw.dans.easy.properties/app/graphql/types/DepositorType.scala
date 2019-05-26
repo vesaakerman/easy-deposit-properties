@@ -16,13 +16,13 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
 import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait DepositorType {
-  this: DepositType with NodeType with MetaTypes =>
+  this: DepositType with StateType with NodeType with MetaTypes =>
 
   private val depositorIdField: Field[DataContext, DepositorId] = Field(
     name = "depositorId",
@@ -33,7 +33,10 @@ trait DepositorType {
   private val depositsField: Field[DataContext, DepositorId] = Field(
     name = "deposits",
     description = Some("List all deposits originating from the same depositor."),
-    arguments = List(optDepositOrderArgument) ++ Connection.Args.All,
+    arguments = List(
+      stateInputArgument,
+      optDepositOrderArgument,
+    ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
   )
@@ -42,9 +45,18 @@ trait DepositorType {
     val repository = context.ctx.deposits
 
     val depositorId = context.value
+    val stateInput = context.arg(stateInputArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = repository.getDepositsByDepositor(depositorId)
+    val result = stateInput match {
+      case Some(StateInput(label, StateFilter.LATEST)) =>
+        repository.getDepositsByDepositorAndCurrentState(depositorId, label)
+      case Some(StateInput(label, StateFilter.ALL)) =>
+        repository.getDepositsByDepositorAndAllStates(depositorId, label)
+      case None =>
+        repository.getDepositsByDepositor(depositorId)
+    }
+
     orderBy.fold(result)(order => result.sorted(order.ordering))
   }
 

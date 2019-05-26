@@ -18,14 +18,15 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
+import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, InputState, State, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
-import sangria.marshalling.FromInput.coercedScalaInput
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
+import sangria.marshalling.FromInput._
 import sangria.marshalling.ToInput.ScalarToInput
-import sangria.relay.{ Connection, ConnectionArgs, ConnectionDefinition, Identifiable, Node }
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
+import sangria.relay._
+import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -87,6 +88,36 @@ trait StateType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+
+  case class StateInput(label: StateLabel, filter: StateFilter.Value = StateFilter.LATEST)
+  implicit val StateInputType: InputObjectType[StateInput] = deriveInputObjectType(
+    InputObjectTypeDescription("The label and filter to be used in searching for deposits"),
+    DocumentInputField("label", "If provided, only show deposits with this state."),
+    DocumentInputField("filter", "Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
+  )
+  implicit val StateInputFromInput: FromInput[StateInput] = new FromInput[StateInput] {
+    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    def fromResult(node: marshaller.Node): StateInput = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      StateInput(
+        label = ad("label").asInstanceOf[StateLabel],
+        filter = ad("filter").asInstanceOf[Option[StateFilter.Value]].getOrElse(StateFilter.LATEST),
+      )
+    }
+  }
+  val stateInputArgument: Argument[Option[StateInput]] = {
+    Argument(
+      name = "state",
+      argumentType = OptionInputType(StateInputType),
+      description = Some("List only those deposits that have this specified label."),
+      defaultValue = None,
+      fromInput = optionInput(inputObjectResultInput(StateInputFromInput)),
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
+  }
 
   private val depositField: Field[DataContext, State] = Field(
     name = "deposit",
@@ -152,7 +183,7 @@ trait StateType {
     nodeType = StateType,
   )
 
-  implicit val StateInputType: InputObjectType[InputState] = deriveInputObjectType(
+  implicit val InputStateType: InputObjectType[InputState] = deriveInputObjectType(
     InputObjectTypeName("InputState"),
     InputObjectTypeDescription("The state of a deposit"),
     DocumentInputField("label", "The state label of the deposit."),

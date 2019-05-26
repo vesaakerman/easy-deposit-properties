@@ -54,7 +54,7 @@ trait MutationType {
     name = "state",
     description = None, // TODO fill in the documentation
     defaultValue = None,
-    argumentType = StateInputType,
+    argumentType = InputStateType,
     fromInput = InputStateFromInput,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,

@@ -22,9 +22,9 @@ import sangria.schema._
 object GraphQLSchema extends Scalars
   with NodeType
   with MetaTypes
-  with DepositorType
   with IngestStepType
   with StateType
+  with DepositorType
   with DepositType
   with QueryType
   with MutationType {

@@ -75,6 +75,9 @@ type Depositor {
 
   """List all deposits originating from the same depositor."""
   deposits(
+    """List only those deposits that have this specified label."""
+    state: StateInput
+
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
     before: String
@@ -262,16 +265,8 @@ type Query {
 
   """List all registered deposits."""
   deposits(
-    """If provided, only show deposits with this state."""
-    state: StateLabel
-
-    """
-    Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
-    """
-    stateFilter: StateFilter! = LATEST
-
-    """If provided, only show deposits from this depositor."""
-    depositorId: String
+    """List only those deposits that have this specified label."""
+    state: StateInput
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
@@ -280,6 +275,12 @@ type Query {
     first: Int
     last: Int
   ): DepositConnection
+
+  """Get the technical metadata related to this depositor."""
+  depositor(
+    """If provided, only show deposits from this depositor."""
+    id: String
+  ): Depositor
 
   """Fetches an object given its ID"""
   node(
@@ -362,6 +363,17 @@ enum StateFilter {
 
   """Only search through current states."""
   LATEST
+}
+
+"""The label and filter to be used in searching for deposits"""
+input StateInput {
+  """If provided, only show deposits with this state."""
+  label: StateLabel!
+
+  """
+  Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
+  """
+  filter: StateFilter = LATEST
 }
 
 """The label identifying the state of a deposit."""
