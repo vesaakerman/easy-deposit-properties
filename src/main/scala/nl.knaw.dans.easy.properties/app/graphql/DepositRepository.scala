@@ -15,8 +15,9 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
+import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel.StepLabel
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, InputState, State }
+import nl.knaw.dans.easy.properties.app.model._
 
 trait DepositRepository {
 
@@ -47,4 +48,22 @@ trait DepositRepository {
   def getDepositsByDepositorAndCurrentState(depositorId: DepositorId, state: StateLabel): Seq[Deposit]
 
   def getDepositsByDepositorAndAllStates(depositorId: DepositorId, state: StateLabel): Seq[Deposit]
+
+  def getIngestStepById(id: String): Option[IngestStep]
+
+  def getCurrentIngestStep(id: DepositId): Option[IngestStep]
+
+  def getAllIngestSteps(id: DepositId): Seq[IngestStep]
+
+  def getCurrentIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Option[IngestStep])]
+
+  def getAllIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Seq[IngestStep])]
+
+  def setIngestStep(id: DepositId, step: InputIngestStep): Option[IngestStep]
+
+  def getDepositByIngestStepId(id: String): Option[Deposit]
+
+  def getDepositsByCurrentIngestStep(label: StepLabel): Seq[Deposit]
+
+  def getDepositsByAllIngestSteps(label: StepLabel): Seq[Deposit]
 }

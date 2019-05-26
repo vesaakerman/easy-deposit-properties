@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
+import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel.StepLabel
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -25,8 +26,8 @@ import scala.collection.mutable
 trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   val depositRepo: mutable.Map[DepositId, Deposit]
-
   val stateRepo: mutable.Map[DepositId, Seq[State]]
+  val stepRepo: mutable.Map[DepositId, Seq[IngestStep]]
 
   override def getAllDeposits: Seq[Deposit] = {
     trace(())
@@ -128,5 +129,80 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllStates(deposits.keys.toSeq)
       .collect { case (depositId, states) if states.exists(_.label == label) => deposits.get(depositId) }
       .flatten
+  }
+
+  override def getIngestStepById(id: String): Option[IngestStep] = {
+    trace(id)
+    stepRepo.values.toStream.flatten.find(_.id == id)
+  }
+
+  override def getCurrentIngestStep(id: DepositId): Option[IngestStep] = {
+    trace(id)
+    stepRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  override def getAllIngestSteps(id: DepositId): Seq[IngestStep] = {
+    trace(id)
+    stepRepo.getOrElse(id, Seq.empty)
+  }
+
+  override def getCurrentIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Option[IngestStep])] = {
+    trace(ids)
+    ids.map(id => id -> stepRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  override def getAllIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Seq[IngestStep])] = {
+    trace(ids)
+    ids.map(id => id -> stepRepo.getOrElse(id, Seq.empty))
+  }
+
+  override def setIngestStep(id: DepositId, inputStep: InputIngestStep): Option[IngestStep] = {
+    trace(id, inputStep)
+    if (depositRepo contains id) {
+      val InputIngestStep(step, timestamp) = inputStep
+
+      val stepId = id.toString.last + stepRepo
+        .collectFirst { case (`id`, steps) => steps }
+        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
+        .toString
+      val newStep = IngestStep(stepId, step, timestamp)
+
+      if (stepRepo contains id)
+        stepRepo.update(id, stepRepo(id) :+ newStep)
+      else
+        stepRepo += (id -> Seq(newStep))
+
+      Some(newStep)
+    }
+    else Option.empty
+  }
+
+  override def getDepositByIngestStepId(id: String): Option[Deposit] = {
+    trace(id)
+    stepRepo
+      .collectFirst {
+        case (depositId, steps) if steps.exists(_.id == id) => depositId
+      }
+      .flatMap(depositRepo.get)
+  }
+
+  override def getDepositsByCurrentIngestStep(label: StepLabel): Seq[Deposit] = {
+    trace(label)
+    stepRepo
+      .collect {
+        case (depositId, steps) if steps.maxByOption(_.timestamp).exists(_.step == label) => depositId
+      }
+      .toSeq
+      .flatMap(depositRepo.get)
+  }
+
+  override def getDepositsByAllIngestSteps(label: StepLabel): Seq[Deposit] = {
+    trace(label)
+    stepRepo
+      .collect {
+        case (depositId, steps) if steps.exists(_.step == label) => depositId
+      }
+      .toSeq
+      .flatMap(depositRepo.get)
   }
 }

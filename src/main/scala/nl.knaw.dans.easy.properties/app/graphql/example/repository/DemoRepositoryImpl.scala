@@ -17,8 +17,9 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import java.util.{ TimeZone, UUID }
 
+import nl.knaw.dans.easy.properties.app.model.IngestStep.StepLabel
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
+import nl.knaw.dans.easy.properties.app.model._
 import org.joda.time.{ DateTime, DateTimeZone }
 
 import scala.collection.mutable
@@ -67,15 +68,34 @@ class DemoRepositoryImpl extends DemoRepository {
   private val state52 = State("52", StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 5, 5, 2, 2, timeZone))
   private val state53 = State("53", StateLabel.REJECTED, "deposit is rejected", new DateTime(2019, 5, 5, 3, 3, timeZone))
 
-  override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
+  private val step10 = IngestStep("10", StepLabel.VALIDATE, new DateTime(2019, 1, 1, 4, 5, timeZone))
+  private val step11 = IngestStep("11", StepLabel.PID_GENERATOR, new DateTime(2019, 1, 1, 4, 6, timeZone))
+  private val step12 = IngestStep("12", StepLabel.FEDORA, new DateTime(2019, 1, 1, 4, 7, timeZone))
+  private val step13 = IngestStep("13", StepLabel.SPRINGFIELD, new DateTime(2019, 1, 1, 4, 8, timeZone))
+  private val step14 = IngestStep("14", StepLabel.BAGSTORE, new DateTime(2019, 1, 1, 4, 9, timeZone))
+  private val step15 = IngestStep("15", StepLabel.SOLR4FILES, new DateTime(2019, 1, 1, 4, 10, timeZone))
+  private val step16 = IngestStep("16", StepLabel.COMPLETED, new DateTime(2019, 1, 1, 4, 11, timeZone))
 
+  private val step20 = IngestStep("20", StepLabel.VALIDATE, new DateTime(2019, 2, 2, 2, 5, timeZone))
+  private val step21 = IngestStep("21", StepLabel.PID_GENERATOR, new DateTime(2019, 2, 2, 2, 6, timeZone))
+  private val step22 = IngestStep("22", StepLabel.FEDORA, new DateTime(2019, 2, 2, 2, 7, timeZone))
+  private val step23 = IngestStep("23", StepLabel.SPRINGFIELD, new DateTime(2019, 2, 2, 2, 8, timeZone))
+  private val step24 = IngestStep("24", StepLabel.BAGSTORE, new DateTime(2019, 2, 2, 2, 9, timeZone))
+  private val step25 = IngestStep("25", StepLabel.SOLR4FILES, new DateTime(2019, 2, 2, 2, 10, timeZone))
+  private val step26 = IngestStep("26", StepLabel.COMPLETED, new DateTime(2019, 2, 2, 2, 11, timeZone))
+
+  private val step50 = IngestStep("50", StepLabel.VALIDATE, new DateTime(2019, 5, 5, 4, 5, timeZone))
+
+  override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
   override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty
+  override val stepRepo: mutable.Map[DepositId, Seq[IngestStep]] = mutable.Map.empty
 
   resetRepository()
 
-  def resetRepository(): mutable.Map[DepositId, Seq[State]] = {
+  def resetRepository(): Unit = {
     resetDepositRepo()
     resetStateRepo()
+    resetStepRepo()
   }
 
   def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
@@ -97,6 +117,17 @@ class DemoRepositoryImpl extends DemoRepository {
       depositId3 -> Seq(state30, state31, state32),
       depositId4 -> Seq(state40, state41, state42),
       depositId5 -> Seq(state50, state51, state52, state53),
+    )
+  }
+
+  def resetStepRepo(): mutable.Map[DepositId, Seq[IngestStep]] = {
+    stepRepo.clear()
+    stepRepo ++= Map(
+      depositId1 -> Seq(step10, step11, step12, step13, step14, step15, step16),
+      depositId2 -> Seq(step20, step21, step22, step23, step24, step25, step26),
+      depositId3 -> Seq.empty,
+      depositId4 -> Seq.empty,
+      depositId5 -> Seq(step50),
     )
   }
 }
