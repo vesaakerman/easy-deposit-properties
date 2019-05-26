@@ -68,6 +68,19 @@ type DepositEdge {
   cursor: String!
 }
 
+"""
+The label and filter to be used in searching for deposits by ingest step
+"""
+input DepositIngestStepFilter {
+  """If provided, only show deposits with this state."""
+  label: IngestStepLabel!
+
+  """
+  Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
+  """
+  filter: IngestStepFilter = LATEST
+}
+
 """Information about the depositor that submitted this deposit."""
 type Depositor {
   """The EASY account of the depositor."""
@@ -75,8 +88,11 @@ type Depositor {
 
   """List all deposits originating from the same depositor."""
   deposits(
-    """List only those deposits that have this specified label."""
-    state: StateInput
+    """List only those deposits that have this specified state label."""
+    state: DepositStateFilter
+
+    """List only those deposits that have this specified ingest step label."""
+    ingestStep: DepositIngestStepFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
@@ -105,10 +121,21 @@ enum DepositOrderField {
   DEPOSIT_ID
 }
 
+"""The label and filter to be used in searching for deposits by state"""
+input DepositStateFilter {
+  """If provided, only show deposits with this state."""
+  label: StateLabel!
+
+  """
+  Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
+  """
+  filter: StateFilter = LATEST
+}
+
 """The ingest step of the deposit."""
 type IngestStep implements Node {
   """The label of the ingest step."""
-  step: StepLabel!
+  step: IngestStepLabel!
 
   """The timestamp at which the deposit got into this ingest step."""
   timestamp: DateTime!
@@ -172,6 +199,35 @@ enum IngestStepFilter {
   LATEST
 }
 
+"""The label identifying the ingest step."""
+enum IngestStepLabel {
+  """The ingest process of this deposit has completed."""
+  COMPLETED
+
+  """The file content of the deposit's payload is being index."""
+  SOLR4FILES
+
+  """Indexing the archival copy and its relation to other bags."""
+  BAGINDEX
+
+  """Creating an archival copy of the deposit for storage in the vault."""
+  BAGSTORE
+
+  """
+  Dissemination copies of the audio/video files in the deposit are being made in Springfield.
+  """
+  SPRINGFIELD
+
+  """A dissemination copy of the deposit is being made in Fedora."""
+  FEDORA
+
+  """Persistent identifiers are being generated for this deposit."""
+  PID_GENERATOR
+
+  """Started validating the deposit."""
+  VALIDATE
+}
+
 """Ordering options for ingest steps"""
 input IngestStepOrder {
   """The field to order ingest steps by"""
@@ -193,7 +249,7 @@ enum IngestStepOrderField {
 """The ingest step of a deposit"""
 input InputIngestStep {
   """The label of the ingest step."""
-  step: StepLabel!
+  step: IngestStepLabel!
 
   """The timestamp at which the deposit got into this ingest step."""
   timestamp: DateTime!
@@ -265,8 +321,11 @@ type Query {
 
   """List all registered deposits."""
   deposits(
-    """List only those deposits that have this specified label."""
-    state: StateInput
+    """List only those deposits that have this specified state label."""
+    state: DepositStateFilter
+
+    """List only those deposits that have this specified ingest step label."""
+    ingestStep: DepositIngestStepFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
@@ -365,17 +424,6 @@ enum StateFilter {
   LATEST
 }
 
-"""The label and filter to be used in searching for deposits"""
-input StateInput {
-  """If provided, only show deposits with this state."""
-  label: StateLabel!
-
-  """
-  Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
-  """
-  filter: StateFilter = LATEST
-}
-
 """The label identifying the state of a deposit."""
 enum StateLabel {
   """Was successfully archived in the Fedora Archive."""
@@ -431,35 +479,6 @@ enum StateOrderField {
 
   """Order states by label"""
   LABEL
-}
-
-"""The label identifying the ingest step."""
-enum StepLabel {
-  """The ingest process of this deposit has completed."""
-  COMPLETED
-
-  """The file content of the deposit's payload is being index."""
-  SOLR4FILES
-
-  """Indexing the archival copy and its relation to other bags."""
-  BAGINDEX
-
-  """Creating an archival copy of the deposit for storage in the vault."""
-  BAGSTORE
-
-  """
-  Dissemination copies of the audio/video files in the deposit are being made in Springfield.
-  """
-  SPRINGFIELD
-
-  """A dissemination copy of the deposit is being made in Fedora."""
-  FEDORA
-
-  """Persistent identifiers are being generated for this deposit."""
-  PID_GENERATOR
-
-  """Started validating the deposit."""
-  VALIDATE
 }
 
 """
