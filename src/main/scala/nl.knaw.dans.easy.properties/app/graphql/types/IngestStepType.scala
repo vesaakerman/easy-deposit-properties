@@ -74,7 +74,7 @@ trait IngestStepType {
 
   implicit val DepositIngestStepFilterType: InputObjectType[DepositIngestStepFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by ingest step"),
-    DocumentInputField("step", "If provided, only show deposits with this state."),
+    DocumentInputField("label", "If provided, only show deposits with this state."),
     DocumentInputField("filter", "Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
   )
   implicit val DepositIngestStepFilterFromInput: FromInput[DepositIngestStepFilter] = new FromInput[DepositIngestStepFilter] {
@@ -84,7 +84,7 @@ trait IngestStepType {
       val ad = node.asInstanceOf[Map[String, Any]]
 
       DepositIngestStepFilter(
-        step = ad("label").asInstanceOf[IngestStepLabel],
+        label = ad("label").asInstanceOf[IngestStepLabel],
         filter = ad("filter").asInstanceOf[Option[IngestStepFilter]].getOrElse(IngestStepFilter.LATEST),
       )
     }
