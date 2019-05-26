@@ -18,20 +18,20 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.State.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, InputState, State, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
-import sangria.marshalling.ToInput
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
 import sangria.marshalling.ToInput.ScalarToInput
-import sangria.relay.{ Connection, ConnectionArgs, Identifiable, Node }
-import sangria.schema.{ Argument, Context, EnumType, Field, ObjectType, OptionType }
+import sangria.relay.{ Connection, ConnectionArgs, ConnectionDefinition, Identifiable, Node }
+import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait StateType {
-  this: DepositConnectionType with NodeType with MetaTypes with Scalars =>
+  this: DepositType with NodeType with MetaTypes with Scalars =>
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the state of a deposit."),
@@ -118,7 +118,7 @@ trait StateType {
     override def id(state: State): String = state.id
   }
 
-  implicit lazy val StateType: ObjectType[DataContext, State] = deriveObjectType(
+  implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
     ObjectTypeDescription("The state of the deposit."),
     Interfaces[DataContext, State](nodeInterface),
     ExcludeFields("id"),
@@ -130,4 +130,30 @@ trait StateType {
       depositsField,
     ),
   )
+
+  val ConnectionDefinition(_, stateConnectionType) = ExtendedConnection.definition[DataContext, ExtendedConnection, State](
+    name = "State",
+    nodeType = StateType,
+  )
+
+  implicit val StateInputType: InputObjectType[InputState] = deriveInputObjectType(
+    InputObjectTypeName("InputState"),
+    InputObjectTypeDescription("The state of a deposit"),
+    DocumentInputField("label", "The state label of the deposit."),
+    DocumentInputField("description", "Additional information about the state."),
+    DocumentInputField("timestamp", "The timestamp at which the deposit got into this state."),
+  )
+  implicit val InputStateFromInput: FromInput[InputState] = new FromInput[InputState] {
+    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    override def fromResult(node: marshaller.Node): InputState = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      InputState(
+        label = ad("label").asInstanceOf[StateLabel.Value],
+        description = ad("description").asInstanceOf[String],
+        timestamp = ad("timestamp").asInstanceOf[Timestamp],
+      )
+    }
+  }
 }

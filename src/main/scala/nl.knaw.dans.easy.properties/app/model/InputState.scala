@@ -15,6 +15,6 @@
  */
 package nl.knaw.dans.easy.properties.app.model
 
-import nl.knaw.dans.easy.properties.app.model.State.StateLabel
+import nl.knaw.dans.easy.properties.app.model.State.StateLabel.StateLabel
 
-case class InputState(label: StateLabel.Value, description: String, timestamp: Timestamp)
+case class InputState(label: StateLabel, description: String, timestamp: Timestamp)

@@ -24,7 +24,7 @@ import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
 
 trait QueryType {
-  this: MetaTypes with DepositConnectionType with DepositType with StateType with Scalars with NodeType =>
+  this: MetaTypes with DepositType with StateType with NodeType with Scalars =>
 
   private val stateArgument: Argument[Option[StateLabel]] = Argument(
     name = "state",

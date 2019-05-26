@@ -16,16 +16,16 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId, State }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId, IngestStep, State }
 import sangria.macros.derive._
-import sangria.relay.{ Connection, ConnectionArgs, Identifiable, Node }
+import sangria.relay._
 import sangria.schema.{ Context, DeferredValue, Field, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DepositType {
-  this: DepositorType with StateConnectionType with StateType with NodeType with MetaTypes with Scalars =>
+  this: DepositorType with StateType with IngestStepType with NodeType with MetaTypes with Scalars =>
 
   private val stateField: Field[DataContext, Deposit] = Field(
     name = "state",
@@ -39,6 +39,19 @@ trait DepositType {
     arguments = optStateOrderArgument :: Connection.Args.All,
     fieldType = OptionType(stateConnectionType),
     resolve = ctx => getAllStates(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+  )
+  private val ingestStepField: Field[DataContext, Deposit] = Field(
+    name = "ingestStep",
+    fieldType = OptionType(IngestStepType),
+    description = Option("The current ingest step of the deposit."),
+    resolve = getCurrentIngestStep,
+  )
+  private val ingestStepsField: Field[DataContext, Deposit] = Field(
+    name = "ingestSteps",
+    description = Option("List all ingest steps of the deposit."),
+    arguments = optIngestStepOrderArgument :: Connection.Args.All,
+    fieldType = OptionType(ingestStepConnectionType),
+    resolve = ctx => getAllIngestSteps(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
   private val depositorField: Field[DataContext, Deposit] = Field(
     name = "depositor",
@@ -61,6 +74,20 @@ trait DepositType {
       .map { case (_, states) => orderBy.fold(states)(order => states.sorted(order.ordering)) }
   }
 
+  private def getCurrentIngestStep(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[IngestStep]] = {
+    val id = context.value.id
+
+    DeferredValue(fetchCurrentIngestSteps.defer(id)).map { case (_, optIngestStep) => optIngestStep }
+  }
+
+  private def getAllIngestSteps(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[IngestStep]] = {
+    val id = context.value.id
+    val orderBy = context.arg(optIngestStepOrderArgument)
+
+    DeferredValue(fetchAllIngestSteps.defer(id))
+      .map { case (_, ingestSteps) => orderBy.fold(ingestSteps)(order => ingestSteps.sorted(order.ordering)) }
+  }
+
   private def getDepositor(context: Context[DataContext, Deposit]): DepositorId = {
     context.value.depositorId
   }
@@ -81,7 +108,14 @@ trait DepositType {
       Node.globalIdField[DataContext, Deposit],
       stateField,
       statesField,
+      ingestStepField,
+      ingestStepsField,
       depositorField,
     ),
+  )
+
+  lazy val ConnectionDefinition(_, depositConnectionType) = ExtendedConnection.definition[DataContext, ExtendedConnection, Deposit](
+    name = "Deposit",
+    nodeType = DepositType,
   )
 }

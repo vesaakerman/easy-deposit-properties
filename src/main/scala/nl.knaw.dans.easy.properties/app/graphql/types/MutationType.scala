@@ -16,12 +16,12 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, InputState, State, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, IngestStep, InputIngestStep, InputState, State, Timestamp }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
-  this: DepositType with StateType with InputStateType with Scalars =>
+  this: DepositType with StateType with IngestStepType with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
     name = "depositId",
@@ -59,6 +59,15 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  private val ingestStepArgument: Argument[InputIngestStep] = Argument(
+    name = "ingestStep",
+    description = None, // TODO fill in the documentation
+    defaultValue = None,
+    argumentType = IngestStepInputType,
+    fromInput = InputIngestStepFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
 
   private val addDepositField: Field[DataContext, Unit] = Field(
     name = "addDeposit",
@@ -81,6 +90,16 @@ trait MutationType {
     fieldType = OptionType(StateType),
     resolve = updateState,
   )
+  private val updateIngestStepField: Field[DataContext, Unit] = Field(
+    name = "updateIngestStep",
+    description = Some("Update the ingest step of the deposit identified by 'id'."),
+    arguments = List(
+      depositIdArgument,
+      ingestStepArgument,
+    ),
+    fieldType = OptionType(IngestStepType),
+    resolve = updateIngestStep,
+  )
 
   private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
     val repository = context.ctx.deposits
@@ -101,12 +120,22 @@ trait MutationType {
     repository.setState(depositId, state)
   }
 
+  private def updateIngestStep(context: Context[DataContext, Unit]): Option[IngestStep] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val ingestStep = context.arg(ingestStepArgument)
+
+    repository.setIngestStep(depositId, ingestStep)
+  }
+
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(
     name = "Mutation",
     description = "The root query for implementing GraphQL mutations.",
     fields = fields[DataContext, Unit](
       addDepositField,
       updateStateField,
+      updateIngestStepField,
     ),
   )
 }

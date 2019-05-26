@@ -21,11 +21,9 @@ import sangria.schema._
 
 object GraphQLSchema extends Scalars
   with NodeType
-  with StateConnectionType
-  with DepositConnectionType
   with MetaTypes
   with DepositorType
-  with InputStateType
+  with IngestStepType
   with StateType
   with DepositType
   with QueryType
@@ -33,7 +31,7 @@ object GraphQLSchema extends Scalars
 
   val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
   val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(
-    fetchCurrentStates,
-    fetchAllStates,
+    fetchCurrentStates, fetchAllStates,
+    fetchCurrentIngestSteps, fetchAllIngestSteps,
   )
 }
