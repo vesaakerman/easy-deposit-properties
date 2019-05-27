@@ -6,9 +6,11 @@ query {
             description
             timestamp
             deposits(stateFilter: ALL) {
-                nodes {
-                    id
-                    depositId
+                edges {
+                    node {
+                        id
+                        depositId
+                    }
                 }
             }
         }

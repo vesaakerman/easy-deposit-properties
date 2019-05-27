@@ -1,11 +1,13 @@
 query ListAllStatesOfDeposit {
     deposit(id: "00000000-0000-0000-0000-000000000001") {
         states {
-            nodes {
-                id
-                label
-                description
-                timestamp
+            edges {
+                node {
+                    id
+                    label
+                    description
+                    timestamp
+                }
             }
         }
     }

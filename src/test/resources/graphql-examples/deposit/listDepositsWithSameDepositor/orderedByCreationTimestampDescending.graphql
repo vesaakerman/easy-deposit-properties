@@ -3,11 +3,13 @@ query ListDepositsWithSameDepositor {
         depositor {
             depositorId
             deposits(orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
-                nodes {
-                    depositId
-                    state {
-                        label
-                        description
+                edges {
+                    node {
+                        depositId
+                        state {
+                            label
+                            description
+                        }
                     }
                 }
             }

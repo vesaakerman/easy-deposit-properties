@@ -1,13 +1,15 @@
 query ListDepositsWithState {
     deposits(state: {label: ARCHIVED, filter: LATEST}, orderBy: {field: DEPOSIT_ID, direction: DESC}) {
-        nodes {
-            depositId
-            creationTimestamp
-            depositor {
-                depositorId
-            }
-            state {
-                description
+        edges {
+            node {
+                depositId
+                creationTimestamp
+                depositor {
+                    depositorId
+                }
+                state {
+                    description
+                }
             }
         }
     }

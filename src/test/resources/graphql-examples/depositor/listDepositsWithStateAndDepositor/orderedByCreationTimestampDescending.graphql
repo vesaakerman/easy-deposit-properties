@@ -1,13 +1,15 @@
 query ListDepositsWithStateAndDepositor {
     depositor(id: "user001") {
         deposits(state: {label: ARCHIVED}, orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
-            nodes {
-                creationTimestamp
-                depositor {
-                    depositorId
-                }
-                state {
-                    description
+            edges {
+                node {
+                    creationTimestamp
+                    depositor {
+                        depositorId
+                    }
+                    state {
+                        description
+                    }
                 }
             }
         }

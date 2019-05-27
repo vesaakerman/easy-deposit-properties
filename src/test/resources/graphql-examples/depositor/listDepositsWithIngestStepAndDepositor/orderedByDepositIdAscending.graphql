@@ -1,15 +1,17 @@
 query ListDepositsWithIngestStepAndDepositor {
     depositor(id: "user001") {
         deposits(ingestStep: {label: COMPLETED}, orderBy: {field: DEPOSIT_ID, direction: ASC}) {
-            nodes {
-                depositId
-                creationTimestamp
-                depositor {
-                    depositorId
-                }
-                state {
-                    label
-                    description
+            edges {
+                node {
+                    depositId
+                    creationTimestamp
+                    depositor {
+                        depositorId
+                    }
+                    state {
+                        label
+                        description
+                    }
                 }
             }
         }

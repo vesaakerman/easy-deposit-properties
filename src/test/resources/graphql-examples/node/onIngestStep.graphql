@@ -7,8 +7,10 @@ query {
                 depositId
             }
             deposits(ingestStepFilter: ALL, orderBy: {field: DEPOSIT_ID, direction: ASC}) {
-                nodes {
-                    depositId
+                edges {
+                    node {
+                        depositId
+                    }
                 }
             }
         }

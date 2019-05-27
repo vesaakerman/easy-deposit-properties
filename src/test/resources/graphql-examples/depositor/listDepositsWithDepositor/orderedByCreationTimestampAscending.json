@@ -2,19 +2,23 @@
   "data": {
     "depositor": {
       "deposits": {
-        "nodes": [
+        "edges": [
           {
-            "depositId": "00000000-0000-0000-0000-000000000003",
-            "state": {
-              "label": "INVALID",
-              "description": "deposit is invalid"
+            "node": {
+              "depositId": "00000000-0000-0000-0000-000000000003",
+              "state": {
+                "label": "INVALID",
+                "description": "deposit is invalid"
+              }
             }
           },
           {
-            "depositId": "00000000-0000-0000-0000-000000000005",
-            "state": {
-              "label": "REJECTED",
-              "description": "deposit is rejected"
+            "node": {
+              "depositId": "00000000-0000-0000-0000-000000000005",
+              "state": {
+                "label": "REJECTED",
+                "description": "deposit is rejected"
+              }
             }
           }
         ]

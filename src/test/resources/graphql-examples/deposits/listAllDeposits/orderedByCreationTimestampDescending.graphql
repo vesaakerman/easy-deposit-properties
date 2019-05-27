@@ -1,18 +1,20 @@
 query ListAllDepositsOrderedByDepositIdDescending {
     deposits(orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
-        nodes {
-            depositId
-            depositor {
-                depositorId
-            }
-            state {
-                label
-                description
-                timestamp
-            }
-            ingestStep {
-                step
-                timestamp
+        edges {
+            node {
+                depositId
+                depositor {
+                    depositorId
+                }
+                state {
+                    label
+                    description
+                    timestamp
+                }
+                ingestStep {
+                    step
+                    timestamp
+                }
             }
         }
     }

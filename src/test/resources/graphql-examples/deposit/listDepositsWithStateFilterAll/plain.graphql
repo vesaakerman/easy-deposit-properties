@@ -2,8 +2,10 @@ query ListDepositsWithSameState {
     deposit(id: "00000000-0000-0000-0000-000000000001") {
         state {
             deposits(stateFilter: ALL) {
-                nodes {
-                    depositId
+                edges {
+                    node {
+                        depositId
+                    }
                 }
             }
         }

@@ -3,8 +3,10 @@ query ListDepositsWithSameState {
         ingestStep {
             step
             deposits(orderBy: {field: DEPOSIT_ID, direction: ASC}) {
-                nodes {
-                    depositId
+                edges {
+                    node {
+                        depositId
+                    }
                 }
             }
         }

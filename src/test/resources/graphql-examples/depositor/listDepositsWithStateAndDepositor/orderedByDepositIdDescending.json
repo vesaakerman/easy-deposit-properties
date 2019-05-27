@@ -2,32 +2,38 @@
   "data": {
     "depositor": {
       "deposits": {
-        "nodes": [
+        "edges": [
           {
-            "creationTimestamp": "2019-04-04T00:00:00.000+02:00",
-            "depositor": {
-              "depositorId": "user001"
-            },
-            "state": {
-              "description": "deposit is archived"
+            "node": {
+              "creationTimestamp": "2019-04-04T00:00:00.000+02:00",
+              "depositor": {
+                "depositorId": "user001"
+              },
+              "state": {
+                "description": "deposit is archived"
+              }
             }
           },
           {
-            "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
-            "depositor": {
-              "depositorId": "user001"
-            },
-            "state": {
-              "description": "deposit is archived"
+            "node": {
+              "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
+              "depositor": {
+                "depositorId": "user001"
+              },
+              "state": {
+                "description": "deposit is archived"
+              }
             }
           },
           {
-            "creationTimestamp": "2019-01-01T00:00:00.000+01:00",
-            "depositor": {
-              "depositorId": "user001"
-            },
-            "state": {
-              "description": "deposit is archived"
+            "node": {
+              "creationTimestamp": "2019-01-01T00:00:00.000+01:00",
+              "depositor": {
+                "depositorId": "user001"
+              },
+              "state": {
+                "description": "deposit is archived"
+              }
             }
           }
         ]

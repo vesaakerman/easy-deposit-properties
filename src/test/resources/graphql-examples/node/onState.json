@@ -6,18 +6,24 @@
       "description": "deposit is archived",
       "timestamp": "2019-01-01T05:05:00.000+01:00",
       "deposits": {
-        "nodes": [
+        "edges": [
           {
-            "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDI=",
-            "depositId": "00000000-0000-0000-0000-000000000002"
+            "node": {
+              "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDI=",
+              "depositId": "00000000-0000-0000-0000-000000000002"
+            }
           },
           {
-            "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDQ=",
-            "depositId": "00000000-0000-0000-0000-000000000004"
+            "node": {
+              "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDQ=",
+              "depositId": "00000000-0000-0000-0000-000000000004"
+            }
           },
           {
-            "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDE=",
-            "depositId": "00000000-0000-0000-0000-000000000001"
+            "node": {
+              "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDE=",
+              "depositId": "00000000-0000-0000-0000-000000000001"
+            }
           }
         ]
       }

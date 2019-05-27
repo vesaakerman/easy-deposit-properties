@@ -3,11 +3,13 @@ query ListDepositsWithSameDepositor {
         depositor {
             depositorId
             deposits {
-                nodes {
-                    depositId
-                    state {
-                        label
-                        description
+                edges {
+                    node {
+                        depositId
+                        state {
+                            label
+                            description
+                        }
                     }
                 }
             }

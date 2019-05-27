@@ -1,35 +1,41 @@
 {
   "data": {
     "deposits": {
-      "nodes": [
+      "edges": [
         {
-          "depositId": "00000000-0000-0000-0000-000000000002",
-          "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
-          "depositor": {
-            "depositorId": "user001"
-          },
-          "state": {
-            "label": "ARCHIVED"
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
+            "depositor": {
+              "depositorId": "user001"
+            },
+            "state": {
+              "label": "ARCHIVED"
+            }
           }
         },
         {
-          "depositId": "00000000-0000-0000-0000-000000000005",
-          "creationTimestamp": "2019-05-05T00:00:00.000+02:00",
-          "depositor": {
-            "depositorId": "user002"
-          },
-          "state": {
-            "label": "REJECTED"
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000005",
+            "creationTimestamp": "2019-05-05T00:00:00.000+02:00",
+            "depositor": {
+              "depositorId": "user002"
+            },
+            "state": {
+              "label": "REJECTED"
+            }
           }
         },
         {
-          "depositId": "00000000-0000-0000-0000-000000000001",
-          "creationTimestamp": "2019-01-01T00:00:00.000+01:00",
-          "depositor": {
-            "depositorId": "user001"
-          },
-          "state": {
-            "label": "ARCHIVED"
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "creationTimestamp": "2019-01-01T00:00:00.000+01:00",
+            "depositor": {
+              "depositorId": "user001"
+            },
+            "state": {
+              "label": "ARCHIVED"
+            }
           }
         }
       ]

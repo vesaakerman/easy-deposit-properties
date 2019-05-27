@@ -63,9 +63,6 @@ type DepositConnection {
 
   """Identifies the total count of items in the connection."""
   totalCount: Int!
-
-  """A list of nodes."""
-  nodes: [Deposit!]!
 }
 
 """An edge in a connection."""
@@ -218,9 +215,6 @@ type IngestStepConnection {
 
   """Identifies the total count of items in the connection."""
   totalCount: Int!
-
-  """A list of nodes."""
-  nodes: [IngestStep!]!
 }
 
 """An edge in a connection."""
@@ -494,9 +488,6 @@ type StateConnection {
 
   """Identifies the total count of items in the connection."""
   totalCount: Int!
-
-  """A list of nodes."""
-  nodes: [State!]!
 }
 
 """An edge in a connection."""

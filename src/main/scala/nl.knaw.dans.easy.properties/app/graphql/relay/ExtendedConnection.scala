@@ -23,8 +23,6 @@ import scala.language.higherKinds
 import scala.reflect.ClassTag
 
 trait ExtendedConnection[T] extends Connection[T] {
-  def nodes: Seq[T]
-
   def totalCount: Int
 }
 
@@ -57,18 +55,12 @@ object ExtendedConnection {
           description = Option("Identifies the total count of items in the connection."),
           resolve = ctx => connEv.totalCount(ctx.value),
         ),
-        Field(
-          name = "nodes",
-          fieldType = ListType(nodeType),
-          description = Option("A list of nodes."),
-          resolve = ctx => connEv.nodes(ctx.value),
-        ),
       ),
     )
   }
 
   def empty[T]: ExtendedConnection[T] = {
-    DefaultExtendedConnection(Connection.empty[T], Vector.empty[T])
+    DefaultExtendedConnection(Connection.empty[T], 0)
   }
 
   def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs)(implicit ec: ExecutionContext): Future[ExtendedConnection[T]] = {
@@ -84,6 +76,6 @@ object ExtendedConnection {
   }
 
   def connectionFromSeq[T](seqSlice: Seq[T], args: ConnectionArgs, sliceInfo: SliceInfo): ExtendedConnection[T] = {
-    DefaultExtendedConnection(Connection.connectionFromSeq(seqSlice, args, sliceInfo), seqSlice)
+    DefaultExtendedConnection(Connection.connectionFromSeq(seqSlice, args, sliceInfo), seqSlice.size)
   }
 }

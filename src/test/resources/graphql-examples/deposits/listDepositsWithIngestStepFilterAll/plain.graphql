@@ -1,13 +1,15 @@
 query ListDepositsWithState {
     deposits(ingestStep: {label: VALIDATE, filter: ALL}) {
-        nodes {
-            depositId
-            creationTimestamp
-            depositor {
-                depositorId
-            }
-            state {
-                label
+        edges {
+            node {
+                depositId
+                creationTimestamp
+                depositor {
+                    depositorId
+                }
+                state {
+                    label
+                }
             }
         }
     }
