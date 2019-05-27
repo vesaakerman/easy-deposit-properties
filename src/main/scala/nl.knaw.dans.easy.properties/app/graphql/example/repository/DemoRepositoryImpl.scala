@@ -107,10 +107,25 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private val identifier51 = Identifier("51", IdentifierType.BAG_STORE, depositId5.toString, new DateTime(2019, 5, 5, 0, 0))
 
+  private val doiRegistered10 = DoiRegisteredEvent("no", new DateTime(2019, 1, 1, 0, 0))
+  private val doiRegistered11 = DoiRegisteredEvent("yes", new DateTime(2019, 1, 1, 4, 7))
+  private val doiRegistered20 = DoiRegisteredEvent("no", new DateTime(2019, 2, 2, 0, 0))
+  private val doiRegistered21 = DoiRegisteredEvent("yes", new DateTime(2019, 2, 2, 2, 7))
+  private val doiRegistered50 = DoiRegisteredEvent("no", new DateTime(2019, 5, 5, 0, 0))
+
+  private val doiAction10 = DoiActionEvent("update", new DateTime(2019, 1, 1, 0, 0))
+  private val doiAction11 = DoiActionEvent("none", new DateTime(2019, 1, 1, 4, 5))
+  private val doiAction20 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0))
+  private val doiAction30 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0))
+  private val doiAction40 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0))
+  private val doiAction50 = DoiActionEvent("update", new DateTime(2019, 5, 5, 0, 0))
+
   override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
   override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty
   override val stepRepo: mutable.Map[DepositId, Seq[IngestStep]] = mutable.Map.empty
   override val identifierRepo: mutable.Map[(DepositId, IdentifierType), Identifier] = mutable.Map.empty
+  override val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = mutable.Map.empty
+  override val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]] = mutable.Map.empty
 
   resetRepository()
 
@@ -119,6 +134,8 @@ class DemoRepositoryImpl extends DemoRepository {
     resetStateRepo()
     resetStepRepo()
     resetIdentifierRepo()
+    resetDoiRegisteredRepo()
+    resetDoiActionRepo()
   }
 
   def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
@@ -175,6 +192,26 @@ class DemoRepositoryImpl extends DemoRepository {
       (depositId4 -> IdentifierType.FEDORA) -> identifier44,
 
       (depositId5 -> IdentifierType.BAG_STORE) -> identifier51,
+    )
+  }
+
+  def resetDoiRegisteredRepo(): mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = {
+    doiRegisteredRepo.clear()
+    doiRegisteredRepo ++= Map(
+      depositId1 -> Seq(doiRegistered10, doiRegistered11),
+      depositId2 -> Seq(doiRegistered20, doiRegistered21),
+      depositId5 -> Seq(doiRegistered50),
+    )
+  }
+
+  def resetDoiActionRepo(): mutable.Map[DepositId, Seq[DoiActionEvent]] = {
+    doiActionRepo.clear()
+    doiActionRepo ++= Map(
+      depositId1 -> Seq(doiAction10, doiAction11),
+      depositId2 -> Seq(doiAction20),
+      depositId3 -> Seq(doiAction30),
+      depositId4 -> Seq(doiAction40),
+      depositId5 -> Seq(doiAction50),
     )
   }
 }

@@ -51,6 +51,24 @@ type Deposit implements Node {
 
   """List the identifiers related to this deposit"""
   identifiers: [Identifier!]!
+
+  """Returns whether the DOI is registered in DataCite."""
+  doiRegistered: String
+
+  """
+  Lists all state changes related to the registration of the DOI in DataCite
+  """
+  doiRegisteredEvents: [DoiRegisteredEvent!]!
+
+  """
+  Returns whether the DOI should be 'created' or 'updated' on registration in DataCite
+  """
+  doiAction: String
+
+  """
+  Lists all state changes related to whether the DOI should be 'created' or 'updated' on registration in DataCite
+  """
+  doiActionEvents: [DoiActionEvent!]!
 }
 
 """A connection to a list of items."""
@@ -136,6 +154,35 @@ input DepositStateFilter {
   Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`).
   """
   filter: StateFilter = LATEST
+}
+
+"""A DOI action event related to a deposit"""
+type DoiActionEvent {
+  """
+  Whether the DOI must be 'created' or 'updated' when registering in DataCite.
+  """
+  value: String!
+
+  """The timestamp at which this value was added."""
+  timestamp: DateTime!
+}
+
+"""A DOI registration event related to a deposit"""
+type DoiRegisteredEvent {
+  """Whether the DOI is registered in DataCite."""
+  value: String!
+
+  """The timestamp at which the DOI was registered in DataCite."""
+  timestamp: DateTime!
+}
+
+"""A DOI registration event related to a deposit"""
+input DoiRegisteredEventInput {
+  """Whether the DOI is registered in DataCite."""
+  value: String!
+
+  """The timestamp at which the DOI was registered in DataCite."""
+  timestamp: DateTime!
 }
 
 """An identifier related to a deposit."""
@@ -357,6 +404,26 @@ type Mutation {
     """The identifier to be added."""
     identifier: InputIdentifier!
   ): Identifier
+
+  """Set whether the DOI has been registered in DataCite."""
+  setDoiRegistered(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The DOI registration event to be set."""
+    doiRegistered: DoiRegisteredEventInput!
+  ): DoiRegisteredEvent
+
+  """
+  Set whether the DOI should be 'created' or 'updated' on registration in DataCite.
+  """
+  setDoiAction(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The DOI action event to be set."""
+    doiAction: DoiRegisteredEventInput!
+  ): DoiActionEvent
 }
 
 """An object with an ID"""

@@ -22,6 +22,7 @@ import sangria.schema._
 object GraphQLSchema extends Scalars
   with NodeType
   with MetaTypes
+  with DoiEventTypes
   with IdentifierType
   with IngestStepType
   with StateType
@@ -35,5 +36,7 @@ object GraphQLSchema extends Scalars
     fetchCurrentStates, fetchAllStates,
     fetchCurrentIngestSteps, fetchAllIngestSteps,
     fetchIdentifiersByDepositId, fetchIdentifiersByType,
+    fetchCurrentDoisRegistered, fetchAllDoisRegistered,
+    fetchCurrentDoisAction, fetchAllDoisAction,
   )
 }

@@ -83,4 +83,28 @@ trait DepositRepository {
   def addIdentifier(id: DepositId, identifier: InputIdentifier): Option[Identifier]
 
   def getDepositByIdentifierId(id: String): Option[Deposit]
+
+  //
+
+  def getCurrentDoiRegistered(id: DepositId): Option[DoiRegisteredEvent]
+
+  def getCurrentDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiRegisteredEvent])]
+
+  def getAllDoiRegistered(id: DepositId): Seq[DoiRegisteredEvent]
+
+  def getAllDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiRegisteredEvent])]
+
+  def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Option[DoiRegisteredEvent]
+
+  //
+
+  def getCurrentDoiAction(id: DepositId): Option[DoiActionEvent]
+
+  def getCurrentDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiActionEvent])]
+
+  def getAllDoiAction(id: DepositId): Seq[DoiActionEvent]
+
+  def getAllDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiActionEvent])]
+
+  def setDoiAction(id: DepositId, action: DoiActionEvent): Option[DoiActionEvent]
 }

@@ -20,16 +20,16 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.state.State
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay._
-import sangria.schema.{ Argument, Context, DeferredValue, Field, ListType, ObjectType, OptionType }
+import sangria.schema.{ Argument, Context, DeferredValue, Field, ListType, ObjectType, OptionType, StringType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DepositType {
-  this: DepositorType with StateType with IngestStepType with IdentifierType with NodeType with MetaTypes with Scalars =>
+  this: DepositorType with StateType with IngestStepType with IdentifierType with DoiEventTypes with NodeType with MetaTypes with Scalars =>
 
   private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
     name = "type",
@@ -86,6 +86,30 @@ trait DepositType {
     fieldType = ListType(IdentifierObjectType),
     resolve = getIdentifiers,
   )
+  private val doiRegisteredField: Field[DataContext, Deposit] = Field(
+    name = "doiRegistered",
+    description = Some("Returns whether the DOI is registered in DataCite."),
+    fieldType = OptionType(StringType),
+    resolve = getDoiRegistered,
+  )
+  private val doiRegisteredEventsField: Field[DataContext, Deposit] = Field(
+    name = "doiRegisteredEvents",
+    description = Some("Lists all state changes related to the registration of the DOI in DataCite"),
+    fieldType = ListType(DoiRegisteredEventType),
+    resolve = getDoiRegisteredEvents,
+  )
+  private val doiActionField: Field[DataContext, Deposit] = Field(
+    name = "doiAction",
+    description = Some("Returns whether the DOI should be 'created' or 'updated' on registration in DataCite"),
+    fieldType = OptionType(StringType),
+    resolve = getDoiAction,
+  )
+  private val doiActionEventsField: Field[DataContext, Deposit] = Field(
+    name = "doiActionEvents",
+    description = Some("Lists all state changes related to whether the DOI should be 'created' or 'updated' on registration in DataCite"),
+    fieldType = ListType(DoiActionEventType),
+    resolve = getDoiActionEvents,
+  )
 
   private def getCurrentState(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[State]] = {
     val id = context.value.id
@@ -134,6 +158,34 @@ trait DepositType {
       .map { case (_, identifiers) => identifiers }
   }
 
+  private def getDoiRegistered(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[String]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchCurrentDoisRegistered.defer(depositId))
+      .map { case (_, doiRegistered) => doiRegistered.map(_.value) }
+  }
+
+  private def getDoiRegisteredEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[DoiRegisteredEvent]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchAllDoisRegistered.defer(depositId))
+      .map { case (_, events) => events.sortBy(_.timestamp) }
+  }
+
+  private def getDoiAction(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[String]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchCurrentDoisAction.defer(depositId))
+      .map { case (_, doiAction) => doiAction.map(_.value) }
+  }
+
+  private def getDoiActionEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[DoiActionEvent]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchAllDoisAction.defer(depositId))
+      .map { case (_, events) => events.sortBy(_.timestamp) }
+  }
+
   implicit object DepositIdentifiable extends Identifiable[Deposit] {
     override def id(deposit: Deposit): String = deposit.id.toString
   }
@@ -155,6 +207,10 @@ trait DepositType {
       depositorField,
       identifierField,
       identifiersField,
+      doiRegisteredField,
+      doiRegisteredEventsField,
+      doiActionField,
+      doiActionEventsField
     ),
   )
 

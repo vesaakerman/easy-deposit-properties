@@ -15,6 +15,22 @@ query ListAllDeposits {
                     step
                     timestamp
                 }
+                identifiers {
+                    id
+                    type
+                    value
+                    timestamp
+                }
+                doiRegistered
+                doiRegisteredEvents {
+                    value
+                    timestamp
+                }
+                doiAction
+                doiActionEvents {
+                    value
+                    timestamp
+                }
             }
         }
     }

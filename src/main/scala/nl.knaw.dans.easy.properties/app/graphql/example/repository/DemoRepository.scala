@@ -31,6 +31,8 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   val stateRepo: mutable.Map[DepositId, Seq[State]]
   val stepRepo: mutable.Map[DepositId, Seq[IngestStep]]
   val identifierRepo: mutable.Map[(DepositId, IdentifierType), Identifier]
+  val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]]
+  val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]]
 
   override def getAllDeposits: Seq[Deposit] = {
     trace(())
@@ -264,5 +266,75 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     identifierRepo
       .collectFirst { case ((depositId, _), identifier) if identifier.id == id => depositId }
       .flatMap(depositRepo.get)
+  }
+
+  //
+
+  override def getCurrentDoiRegistered(id: DepositId): Option[DoiRegisteredEvent] = {
+    trace(id)
+    doiRegisteredRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  override def getCurrentDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiRegisteredEvent])] = {
+    trace(ids)
+    ids.map(id => id -> doiRegisteredRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  override def getAllDoiRegistered(id: DepositId): Seq[DoiRegisteredEvent] = {
+    trace(id)
+    doiRegisteredRepo.getOrElse(id, Seq.empty)
+  }
+
+  override def getAllDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiRegisteredEvent])] = {
+    trace(ids)
+    ids.map(id => id -> doiRegisteredRepo.getOrElse(id, Seq.empty))
+  }
+
+  override def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Option[DoiRegisteredEvent] = {
+    trace(id, registered)
+    if (depositRepo contains id) {
+      if (doiRegisteredRepo contains id)
+        doiRegisteredRepo.update(id, doiRegisteredRepo(id) :+ registered)
+      else
+        doiRegisteredRepo += (id -> Seq(registered))
+
+      Some(registered)
+    }
+    else Option.empty
+  }
+
+  //
+
+  override def getCurrentDoiAction(id: DepositId): Option[DoiActionEvent] = {
+    trace(id)
+    doiActionRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  override def getCurrentDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiActionEvent])] = {
+    trace(ids)
+    ids.map(id => id -> doiActionRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  override def getAllDoiAction(id: DepositId): Seq[DoiActionEvent] = {
+    trace(id)
+    doiActionRepo.getOrElse(id, Seq.empty)
+  }
+
+  override def getAllDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiActionEvent])] = {
+    trace(ids)
+    ids.map(id => id -> doiActionRepo.getOrElse(id, Seq.empty))
+  }
+
+  override def setDoiAction(id: DepositId, action: DoiActionEvent): Option[DoiActionEvent] = {
+    trace(id, action)
+    if (depositRepo contains id) {
+      if (doiActionRepo contains id)
+        doiActionRepo.update(id, doiActionRepo(id) :+ action)
+      else
+        doiActionRepo += (id -> Seq(action))
+
+      Some(action)
+    }
+    else Option.empty
   }
 }

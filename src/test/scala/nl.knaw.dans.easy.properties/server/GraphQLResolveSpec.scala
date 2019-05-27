@@ -23,7 +23,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.Identifi
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepFilter, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, State, StateFilter, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiActionEvent, DoiRegisteredEvent }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
@@ -105,6 +105,22 @@ trait GraphQLResolveSpecTestObjects {
     idValue = "easy-dataset:1",
     timestamp = DateTime.now(),
   )
+  val doiRegisteredEvent1 = DoiRegisteredEvent(
+    value = "yes",
+    timestamp = DateTime.now(),
+  )
+  val doiRegisteredEvent2 = DoiRegisteredEvent(
+    value = "no",
+    timestamp = DateTime.now(),
+  )
+  val doiActionEvent1 = DoiActionEvent(
+    value = "create",
+    timestamp = DateTime.now(),
+  )
+  val doiActionEvent2 = DoiActionEvent(
+    value = "update",
+    timestamp = DateTime.now(),
+  )
 }
 
 class GraphQLResolveSpec extends TestSupportFixture
@@ -128,7 +144,7 @@ class GraphQLResolveSpec extends TestSupportFixture
       .copyTo(graphqlExamplesDir)
   }
 
-  "graphql" should "resolve 'deposit/findDeposit/plain.graphql' with 4 calls to the repository" in {
+  "graphql" should "resolve 'deposit/findDeposit/plain.graphql' with 8 calls to the repository" in {
     val input = graphqlExamplesDir / "deposit" / "findDeposit" / "plain.graphql"
 
     inSequence {
@@ -137,6 +153,16 @@ class GraphQLResolveSpec extends TestSupportFixture
         repository.getCurrentState _ expects depositId1 once() returning Some(state1)
         repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
         (repository.getIdentifiers(_: DepositId)) expects depositId1 once() returning Seq(identifier1, identifier2)
+        repository.getCurrentDoiRegistered _ expects depositId1 once() returning Some(doiRegisteredEvent1)
+        repository.getAllDoiRegistered _ expects depositId1 once() returning Seq(
+          doiRegisteredEvent1,
+          doiRegisteredEvent2,
+        )
+        repository.getCurrentDoiAction _ expects depositId1 once() returning Some(doiActionEvent1)
+        repository.getAllDoiAction _ expects depositId1 once() returning Seq(
+          doiActionEvent1,
+          doiActionEvent2,
+        )
       }
     }
 
@@ -366,7 +392,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
-  it should "resolve 'deposits/listAllDeposits/plain.graphql' with 2 calls to the repository" in {
+  it should "resolve 'deposits/listAllDeposits/plain.graphql' with 8 calls to the repository" in {
     val input = graphqlExamplesDir / "deposits" / "listAllDeposits" / "plain.graphql"
 
     inSequence {
@@ -381,6 +407,31 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId1 -> Some(step1),
           depositId2 -> Some(step2),
           depositId3 -> Some(step3),
+        )
+        (repository.getIdentifiers(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Seq(identifier1, identifier2),
+          depositId2 -> Seq(identifier2, identifier3),
+          depositId3 -> Seq.empty,
+        )
+        repository.getCurrentDoisRegistered _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Some(doiRegisteredEvent1),
+          depositId2 -> Some(doiRegisteredEvent2),
+          depositId3 -> None,
+        )
+        repository.getAllDoisRegistered _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Seq(doiRegisteredEvent1, doiRegisteredEvent2),
+          depositId2 -> Seq(doiRegisteredEvent2),
+          depositId3 -> Seq.empty,
+        )
+        repository.getCurrentDoisAction _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Some(doiActionEvent1),
+          depositId2 -> Some(doiActionEvent2),
+          depositId3 -> None,
+        )
+        repository.getAllDoisAction _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Seq(doiActionEvent1, doiActionEvent2),
+          depositId2 -> Seq(doiActionEvent2),
+          depositId3 -> Seq.empty,
         )
       }
     }

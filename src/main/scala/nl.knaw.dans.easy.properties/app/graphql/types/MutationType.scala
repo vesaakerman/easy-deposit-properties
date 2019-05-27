@@ -19,12 +19,12 @@ import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, DoiActionEvent, DoiRegisteredEvent, Timestamp }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
-  this: DepositType with StateType with IngestStepType with IdentifierType with Scalars =>
+  this: DepositType with StateType with IngestStepType with IdentifierType with DoiEventTypes with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
     name = "depositId",
@@ -80,6 +80,24 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  private val doiRegisteredArgument: Argument[DoiRegisteredEvent] = Argument(
+    name = "doiRegistered",
+    description = Some("The DOI registration event to be set."),
+    defaultValue = None,
+    argumentType = InputDoiRegisteredEventType,
+    fromInput = inputDoiRegisteredEventFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val doiActionArgument: Argument[DoiActionEvent] = Argument(
+    name = "doiAction",
+    description = Some("The DOI action event to be set."),
+    defaultValue = None,
+    argumentType = InputDoiActionEventType,
+    fromInput = inputDoiActionEventFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
 
   private val addDepositField: Field[DataContext, Unit] = Field(
     name = "addDeposit",
@@ -122,6 +140,26 @@ trait MutationType {
     fieldType = OptionType(IdentifierObjectType),
     resolve = addIdentifier,
   )
+  private val setDoiRegisteredField: Field[DataContext, Unit] = Field(
+    name = "setDoiRegistered",
+    description = Some("Set whether the DOI has been registered in DataCite."),
+    arguments = List(
+      depositIdArgument,
+      doiRegisteredArgument,
+    ),
+    fieldType = OptionType(DoiRegisteredEventType),
+    resolve = setDoiRegistered,
+  )
+  private val setDoiActionField: Field[DataContext, Unit] = Field(
+    name = "setDoiAction",
+    description = Some("Set whether the DOI should be 'created' or 'updated' on registration in DataCite."),
+    arguments = List(
+      depositIdArgument,
+      doiActionArgument,
+    ),
+    fieldType = OptionType(DoiActionEventType),
+    resolve = setDoiAction,
+  )
 
   private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
     val repository = context.ctx.deposits
@@ -160,6 +198,24 @@ trait MutationType {
     repository.addIdentifier(depositId, identifier)
   }
 
+  private def setDoiRegistered(context: Context[DataContext, Unit]): Option[DoiRegisteredEvent] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val doiRegistered = context.arg(doiRegisteredArgument)
+
+    repository.setDoiRegistered(depositId, doiRegistered)
+  }
+
+  private def setDoiAction(context: Context[DataContext, Unit]): Option[DoiActionEvent] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val doiAction = context.arg(doiActionArgument)
+
+    repository.setDoiAction(depositId, doiAction)
+  }
+
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(
     name = "Mutation",
     description = "The root query for implementing GraphQL mutations.",
@@ -168,6 +224,8 @@ trait MutationType {
       updateStateField,
       updateIngestStepField,
       addIdentifierField,
+      setDoiRegisteredField,
+      setDoiActionField,
     ),
   )
 }
