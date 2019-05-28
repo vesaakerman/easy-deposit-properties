@@ -19,8 +19,8 @@ import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model._
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
-import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepFilter, InputIngestStep }
-import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State, StateFilter }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.collection.mutable
@@ -57,8 +57,8 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
         fromDepositor.withFilter(d => {
           val states = stateRepo.getOrElse(d.id, Seq.empty)
           val selectedStates = filter match {
-            case StateFilter.LATEST => states.maxByOption(_.timestamp).toSeq
-            case StateFilter.ALL => states
+            case SeriesFilter.LATEST => states.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => states
           }
           selectedStates.exists(_.label == label)
         })
@@ -70,8 +70,8 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
         withState.withFilter(d => {
           val steps = stepRepo.getOrElse(d.id, Seq.empty)
           val selectedSteps = filter match {
-            case IngestStepFilter.LATEST => steps.maxByOption(_.timestamp).toSeq
-            case IngestStepFilter.ALL => steps
+            case SeriesFilter.LATEST => steps.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => steps
           }
           selectedSteps.exists(_.step == step)
         })

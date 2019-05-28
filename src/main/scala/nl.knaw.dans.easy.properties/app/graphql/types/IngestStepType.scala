@@ -17,15 +17,14 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepFilter.IngestStepFilter
+import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.{ coercedScalaInput, inputObjectResultInput, optionInput }
-import sangria.marshalling.ToInput.ScalarToInput
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
@@ -34,13 +33,6 @@ import scala.concurrent.Future
 
 trait IngestStepType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
-
-  implicit val IngestStepFilterType: EnumType[IngestStepFilter] = deriveEnumType(
-    EnumTypeDescription("Mark a query to only search through current ingest steps, or also to include past ingest steps."),
-    DocumentValue("LATEST", "Only search through current ingest steps."),
-    DocumentValue("ALL", "Search through both current and past ingest steps.")
-  )
-  implicit val IngestStepFilterToInput: ToInput[IngestStepFilter, _] = new ScalarToInput
 
   implicit val StepLabelType: EnumType[IngestStepLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the ingest step."),
@@ -85,16 +77,16 @@ trait IngestStepType {
 
       DepositIngestStepFilter(
         label = ad("label").asInstanceOf[IngestStepLabel],
-        filter = ad("filter").asInstanceOf[Option[IngestStepFilter]].getOrElse(IngestStepFilter.LATEST),
+        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
       )
     }
   }
 
-  private val ingestStepFilterArgument: Argument[IngestStepFilter] = Argument(
+  private val seriesFilterArgument: Argument[SeriesFilter] = Argument(
     name = "ingestStepFilter",
-    argumentType = IngestStepFilterType,
+    argumentType = SeriesFilterType,
     description = Some("Determine whether to search in current ingest steps (`LATEST`, default) or all current and past ingest steps (`ALL`)."),
-    defaultValue = Some(IngestStepFilter.LATEST -> IngestStepFilterToInput),
+    defaultValue = Some(SeriesFilter.LATEST -> SeriesFilterToInput),
     fromInput = coercedScalaInput,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
@@ -122,7 +114,7 @@ trait IngestStepType {
     name = "deposits",
     description = Some("List all deposits with the same current ingest step."),
     arguments = List(
-      ingestStepFilterArgument,
+      seriesFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -141,7 +133,7 @@ trait IngestStepType {
     val repository = context.ctx.deposits
 
     val step = context.value.step
-    val stepFilter = context.arg(ingestStepFilterArgument)
+    val stepFilter = context.arg(seriesFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = repository.getDeposits(

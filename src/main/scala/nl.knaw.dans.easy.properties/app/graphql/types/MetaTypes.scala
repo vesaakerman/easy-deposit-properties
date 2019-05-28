@@ -15,17 +15,26 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
+import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.state.State
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
+import sangria.marshalling.ToInput.ScalarToInput
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
 import sangria.schema.{ Argument, EnumType, InputObjectType, OptionInputType }
 
 trait MetaTypes {
+
+  implicit val SeriesFilterType: EnumType[SeriesFilter.Value] = deriveEnumType(
+    EnumTypeDescription("Mark a query to only search through current states, or also to include past states."),
+    DocumentValue("LATEST", "Only search through current states."),
+    DocumentValue("ALL", "Search through both current and past states."),
+  )
+  implicit val SeriesFilterToInput: ToInput[SeriesFilter, _] = new ScalarToInput
 
   @GraphQLDescription("Possible directions in which to order a list of items when provided an orderBy argument")
   object OrderDirection extends Enumeration {

@@ -17,15 +17,14 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.state.StateFilter.StateFilter
+import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
-import sangria.marshalling.ToInput.ScalarToInput
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
@@ -34,13 +33,6 @@ import scala.concurrent.Future
 
 trait StateType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
-
-  implicit val StateFilterType: EnumType[StateFilter] = deriveEnumType(
-    EnumTypeDescription("Mark a query to only search through current states, or also to include past states."),
-    DocumentValue("LATEST", "Only search through current states."),
-    DocumentValue("ALL", "Search through both current and past states."),
-  )
-  implicit val StateFilterToInput: ToInput[StateFilter, _] = new ScalarToInput
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the state of a deposit."),
@@ -87,16 +79,16 @@ trait StateType {
 
       DepositStateFilter(
         label = ad("label").asInstanceOf[StateLabel],
-        filter = ad("filter").asInstanceOf[Option[StateFilter]].getOrElse(StateFilter.LATEST),
+        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
       )
     }
   }
 
-  private val stateFilterArgument: Argument[StateFilter] = Argument(
+  private val seriesFilterArgument: Argument[SeriesFilter] = Argument(
     name = "stateFilter",
-    argumentType = StateFilterType,
+    argumentType = SeriesFilterType,
     description = Some("Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
-    defaultValue = Some(StateFilter.LATEST -> StateFilterToInput),
+    defaultValue = Some(SeriesFilter.LATEST -> SeriesFilterToInput),
     fromInput = coercedScalaInput,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
@@ -123,7 +115,7 @@ trait StateType {
     name = "deposits",
     description = Some("List all deposits with the same current state label."),
     arguments = List(
-      stateFilterArgument,
+      seriesFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -142,7 +134,7 @@ trait StateType {
     val repository = context.ctx.deposits
 
     val label = context.value.label
-    val stateFilter = context.arg(stateFilterArgument)
+    val stateFilter = context.arg(seriesFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = repository.getDeposits(

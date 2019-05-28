@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.model.ingestStep
 
-import nl.knaw.dans.easy.properties.app.model.DepositFilter
-import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepFilter.IngestStepFilter
+import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
+import nl.knaw.dans.easy.properties.app.model.{ DepositFilter, SeriesFilter }
 
-case class DepositIngestStepFilter(label: IngestStepLabel, filter: IngestStepFilter = IngestStepFilter.LATEST) extends DepositFilter
+case class DepositIngestStepFilter(label: IngestStepLabel, filter: SeriesFilter = SeriesFilter.LATEST) extends DepositFilter

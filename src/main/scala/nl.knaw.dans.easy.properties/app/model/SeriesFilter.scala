@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.model.ingestStep
+package nl.knaw.dans.easy.properties.app.model
 
-object IngestStepFilter extends Enumeration {
-  type IngestStepFilter = Value
+object SeriesFilter extends Enumeration {
+  type SeriesFilter = Value
 
   // @formatter:off
-  val LATEST: IngestStepFilter = Value("LATEST")
-  val ALL   : IngestStepFilter = Value("ALL")
+  val LATEST: SeriesFilter = Value("LATEST")
+  val ALL:    SeriesFilter = Value("ALL")
   // @formatter:on
 }

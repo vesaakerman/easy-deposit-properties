@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.model.state
 
-import nl.knaw.dans.easy.properties.app.model.DepositFilter
-import nl.knaw.dans.easy.properties.app.model.state.StateFilter.StateFilter
+import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
+import nl.knaw.dans.easy.properties.app.model.{ DepositFilter, SeriesFilter }
 
-case class DepositStateFilter(label: StateLabel, filter: StateFilter = StateFilter.LATEST) extends DepositFilter
+case class DepositStateFilter(label: StateLabel, filter: SeriesFilter = SeriesFilter.LATEST) extends DepositFilter
