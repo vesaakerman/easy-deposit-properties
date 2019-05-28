@@ -83,6 +83,35 @@ type DepositConnection {
   totalCount: Int!
 }
 
+"""
+The label and filter to be used in searching for deposits by DOI registration action.
+"""
+input DepositDoiActionFilter {
+  """If provided, only show deposits with the same value for DOI action."""
+  label: String!
+
+  """
+  Determine whether to search in current value for DOI action (`LATEST`, default) or all current and past values (`ALL`).
+  """
+  filter: SeriesFilter = LATEST
+}
+
+"""
+The label and filter to be used in searching for deposits by whether the DOI is registered.
+"""
+input DepositDoiRegisteredFilter {
+  """
+  If provided, only show deposits with the same value for DOI registered.
+  """
+  label: String!
+
+  """
+  Determine whether to search in current value for DOI registered (`LATEST`,
+  default) or all current and past values (`ALL`).
+  """
+  filter: SeriesFilter = LATEST
+}
+
 """An edge in a connection."""
 type DepositEdge {
   """The item at the end of the edge."""
@@ -117,6 +146,16 @@ type Depositor {
 
     """List only those deposits that have this specified ingest step label."""
     ingestStep: DepositIngestStepFilter
+
+    """
+    List only those deposits that have this specified value for DOI registered.
+    """
+    doiRegistered: DepositDoiRegisteredFilter
+
+    """
+    List only those deposits that have this specified value for DOI action.
+    """
+    doiAction: DepositDoiActionFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
@@ -462,6 +501,16 @@ type Query {
 
     """List only those deposits that have this specified ingest step label."""
     ingestStep: DepositIngestStepFilter
+
+    """
+    List only those deposits that have this specified value for DOI registered.
+    """
+    doiRegistered: DepositDoiRegisteredFilter
+
+    """
+    List only those deposits that have this specified value for DOI action.
+    """
+    doiAction: DepositDoiActionFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder

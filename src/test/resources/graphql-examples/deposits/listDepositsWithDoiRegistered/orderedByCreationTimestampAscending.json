@@ -1,0 +1,20 @@
+{
+  "data": {
+    "deposits": {
+      "edges": [
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "doiRegistered": "yes"
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "doiRegistered": "yes"
+          }
+        }
+      ]
+    }
+  }
+}

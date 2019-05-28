@@ -42,6 +42,8 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   def getDeposits(depositorId: Option[DepositorId] = Option.empty,
                   stateFilter: Option[DepositStateFilter] = Option.empty,
                   ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
+                  doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
+                  doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
                  ): Seq[Deposit] = {
     trace(depositorId, stateFilter, ingestStepFilter)
 
@@ -78,7 +80,33 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       case None => withState
     }
 
-    withIngestStep.map(identity)
+    val withDoiRegistered = doiRegisteredFilter match {
+      case Some(DepositDoiRegisteredFilter(value, filter)) =>
+        withIngestStep.withFilter(d => {
+          val doiRegisteredEvents = doiRegisteredRepo.getOrElse(d.id, Seq.empty)
+          val selectedEvents = filter match {
+            case SeriesFilter.LATEST => doiRegisteredEvents.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => doiRegisteredEvents
+          }
+          selectedEvents.exists(_.value == value)
+        })
+      case None => withIngestStep
+    }
+
+    val withDoiAction = doiActionFilter match {
+      case Some(DepositDoiActionFilter(value, filter)) =>
+        withDoiRegistered.withFilter(d => {
+          val doiActionEvents = doiActionRepo.getOrElse(d.id, Seq.empty)
+          val selectedEvents = filter match {
+            case SeriesFilter.LATEST => doiActionEvents.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => doiActionEvents
+          }
+          selectedEvents.exists(_.value == value)
+        })
+      case None => withDoiRegistered
+    }
+
+    withDoiAction.map(identity)
   }
 
   override def getDeposit(id: DepositId): Option[Deposit] = {

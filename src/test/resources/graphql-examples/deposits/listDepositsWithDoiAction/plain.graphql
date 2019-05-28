@@ -1,0 +1,10 @@
+query {
+    deposits(doiAction: {label: "create", filter: LATEST}) {
+        edges {
+            node {
+                depositId
+                doiAction
+            }
+        }
+    }
+}

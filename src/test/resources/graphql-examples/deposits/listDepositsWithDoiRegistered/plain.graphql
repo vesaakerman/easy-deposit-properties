@@ -1,0 +1,10 @@
+query {
+    deposits(doiRegistered: {label: "yes", filter: LATEST}) {
+        edges {
+            node {
+                depositId
+                doiRegistered
+            }
+        }
+    }
+}

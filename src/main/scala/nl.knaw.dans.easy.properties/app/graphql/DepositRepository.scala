@@ -28,6 +28,8 @@ trait DepositRepository {
   def getDeposits(depositorId: Option[DepositorId] = Option.empty,
                   stateFilter: Option[DepositStateFilter] = Option.empty,
                   ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
+                  doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
+                  doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
                  ): Seq[Deposit]
 
   def getDeposit(id: DepositId): Option[Deposit]

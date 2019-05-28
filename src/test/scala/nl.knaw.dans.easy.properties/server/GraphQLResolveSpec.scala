@@ -23,7 +23,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.Identifi
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, State, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiActionEvent, DoiRegisteredEvent, SeriesFilter }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, SeriesFilter }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
@@ -244,7 +244,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
-      repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL))) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL)), None, None) once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)
@@ -257,7 +257,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId2 once() returning Some(deposit2)
-      repository.getDeposits _ expects(Some("user002"), None, None) once() returning Seq(deposit2, deposit3)
+      repository.getDeposits _ expects(Some("user002"), None, None, None, None) once() returning Seq(deposit2, deposit3)
       repository.getCurrentStates _ expects Seq(depositId2, depositId3) once() returning Seq(
         depositId2 -> Some(state2),
         depositId3 -> Some(state3),
@@ -273,7 +273,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
-      repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.LATEST))) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.LATEST)), None, None) once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)
@@ -285,7 +285,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       repository.getCurrentState _ expects depositId1 once() returning Some(state1)
-      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.ARCHIVED, SeriesFilter.LATEST)), None) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.ARCHIVED, SeriesFilter.LATEST)), None, None, None) once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)
@@ -297,7 +297,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       repository.getCurrentState _ expects depositId1 once() returning Some(state1)
-      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.ARCHIVED, SeriesFilter.ALL)), None) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.ARCHIVED, SeriesFilter.ALL)), None, None, None) once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)
@@ -340,7 +340,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "depositor" / "listDepositsWithDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(Some("user002"), None, None) once() returning Seq(deposit2, deposit3)
+      repository.getDeposits _ expects(Some("user002"), None, None, None, None) once() returning Seq(deposit2, deposit3)
       repository.getCurrentStates _ expects Seq(depositId2, depositId3) once() returning Seq(
         depositId2 -> Some(state2),
         depositId3 -> Some(state3),
@@ -354,7 +354,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "depositor" / "listDepositsWithIngestStepAndDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(Some("user001"), None, Some(DepositIngestStepFilter(IngestStepLabel.COMPLETED, SeriesFilter.LATEST))) once() returning Seq(deposit2, deposit3)
+      repository.getDeposits _ expects(Some("user001"), None, Some(DepositIngestStepFilter(IngestStepLabel.COMPLETED, SeriesFilter.LATEST)), None, None) once() returning Seq(deposit2, deposit3)
       repository.getCurrentStates _ expects Seq(depositId2, depositId3) once() returning Seq(
         depositId2 -> Some(state2),
         depositId3 -> Some(state3),
@@ -368,7 +368,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "depositor" / "listDepositsWithStateAndDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(Some("user001"), Some(DepositStateFilter(StateLabel.ARCHIVED, SeriesFilter.LATEST)), None) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(Some("user001"), Some(DepositStateFilter(StateLabel.ARCHIVED, SeriesFilter.LATEST)), None, None, None) once() returning Seq(deposit1, deposit3)
       repository.getCurrentStates _ expects Seq(depositId1, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId3 -> Some(state3),
@@ -382,7 +382,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "depositor" / "listDepositsWithStateFilterAllAndDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(Some("user001"), Some(DepositStateFilter(StateLabel.DRAFT, SeriesFilter.ALL)), None) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(Some("user001"), Some(DepositStateFilter(StateLabel.DRAFT, SeriesFilter.ALL)), None, None, None) once() returning Seq(deposit1, deposit3)
       repository.getCurrentStates _ expects Seq(depositId1, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId3 -> Some(state3),
@@ -396,7 +396,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listAllDeposits" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
+      repository.getDeposits _ expects(None, None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
       inAnyOrder {
         repository.getCurrentStates _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(state1),
@@ -443,7 +443,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listAllDepositsWithAllIngestSteps" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
+      repository.getDeposits _ expects(None, None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getAllIngestSteps(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
         depositId1 -> Seq(step1, step2),
         depositId2 -> Seq(step2, step3),
@@ -458,7 +458,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listAllDepositsWithAllStates" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
+      repository.getDeposits _ expects(None, None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getAllStates(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
         depositId1 -> Seq(state1, state2),
         depositId2 -> Seq(state2, state3),
@@ -469,11 +469,41 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
+  it should "resolve 'deposits/listDepositsWithDoiAction/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "listDepositsWithDoiAction" / "plain.graphql"
+
+    inSequence {
+      repository.getDeposits _ expects(None, None, None, None, Some(DepositDoiActionFilter("create", SeriesFilter.LATEST))) once() returning Seq(deposit1, deposit2, deposit3)
+      (repository.getCurrentDoisAction(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(doiActionEvent1),
+        depositId2 -> Some(doiActionEvent2),
+        depositId3 -> None,
+      )
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/listDepositsWithDoiRegistered/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "listDepositsWithDoiRegistered" / "plain.graphql"
+
+    inSequence {
+      repository.getDeposits _ expects(None, None, None, Some(DepositDoiRegisteredFilter("yes", SeriesFilter.LATEST)), None) once() returning Seq(deposit1, deposit2, deposit3)
+      (repository.getCurrentDoisRegistered(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(doiRegisteredEvent1),
+        depositId2 -> Some(doiRegisteredEvent2),
+        depositId3 -> None,
+      )
+    }
+
+    runQuery(input)
+  }
+
   it should "resolve 'deposits/listDepositsWithIngestStepFilterAll/plain.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "deposits" / "listDepositsWithIngestStepFilterAll" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL))) once() returning Seq(deposit1, deposit2, deposit3)
+      repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL)), None, None) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getCurrentStates(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId2 -> Some(state2),
@@ -488,7 +518,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listDepositsWithState" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.ARCHIVED, SeriesFilter.LATEST)), None) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.ARCHIVED, SeriesFilter.LATEST)), None, None, None) once() returning Seq(deposit1, deposit3)
       repository.getCurrentStates _ expects Seq(depositId1, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId3 -> Some(state3),
@@ -502,7 +532,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listDepositsWithStateFilterAll" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.DRAFT, SeriesFilter.ALL)), None) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.DRAFT, SeriesFilter.ALL)), None, None, None) once() returning Seq(deposit1, deposit3)
       repository.getCurrentStates _ expects Seq(depositId1, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId3 -> Some(state3),
@@ -516,7 +546,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listDepositsWithStateFilterAllAndIngestStepFilterAll" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.REJECTED, SeriesFilter.ALL)), Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL))) once() returning Seq(deposit1, deposit2, deposit3)
+      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.REJECTED, SeriesFilter.ALL)), Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL)), None, None) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getCurrentStates(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
         depositId1 -> Some(state1),
         depositId2 -> Some(state2),
@@ -531,7 +561,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "pagination" / "firstPage.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, None) once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+      repository.getDeposits _ expects(None, None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
     }
 
     runQuery(input)
@@ -541,7 +571,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "pagination" / "secondPage.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, None) once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+      repository.getDeposits _ expects(None, None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
     }
 
     runQuery(input)
@@ -551,7 +581,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "pagination" / "thirdPage.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, None) once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
+      repository.getDeposits _ expects(None, None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3, deposit1, deposit2)
     }
 
     runQuery(input)
@@ -596,7 +626,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getIngestStepById _ expects "10" once() returning Some(step1)
       repository.getDepositByIngestStepId _ expects step1.id once() returning Some(deposit1)
-      repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL))) once() returning Seq(deposit1, deposit2)
+      repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL)), None, None) once() returning Seq(deposit1, deposit2)
     }
 
     runQuery(input)
@@ -607,7 +637,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getStateById _ expects "15" once() returning Some(state2)
-      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.DRAFT, SeriesFilter.ALL)), None) once() returning Seq(deposit1, deposit3)
+      repository.getDeposits _ expects(None, Some(DepositStateFilter(StateLabel.DRAFT, SeriesFilter.ALL)), None, None, None) once() returning Seq(deposit1, deposit3)
     }
 
     runQuery(input)

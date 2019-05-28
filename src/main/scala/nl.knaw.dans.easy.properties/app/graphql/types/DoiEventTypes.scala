@@ -16,17 +16,19 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.{ DepositId, DoiActionEvent, DoiRegisteredEvent, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
+import nl.knaw.dans.easy.properties.app.model.{ DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, SeriesFilter, Timestamp }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
-import sangria.schema.{ InputObjectType, ObjectType }
+import sangria.schema.{ Argument, InputObjectType, ObjectType, OptionInputType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait DoiEventTypes {
-  this: Scalars =>
+  this: MetaTypes with Scalars =>
 
   implicit val doisCurrentRegisteredHasId: HasId[(DepositId, Option[DoiRegisteredEvent]), DepositId] = HasId { case (id, _) => id }
   implicit val doisAllRegisteredHasId: HasId[(DepositId, Seq[DoiRegisteredEvent]), DepositId] = HasId { case (id, _) => id }
@@ -61,6 +63,66 @@ trait DoiEventTypes {
       case _ => ctx.deposits.getAllDoisAction(ids)
     }
   })
+
+  implicit val DepositDoiRegisteredFilterType: InputObjectType[DepositDoiRegisteredFilter] = deriveInputObjectType(
+    InputObjectTypeDescription("The label and filter to be used in searching for deposits by whether the DOI is registered."),
+    DocumentInputField("label", "If provided, only show deposits with the same value for DOI registered."),
+    DocumentInputField("filter", "Determine whether to search in current value for DOI registered (`LATEST`, default) or all current and past values (`ALL`)."),
+  )
+  implicit val DepositDoiRegisteredFilterFromInput: FromInput[DepositDoiRegisteredFilter] = new FromInput[DepositDoiRegisteredFilter] {
+    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    def fromResult(node: marshaller.Node): DepositDoiRegisteredFilter = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      DepositDoiRegisteredFilter(
+        label = ad("label").asInstanceOf[String],
+        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+      )
+    }
+  }
+
+  implicit val DepositDoiActionFilterType: InputObjectType[DepositDoiActionFilter] = deriveInputObjectType(
+    InputObjectTypeDescription("The label and filter to be used in searching for deposits by DOI registration action."),
+    DocumentInputField("label", "If provided, only show deposits with the same value for DOI action."),
+    DocumentInputField("filter", "Determine whether to search in current value for DOI action (`LATEST`, default) or all current and past values (`ALL`)."),
+  )
+  implicit val DepositDoiActionFilterFromInput: FromInput[DepositDoiActionFilter] = new FromInput[DepositDoiActionFilter] {
+    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    def fromResult(node: marshaller.Node): DepositDoiActionFilter = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      DepositDoiActionFilter(
+        label = ad("label").asInstanceOf[String],
+        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+      )
+    }
+  }
+
+  val depositDoiRegisteredFilterArgument: Argument[Option[DepositDoiRegisteredFilter]] = {
+    Argument(
+      name = "doiRegistered",
+      argumentType = OptionInputType(DepositDoiRegisteredFilterType),
+      description = Some("List only those deposits that have this specified value for DOI registered."),
+      defaultValue = None,
+      fromInput = optionInput(inputObjectResultInput(DepositDoiRegisteredFilterFromInput)),
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
+  }
+
+  val depositDoiActionFilterArgument: Argument[Option[DepositDoiActionFilter]] = {
+    Argument(
+      name = "doiAction",
+      argumentType = OptionInputType(DepositDoiActionFilterType),
+      description = Some("List only those deposits that have this specified value for DOI action."),
+      defaultValue = None,
+      fromInput = optionInput(inputObjectResultInput(DepositDoiActionFilterFromInput)),
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
+  }
 
   implicit val DoiRegisteredEventType: ObjectType[DataContext, DoiRegisteredEvent] = deriveObjectType(
     ObjectTypeDescription("A DOI registration event related to a deposit"),
