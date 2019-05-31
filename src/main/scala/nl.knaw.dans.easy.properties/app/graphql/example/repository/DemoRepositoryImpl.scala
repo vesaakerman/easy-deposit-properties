@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 import java.util.{ TimeZone, UUID }
 
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.curator.Curator
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
@@ -88,37 +89,47 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private val step50 = IngestStep("50", IngestStepLabel.VALIDATE, new DateTime(2019, 5, 5, 4, 5, timeZone))
 
-  private val identifier11 = Identifier("11", IdentifierType.BAG_STORE, depositId1.toString, new DateTime(2019, 1, 1, 0, 0))
-  private val identifier12 = Identifier("12", IdentifierType.DOI, "10.5072/dans-a1b-cde2", new DateTime(2019, 1, 1, 0, 1))
-  private val identifier13 = Identifier("13", IdentifierType.URN, "urn:nbn:123456", new DateTime(2019, 1, 1, 0, 2))
-  private val identifier14 = Identifier("14", IdentifierType.FEDORA, "easy-dataset:1", new DateTime(2019, 1, 1, 0, 3))
+  private val identifier11 = Identifier("11", IdentifierType.BAG_STORE, depositId1.toString, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val identifier12 = Identifier("12", IdentifierType.DOI, "10.5072/dans-a1b-cde2", new DateTime(2019, 1, 1, 0, 1, timeZone))
+  private val identifier13 = Identifier("13", IdentifierType.URN, "urn:nbn:123456", new DateTime(2019, 1, 1, 0, 2, timeZone))
+  private val identifier14 = Identifier("14", IdentifierType.FEDORA, "easy-dataset:1", new DateTime(2019, 1, 1, 0, 3, timeZone))
 
-  private val identifier21 = Identifier("21", IdentifierType.BAG_STORE, depositId2.toString, new DateTime(2019, 2, 2, 0, 0))
-  private val identifier22 = Identifier("22", IdentifierType.DOI, "10.5072/dans-f3g-hij4", new DateTime(2019, 2, 2, 0, 1))
-  private val identifier23 = Identifier("23", IdentifierType.URN, "urn:nbn:789012", new DateTime(2019, 2, 2, 0, 2))
-  private val identifier24 = Identifier("24", IdentifierType.FEDORA, "easy-dataset:2", new DateTime(2019, 2, 2, 0, 3))
+  private val identifier21 = Identifier("21", IdentifierType.BAG_STORE, depositId2.toString, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val identifier22 = Identifier("22", IdentifierType.DOI, "10.5072/dans-f3g-hij4", new DateTime(2019, 2, 2, 0, 1, timeZone))
+  private val identifier23 = Identifier("23", IdentifierType.URN, "urn:nbn:789012", new DateTime(2019, 2, 2, 0, 2, timeZone))
+  private val identifier24 = Identifier("24", IdentifierType.FEDORA, "easy-dataset:2", new DateTime(2019, 2, 2, 0, 3, timeZone))
 
-  private val identifier31 = Identifier("31", IdentifierType.BAG_STORE, depositId3.toString, new DateTime(2019, 3, 3, 0, 0))
+  private val identifier31 = Identifier("31", IdentifierType.BAG_STORE, depositId3.toString, new DateTime(2019, 3, 3, 0, 0, timeZone))
 
-  private val identifier41 = Identifier("41", IdentifierType.BAG_STORE, depositId4.toString, new DateTime(2019, 4, 4, 0, 0))
-  private val identifier42 = Identifier("42", IdentifierType.DOI, "10.5072/dans-p7q-rst8", new DateTime(2019, 4, 4, 0, 1))
-  private val identifier43 = Identifier("43", IdentifierType.URN, "urn:nbn:901234", new DateTime(2019, 4, 4, 0, 2))
-  private val identifier44 = Identifier("44", IdentifierType.FEDORA, "easy-dataset:4", new DateTime(2019, 4, 4, 0, 3))
+  private val identifier41 = Identifier("41", IdentifierType.BAG_STORE, depositId4.toString, new DateTime(2019, 4, 4, 0, 0, timeZone))
+  private val identifier42 = Identifier("42", IdentifierType.DOI, "10.5072/dans-p7q-rst8", new DateTime(2019, 4, 4, 0, 1, timeZone))
+  private val identifier43 = Identifier("43", IdentifierType.URN, "urn:nbn:901234", new DateTime(2019, 4, 4, 0, 2, timeZone))
+  private val identifier44 = Identifier("44", IdentifierType.FEDORA, "easy-dataset:4", new DateTime(2019, 4, 4, 0, 3, timeZone))
 
-  private val identifier51 = Identifier("51", IdentifierType.BAG_STORE, depositId5.toString, new DateTime(2019, 5, 5, 0, 0))
+  private val identifier51 = Identifier("51", IdentifierType.BAG_STORE, depositId5.toString, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
-  private val doiRegistered10 = DoiRegisteredEvent("no", new DateTime(2019, 1, 1, 0, 0))
-  private val doiRegistered11 = DoiRegisteredEvent("yes", new DateTime(2019, 1, 1, 4, 7))
-  private val doiRegistered20 = DoiRegisteredEvent("no", new DateTime(2019, 2, 2, 0, 0))
-  private val doiRegistered21 = DoiRegisteredEvent("yes", new DateTime(2019, 2, 2, 2, 7))
-  private val doiRegistered50 = DoiRegisteredEvent("no", new DateTime(2019, 5, 5, 0, 0))
+  private val doiRegistered10 = DoiRegisteredEvent("no", new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val doiRegistered11 = DoiRegisteredEvent("yes", new DateTime(2019, 1, 1, 4, 7, timeZone))
+  private val doiRegistered20 = DoiRegisteredEvent("no", new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val doiRegistered21 = DoiRegisteredEvent("yes", new DateTime(2019, 2, 2, 2, 7, timeZone))
+  private val doiRegistered50 = DoiRegisteredEvent("no", new DateTime(2019, 5, 5, 0, 0, timeZone))
 
-  private val doiAction10 = DoiActionEvent("update", new DateTime(2019, 1, 1, 0, 0))
-  private val doiAction11 = DoiActionEvent("none", new DateTime(2019, 1, 1, 4, 5))
-  private val doiAction20 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0))
-  private val doiAction30 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0))
-  private val doiAction40 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0))
-  private val doiAction50 = DoiActionEvent("update", new DateTime(2019, 5, 5, 0, 0))
+  private val doiAction10 = DoiActionEvent("update", new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val doiAction11 = DoiActionEvent("none", new DateTime(2019, 1, 1, 4, 5, timeZone))
+  private val doiAction20 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val doiAction30 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val doiAction40 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val doiAction50 = DoiActionEvent("update", new DateTime(2019, 5, 5, 0, 0, timeZone))
+
+  private val curator11 = Curator("11", "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val curator12 = Curator("12", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 3, 3, timeZone))
+
+  private val curator31 = Curator("31", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 3, 3, 0, 0, timeZone))
+  private val curator32 = Curator("32", "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 3, 3, 4, 6, timeZone))
+
+  private val curator41 = Curator("41", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 0, 0, timeZone))
+
+  private val curator51 = Curator("51", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 0, 0, timeZone))
 
   override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
   override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty
@@ -126,6 +137,7 @@ class DemoRepositoryImpl extends DemoRepository {
   override val identifierRepo: mutable.Map[(DepositId, IdentifierType), Identifier] = mutable.Map.empty
   override val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = mutable.Map.empty
   override val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]] = mutable.Map.empty
+  override val curatorRepo: mutable.Map[DepositId, Seq[Curator]] = mutable.Map.empty
 
   resetRepository()
 
@@ -136,6 +148,7 @@ class DemoRepositoryImpl extends DemoRepository {
     resetIdentifierRepo()
     resetDoiRegisteredRepo()
     resetDoiActionRepo()
+    resetCuratorRepo()
   }
 
   def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
@@ -212,6 +225,16 @@ class DemoRepositoryImpl extends DemoRepository {
       depositId3 -> Seq(doiAction30),
       depositId4 -> Seq(doiAction40),
       depositId5 -> Seq(doiAction50),
+    )
+  }
+
+  def resetCuratorRepo(): mutable.Map[DepositId, Seq[Curator]] = {
+    curatorRepo.clear()
+    curatorRepo ++= Map(
+      depositId1 -> Seq(curator11, curator12),
+      depositId3 -> Seq(curator31, curator32),
+      depositId4 -> Seq(curator41),
+      depositId5 -> Seq(curator51),
     )
   }
 }

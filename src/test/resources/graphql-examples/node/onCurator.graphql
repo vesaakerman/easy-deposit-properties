@@ -1,0 +1,19 @@
+query {
+    node(id: "Q3VyYXRvcjo1MQ==") {
+        ... on Curator {
+            userId
+            email
+            timestamp
+            deposit {
+                depositId
+            }
+            deposits(curatorFilter: ALL, orderBy: {field: DEPOSIT_ID, direction: ASC}) {
+                edges {
+                    node {
+                        depositId
+                    }
+                }
+            }
+        }
+    }
+}

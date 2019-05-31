@@ -1,0 +1,14 @@
+query {
+    deposit(id: "00000000-0000-0000-0000-000000000001") {
+        curator {
+            userId
+            deposits(orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
+                edges {
+                    node {
+                        depositId
+                    }
+                }
+            }
+        }
+    }
+}

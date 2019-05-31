@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
@@ -24,7 +25,7 @@ import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
-  this: DepositType with StateType with IngestStepType with IdentifierType with DoiEventTypes with Scalars =>
+  this: DepositType with StateType with IngestStepType with IdentifierType with DoiEventTypes with CuratorType with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
     name = "depositId",
@@ -98,6 +99,15 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  private val curatorArgument: Argument[InputCurator] = Argument(
+    name = "curator",
+    description = Some("The data manager to be assigned to this deposit."),
+    defaultValue = None,
+    argumentType = InputCuratorType,
+    fromInput = InputCuratorFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
 
   private val addDepositField: Field[DataContext, Unit] = Field(
     name = "addDeposit",
@@ -160,6 +170,16 @@ trait MutationType {
     fieldType = OptionType(DoiActionEventType),
     resolve = setDoiAction,
   )
+  private val setCuratorField: Field[DataContext, Unit] = Field(
+    name = "setCurator",
+    description = Some("Assign a data manager to the deposit identified by 'id'."),
+    arguments = List(
+      depositIdArgument,
+      curatorArgument,
+    ),
+    fieldType = OptionType(CuratorType),
+    resolve = setCurator,
+  )
 
   private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
     val repository = context.ctx.deposits
@@ -216,6 +236,15 @@ trait MutationType {
     repository.setDoiAction(depositId, doiAction)
   }
 
+  private def setCurator(context: Context[DataContext, Unit]): Option[Curator] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val curator = context.arg(curatorArgument)
+
+    repository.setCurator(depositId, curator)
+  }
+
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(
     name = "Mutation",
     description = "The root query for implementing GraphQL mutations.",
@@ -226,6 +255,7 @@ trait MutationType {
       addIdentifierField,
       setDoiRegisteredField,
       setDoiActionField,
+      setCuratorField,
     ),
   )
 }

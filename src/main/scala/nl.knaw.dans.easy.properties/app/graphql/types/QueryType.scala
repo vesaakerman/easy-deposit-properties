@@ -17,14 +17,14 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType => IdentifierTypeEnum }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
 
 trait QueryType {
-  this: MetaTypes with DepositType with DepositorType with StateType with IngestStepType with IdentifierType with DoiEventTypes with NodeType with Scalars =>
+  this: MetaTypes with DepositType with DepositorType with StateType with IngestStepType with IdentifierType with DoiEventTypes with CuratorType with NodeType with Scalars =>
 
   private val depositorIdArgument: Argument[Option[DepositorId]] = Argument(
     name = "id",
@@ -44,7 +44,7 @@ trait QueryType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
+  private val identifierTypeArgument: Argument[IdentifierTypeEnum.Value] = Argument(
     name = "type",
     description = Some("The type of identifier to be found."),
     defaultValue = None,
@@ -78,6 +78,7 @@ trait QueryType {
       depositIngestStepFilterArgument,
       depositDoiRegisteredFilterArgument,
       depositDoiActionFilterArgument,
+      depositCuratorFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -118,6 +119,7 @@ trait QueryType {
     val ingestStepInput = context.arg(depositIngestStepFilterArgument)
     val doiRegistered = context.arg(depositDoiRegisteredFilterArgument)
     val doiAction = context.arg(depositDoiActionFilterArgument)
+    val curator = context.arg(depositCuratorFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = repository.getDeposits(
@@ -125,6 +127,7 @@ trait QueryType {
       ingestStepFilter = ingestStepInput,
       doiRegisteredFilter = doiRegistered,
       doiActionFilter = doiAction,
+      curatorFilter = curator,
     )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))

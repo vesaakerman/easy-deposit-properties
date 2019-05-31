@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
@@ -33,18 +34,20 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   val identifierRepo: mutable.Map[(DepositId, IdentifierType), Identifier]
   val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]]
   val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]]
+  val curatorRepo: mutable.Map[DepositId, Seq[Curator]]
 
   override def getAllDeposits: Seq[Deposit] = {
     trace(())
     depositRepo.values.toSeq
   }
 
-  def getDeposits(depositorId: Option[DepositorId] = Option.empty,
-                  stateFilter: Option[DepositStateFilter] = Option.empty,
-                  ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
-                  doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
-                  doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
-                 ): Seq[Deposit] = {
+  override def getDeposits(depositorId: Option[DepositorId] = Option.empty,
+                           stateFilter: Option[DepositStateFilter] = Option.empty,
+                           ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
+                           doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
+                           doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
+                           curatorFilter: Option[DepositCuratorFilter] = Option.empty,
+                          ): Seq[Deposit] = {
     trace(depositorId, stateFilter, ingestStepFilter)
 
     val deposits = getAllDeposits
@@ -106,7 +109,20 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       case None => withDoiRegistered
     }
 
-    withDoiAction.map(identity)
+    val withCurator = curatorFilter match {
+      case Some(DepositCuratorFilter(curator, filter)) =>
+        withDoiAction.withFilter(d => {
+          val curators = curatorRepo.getOrElse(d.id, Seq.empty)
+          val selectedCurators = filter match {
+            case SeriesFilter.LATEST => curators.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => curators
+          }
+          selectedCurators.exists(_.userId == curator)
+        })
+      case None => withDoiAction
+    }
+
+    withCurator.map(identity)
   }
 
   override def getDeposit(id: DepositId): Option[Deposit] = {
@@ -364,5 +380,65 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       Some(action)
     }
     else Option.empty
+  }
+
+  //
+
+  override def getCuratorById(id: String): Option[Curator] = {
+    trace(id)
+    curatorRepo.values.toStream.flatten.find(_.id == id)
+  }
+
+  override def getCuratorByUserId(userId: String): Option[Curator] = {
+    trace(userId)
+    curatorRepo.values.toStream.flatten.find(_.userId == userId)
+  }
+
+  override def getCurrentCurator(id: DepositId): Option[Curator] = {
+    trace(id)
+    curatorRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  override def getAllCurators(id: DepositId): Seq[Curator] = {
+    trace(id)
+    curatorRepo.getOrElse(id, Seq.empty)
+  }
+
+  override def getCurrentCurators(ids: Seq[DepositId]): Seq[(DepositId, Option[Curator])] = {
+    trace(ids)
+    ids.map(id => id -> curatorRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  override def getAllCurators(ids: Seq[DepositId]): Seq[(DepositId, Seq[Curator])] = {
+    trace(ids)
+    ids.map(id => id -> curatorRepo.getOrElse(id, Seq.empty))
+  }
+
+  override def setCurator(id: DepositId, curator: InputCurator): Option[Curator] = {
+    trace(id, curator)
+    if (depositRepo contains id) {
+      val InputCurator(userId, email, timestamp) = curator
+
+      val curatorId = id.toString.last + stepRepo
+        .collectFirst { case (`id`, steps) => steps }
+        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
+        .toString
+      val newCurator = Curator(curatorId, userId, email, timestamp)
+
+      if (curatorRepo contains id)
+        curatorRepo.update(id, curatorRepo(id) :+ newCurator)
+      else
+        curatorRepo += (id -> Seq(newCurator))
+
+      Some(newCurator)
+    }
+    else Option.empty
+  }
+
+  override def getDepositByCuratorId(id: String): Option[Deposit] = {
+    trace(id)
+    curatorRepo
+      .collectFirst { case (depositId, curators) if curators.exists(_.id == id) => depositId }
+      .flatMap(depositRepo.get)
   }
 }

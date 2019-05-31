@@ -1,3 +1,94 @@
+"""Data manager responsible for curating this deposit."""
+type Curator implements Node {
+  """The data manager's username in EASY."""
+  userId: String!
+
+  """The data manager's email address."""
+  email: String!
+
+  """The timestamp at which the data manager was assigned to this deposit."""
+  timestamp: DateTime!
+
+  """The ID of an object"""
+  id: ID!
+
+  """
+  Returns the deposit that is associated with this particular curator object.
+  """
+  deposit: Deposit
+
+  """List all deposits with the same data manager."""
+  deposits(
+    """
+    Determine whether to search in current curators (`LATEST`, default) only or
+    all current and past curators (`ALL`) of this deposit.
+    """
+    curatorFilter: SeriesFilter! = LATEST
+
+    """List only those deposits that have this specified state label."""
+    state: DepositStateFilter
+
+    """List only those deposits that have this specified ingest step label."""
+    ingestStep: DepositIngestStepFilter
+
+    """
+    List only those deposits that have this specified value for DOI registered.
+    """
+    doiRegistered: DepositDoiRegisteredFilter
+
+    """
+    List only those deposits that have this specified value for DOI action.
+    """
+    doiAction: DepositDoiActionFilter
+
+    """Ordering options for the returned deposits."""
+    orderBy: DepositOrder
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): DepositConnection
+}
+
+"""A connection to a list of items."""
+type CuratorConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [CuratorEdge]
+
+  """Identifies the total count of items in the connection."""
+  totalCount: Int!
+}
+
+"""An edge in a connection."""
+type CuratorEdge {
+  """The item at the end of the edge."""
+  node: Curator!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Ordering options for curators"""
+input CuratorOrder {
+  """The field to order curators by"""
+  field: CuratorOrderField!
+
+  """The ordering direction"""
+  direction: OrderDirection!
+}
+
+"""Properties by which curators can be ordered"""
+enum CuratorOrderField {
+  """Order curators by timestamp"""
+  TIMESTAMP
+
+  """Order curators by step"""
+  USERID
+}
+
 """
 A DateTime scalar type represents textual data, formatted as an ISO8601 date-time.
 """
@@ -69,6 +160,19 @@ type Deposit implements Node {
   Lists all state changes related to whether the DOI should be 'created' or 'updated' on registration in DataCite
   """
   doiActionEvents: [DoiActionEvent!]!
+
+  """The data manager currently assigned to this deposit"""
+  curator: Curator
+
+  """List all data manager that were ever assigned to this deposit."""
+  curators(
+    """Ordering options for the returned curators."""
+    orderBy: CuratorOrder
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): CuratorConnection
 }
 
 """A connection to a list of items."""
@@ -81,6 +185,18 @@ type DepositConnection {
 
   """Identifies the total count of items in the connection."""
   totalCount: Int!
+}
+
+"""The label and filter to be used in searching for deposits by curator."""
+input DepositCuratorFilter {
+  """If provided, only show deposits with this curator."""
+  userId: String!
+
+  """
+  Determine whether to search in current curator (`LATEST`, default) only or all
+  current and past curators (`ALL`) of this deposit.
+  """
+  filter: SeriesFilter = LATEST
 }
 
 """
@@ -156,6 +272,9 @@ type Depositor {
     List only those deposits that have this specified value for DOI action.
     """
     doiAction: DepositDoiActionFilter
+
+    """List only those deposits that have this specified data manager."""
+    curator: DepositCuratorFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
@@ -359,6 +478,18 @@ enum IngestStepOrderField {
   STEP
 }
 
+"""Data manager responsible for curating this deposit."""
+input InputCurator {
+  """The data manager's username in EASY."""
+  userId: String!
+
+  """The data manager's email address."""
+  email: String!
+
+  """The timestamp at which the data manager was assigned to this deposit."""
+  timestamp: DateTime!
+}
+
 """An identifier related to a deposit."""
 input InputIdentifier {
   """The type of identifier."""
@@ -452,6 +583,15 @@ type Mutation {
     """The DOI action event to be set."""
     doiAction: DoiRegisteredEventInput!
   ): DoiActionEvent
+
+  """Assign a data manager to the deposit identified by 'id'."""
+  setCurator(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The data manager to be assigned to this deposit."""
+    curator: InputCurator!
+  ): Curator
 }
 
 """An object with an ID"""
@@ -511,6 +651,9 @@ type Query {
     List only those deposits that have this specified value for DOI action.
     """
     doiAction: DepositDoiActionFilter
+
+    """List only those deposits that have this specified data manager."""
+    curator: DepositCuratorFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder

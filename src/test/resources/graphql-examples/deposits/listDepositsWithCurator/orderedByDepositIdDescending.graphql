@@ -1,0 +1,14 @@
+query {
+    deposits(curator: {userId: "archie001", filter: LATEST}, orderBy: {field: DEPOSIT_ID, direction: DESC}) {
+        edges {
+            node {
+                depositId
+                curator {
+                    userId
+                    email
+                    timestamp
+                }
+            }
+        }
+    }
+}

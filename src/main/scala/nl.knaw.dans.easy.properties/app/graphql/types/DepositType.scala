@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.curator.Curator
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.state.State
@@ -29,7 +30,7 @@ import sangria.schema.{ Argument, Context, DeferredValue, Field, ListType, Objec
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DepositType {
-  this: DepositorType with StateType with IngestStepType with IdentifierType with DoiEventTypes with NodeType with MetaTypes with Scalars =>
+  this: DepositorType with StateType with IngestStepType with IdentifierType with DoiEventTypes with CuratorType with NodeType with MetaTypes with Scalars =>
 
   private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
     name = "type",
@@ -110,6 +111,19 @@ trait DepositType {
     fieldType = ListType(DoiActionEventType),
     resolve = getDoiActionEvents,
   )
+  private val curatorField: Field[DataContext, Deposit] = Field(
+    name = "curator",
+    description = Some("The data manager currently assigned to this deposit"),
+    fieldType = OptionType(CuratorType),
+    resolve = getCurrentCurator,
+  )
+  private val curatorsField: Field[DataContext, Deposit] = Field(
+    name = "curators",
+    description = Some("List all data manager that were ever assigned to this deposit."),
+    arguments = optCuratorOrderArgument :: Connection.Args.All,
+    fieldType = OptionType(curatorConnectionType),
+    resolve = ctx => getAllCurators(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+  )
 
   private def getCurrentState(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[State]] = {
     val id = context.value.id
@@ -186,6 +200,21 @@ trait DepositType {
       .map { case (_, events) => events.sortBy(_.timestamp) }
   }
 
+  private def getCurrentCurator(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Curator]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchCurrentCurators.defer(depositId))
+      .map { case (_, curator) => curator }
+  }
+
+  private def getAllCurators(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[Curator]] = {
+    val depositId = context.value.id
+    val orderBy = context.arg(optCuratorOrderArgument)
+
+    DeferredValue(fetchAllCurators.defer(depositId))
+      .map { case (_, curators) => orderBy.fold(curators)(order => curators.sorted(order.ordering)) }
+  }
+
   implicit object DepositIdentifiable extends Identifiable[Deposit] {
     override def id(deposit: Deposit): String = deposit.id.toString
   }
@@ -210,7 +239,9 @@ trait DepositType {
       doiRegisteredField,
       doiRegisteredEventsField,
       doiActionField,
-      doiActionEventsField
+      doiActionEventsField,
+      curatorField,
+      curatorsField,
     ),
   )
 

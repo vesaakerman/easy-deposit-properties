@@ -125,9 +125,9 @@ trait StateType {
   private def getDepositByState(context: Context[DataContext, State]): Option[Deposit] = {
     val repository = context.ctx.deposits
 
-    val stepId = context.value.id
+    val stateId = context.value.id
 
-    repository.getDepositByStateId(stepId)
+    repository.getDepositByStateId(stateId)
   }
 
   private def getDeposits(context: Context[DataContext, State]): Seq[Deposit] = {

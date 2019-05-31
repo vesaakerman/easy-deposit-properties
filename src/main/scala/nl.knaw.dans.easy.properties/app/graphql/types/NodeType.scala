@@ -22,15 +22,16 @@ import sangria.relay.{ GlobalId, Identifiable, Node, NodeDefinition }
 import sangria.schema.{ Context, Field, StringType, fields }
 
 trait NodeType {
-  this: DepositType with DepositorType with StateType with IngestStepType with IdentifierType =>
+  this: DepositType with DepositorType with StateType with IngestStepType with IdentifierType with CuratorType =>
 
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[DataContext, Unit]) => {
     if (id.typeName == "Deposit") ctx.ctx.deposits.getDeposit(UUID.fromString(id.id))
     else if (id.typeName == "State") ctx.ctx.deposits.getStateById(id.id)
     else if (id.typeName == "IngestStep") ctx.ctx.deposits.getIngestStepById(id.id)
     else if (id.typeName == "Identifier") ctx.ctx.deposits.getIdentifierById(id.id)
+    else if (id.typeName == "Curator") ctx.ctx.deposits.getCuratorById(id.id)
     else None
-  }, Node.possibleNodeTypes[DataContext, Node](DepositType, StateType, IngestStepType, IdentifierObjectType))
+  }, Node.possibleNodeTypes[DataContext, Node](DepositType, StateType, IngestStepType, IdentifierObjectType, CuratorType))
 
   def idFields[T](implicit identifiable: Identifiable[T]): List[Field[Unit, T]] = {
     fields[Unit, T](

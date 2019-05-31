@@ -1,0 +1,11 @@
+query {
+    depositor(id: "user001") {
+        deposits(curator: {userId: "archie001"}, orderBy: {field: DEPOSIT_ID, direction: DESC}) {
+            edges {
+                node {
+                    depositId
+                }
+            }
+        }
+    }
+}

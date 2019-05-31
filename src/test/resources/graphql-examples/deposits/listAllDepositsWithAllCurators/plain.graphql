@@ -1,0 +1,18 @@
+query {
+    deposits(orderBy: {field: DEPOSIT_ID, direction: ASC}) {
+        edges {
+            node {
+                depositId
+                curators {
+                    edges {
+                        node {
+                            userId
+                            email
+                            timestamp
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

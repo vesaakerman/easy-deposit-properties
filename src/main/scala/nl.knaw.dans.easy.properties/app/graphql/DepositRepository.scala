@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql
 
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
@@ -30,6 +31,7 @@ trait DepositRepository {
                   ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
                   doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
                   doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
+                  curatorFilter: Option[DepositCuratorFilter] = Option.empty,
                  ): Seq[Deposit]
 
   def getDeposit(id: DepositId): Option[Deposit]
@@ -109,4 +111,22 @@ trait DepositRepository {
   def getAllDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiActionEvent])]
 
   def setDoiAction(id: DepositId, action: DoiActionEvent): Option[DoiActionEvent]
+
+  //
+
+  def getCuratorById(id: String): Option[Curator]
+
+  def getCuratorByUserId(userId: String): Option[Curator]
+
+  def getCurrentCurator(id: DepositId): Option[Curator]
+
+  def getAllCurators(id: DepositId): Seq[Curator]
+
+  def getCurrentCurators(ids: Seq[DepositId]): Seq[(DepositId, Option[Curator])]
+
+  def getAllCurators(ids: Seq[DepositId]): Seq[(DepositId, Seq[Curator])]
+
+  def setCurator(id: DepositId, curator: InputCurator): Option[Curator]
+
+  def getDepositByCuratorId(id: String): Option[Deposit]
 }

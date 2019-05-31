@@ -1,0 +1,13 @@
+query ListAllStatesOfDeposit {
+    deposit(id: "00000000-0000-0000-0000-000000000001") {
+        curators(orderBy: {field: TIMESTAMP, direction: ASC}) {
+            edges {
+                node {
+                    userId
+                    email
+                    timestamp
+                }
+            }
+        }
+    }
+}

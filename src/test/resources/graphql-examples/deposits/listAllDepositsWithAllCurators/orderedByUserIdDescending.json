@@ -1,0 +1,95 @@
+{
+  "data": {
+    "deposits": {
+      "edges": [
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "userId": "archie002",
+                    "email": "does.not.exists2@dans.knaw.nl",
+                    "timestamp": "2019-01-01T00:00:00.000+01:00"
+                  }
+                },
+                {
+                  "node": {
+                    "userId": "archie001",
+                    "email": "does.not.exists1@dans.knaw.nl",
+                    "timestamp": "2019-01-01T03:03:00.000+01:00"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "curators": {
+              "edges": [
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000003",
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "userId": "archie002",
+                    "email": "does.not.exists2@dans.knaw.nl",
+                    "timestamp": "2019-03-03T04:06:00.000+01:00"
+                  }
+                },
+                {
+                  "node": {
+                    "userId": "archie001",
+                    "email": "does.not.exists1@dans.knaw.nl",
+                    "timestamp": "2019-03-03T00:00:00.000+01:00"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000004",
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "userId": "archie001",
+                    "email": "does.not.exists1@dans.knaw.nl",
+                    "timestamp": "2019-04-04T00:00:00.000+02:00"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000005",
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "userId": "archie001",
+                    "email": "does.not.exists1@dans.knaw.nl",
+                    "timestamp": "2019-04-04T00:00:00.000+02:00"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

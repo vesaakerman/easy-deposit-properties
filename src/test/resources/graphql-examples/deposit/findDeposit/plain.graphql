@@ -31,5 +31,10 @@ query Deposit {
             value
             timestamp
         }
+        curator {
+            userId
+            email
+            timestamp
+        }
     }
 }

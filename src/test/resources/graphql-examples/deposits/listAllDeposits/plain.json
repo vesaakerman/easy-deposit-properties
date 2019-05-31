@@ -60,7 +60,8 @@
                 "value": "create",
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
-            ]
+            ],
+            "curator": null
           }
         },
         {
@@ -99,7 +100,12 @@
                 "value": "update",
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               }
-            ]
+            ],
+            "curator": {
+              "userId": "archie001",
+              "email": "does.not.exists1@dans.knaw.nl",
+              "timestamp": "2019-04-04T00:00:00.000+02:00"
+            }
           }
         },
         {
@@ -149,7 +155,12 @@
                 "value": "create",
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
-            ]
+            ],
+            "curator": {
+              "userId": "archie001",
+              "email": "does.not.exists1@dans.knaw.nl",
+              "timestamp": "2019-04-04T00:00:00.000+02:00"
+            }
           }
         },
         {
@@ -214,7 +225,12 @@
                 "value": "none",
                 "timestamp": "2019-01-01T04:05:00.000+01:00"
               }
-            ]
+            ],
+            "curator": {
+              "userId": "archie001",
+              "email": "does.not.exists1@dans.knaw.nl",
+              "timestamp": "2019-01-01T03:03:00.000+01:00"
+            }
           }
         },
         {
@@ -246,7 +262,12 @@
                 "value": "create",
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
-            ]
+            ],
+            "curator": {
+              "userId": "archie002",
+              "email": "does.not.exists2@dans.knaw.nl",
+              "timestamp": "2019-03-03T04:06:00.000+01:00"
+            }
           }
         }
       ]
