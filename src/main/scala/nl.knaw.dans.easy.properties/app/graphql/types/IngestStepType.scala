@@ -21,7 +21,7 @@ import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
-import sangria.execution.deferred.{ Fetcher, HasId }
+import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.{ coercedScalaInput, inputObjectResultInput, optionInput }
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
@@ -45,9 +45,6 @@ trait IngestStepType {
     DocumentValue("SOLR4FILES", "The file content of the deposit's payload is being index."),
     DocumentValue("COMPLETED", "The ingest process of this deposit has completed."),
   )
-
-  implicit val currentStepHasId: HasId[(DepositId, Option[IngestStep]), DepositId] = HasId { case (id, _) => id }
-  implicit val allStepsHasId: HasId[(DepositId, Seq[IngestStep]), DepositId] = HasId { case (id, _) => id }
 
   val fetchCurrentIngestSteps = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
     ids match {

@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
-import sangria.execution.deferred.{ Fetcher, HasId }
+import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay.{ Identifiable, Node }
@@ -28,7 +28,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait IdentifierType {
-  this: DepositType with NodeType with Scalars =>
+  this: DepositType with NodeType with MetaTypes with Scalars =>
 
   implicit val IdentifierTypeType: EnumType[IdentifierType.Value] = deriveEnumType(
     EnumTypeDescription("The type of the identifier."),
@@ -37,9 +37,6 @@ trait IdentifierType {
     DocumentValue("FEDORA", "The Fedora identifier."),
     DocumentValue("BAG_STORE", "The bagstore identifier."),
   )
-
-  implicit val identifierByDepositIdHasId: HasId[(DepositId, Seq[Identifier]), DepositId] = HasId { case (id, _) => id }
-  implicit val identifierByTypeHasId: HasId[((DepositId, IdentifierType.Value), Option[Identifier]), (DepositId, IdentifierType.Value)] = HasId { case (id, _) => id }
 
   val fetchIdentifiersByDepositId = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
     ids match {

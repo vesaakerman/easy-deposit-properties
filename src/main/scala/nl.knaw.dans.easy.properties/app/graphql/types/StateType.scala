@@ -21,7 +21,7 @@ import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
-import sangria.execution.deferred.{ Fetcher, HasId }
+import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
@@ -47,9 +47,6 @@ trait StateType {
     DocumentValue("FEDORA_ARCHIVED", "Was successfully archived in the Fedora Archive."),
     DocumentValue("ARCHIVED", "Was successfully archived in the data vault."),
   )
-
-  implicit val currentStateHasId: HasId[(DepositId, Option[State]), DepositId] = HasId { case (id, _) => id }
-  implicit val allStatesHasId: HasId[(DepositId, Seq[State]), DepositId] = HasId { case (id, _) => id }
 
   val fetchCurrentStates = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
     ids match {

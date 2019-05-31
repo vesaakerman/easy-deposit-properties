@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
-import sangria.execution.deferred.{ Fetcher, HasId }
+import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
@@ -38,9 +38,6 @@ trait CuratorType {
     with NodeType
     with MetaTypes
     with Scalars =>
-
-  implicit val currentCuratorHasId: HasId[(DepositId, Option[Curator]), DepositId] = HasId { case (id, _) => id }
-  implicit val allCuratorsHasId: HasId[(DepositId, Seq[Curator]), DepositId] = HasId { case (id, _) => id }
 
   val fetchCurrentCurators = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
     ids match {

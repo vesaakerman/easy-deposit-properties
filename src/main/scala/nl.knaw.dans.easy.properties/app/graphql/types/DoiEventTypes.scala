@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.{ DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, SeriesFilter, Timestamp }
-import sangria.execution.deferred.{ Fetcher, HasId }
+import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
@@ -29,11 +29,6 @@ import scala.concurrent.Future
 
 trait DoiEventTypes {
   this: MetaTypes with Scalars =>
-
-  implicit val doisCurrentRegisteredHasId: HasId[(DepositId, Option[DoiRegisteredEvent]), DepositId] = HasId { case (id, _) => id }
-  implicit val doisAllRegisteredHasId: HasId[(DepositId, Seq[DoiRegisteredEvent]), DepositId] = HasId { case (id, _) => id }
-  implicit val doisCurrentActionHasId: HasId[(DepositId, Option[DoiActionEvent]), DepositId] = HasId { case (id, _) => id }
-  implicit val doisAllActionHasId: HasId[(DepositId, Seq[DoiActionEvent]), DepositId] = HasId { case (id, _) => id }
 
   val fetchCurrentDoisRegistered = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
     ids match {
