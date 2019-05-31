@@ -28,7 +28,7 @@ trait MutationType {
   this: DepositType
     with StateType
     with IngestStepType
-    with IdentifierType
+    with IdentifierGraphQLType
     with DoiEventTypes
     with CuratorType
     with Scalars =>

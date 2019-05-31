@@ -23,7 +23,7 @@ object GraphQLSchema extends Scalars
   with NodeType
   with MetaTypes
   with DoiEventTypes
-  with IdentifierType
+  with IdentifierGraphQLType
   with IngestStepType
   with StateType
   with CuratorType

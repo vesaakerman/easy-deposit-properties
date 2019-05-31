@@ -26,7 +26,7 @@ trait NodeType {
     with DepositorType
     with StateType
     with IngestStepType
-    with IdentifierType
+    with IdentifierGraphQLType
     with CuratorType =>
 
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[DataContext, Unit]) => {

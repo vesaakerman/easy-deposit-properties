@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType => IdentifierTypeEnum }
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay.{ Connection, ConnectionArgs }
@@ -28,7 +28,7 @@ trait QueryType {
     with DepositorType
     with StateType
     with IngestStepType
-    with IdentifierType
+    with IdentifierGraphQLType
     with DoiEventTypes
     with CuratorType
     with MetaTypes
@@ -53,7 +53,7 @@ trait QueryType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val identifierTypeArgument: Argument[IdentifierTypeEnum.Value] = Argument(
+  private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
     name = "type",
     description = Some("The type of identifier to be found."),
     defaultValue = None,

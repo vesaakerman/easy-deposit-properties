@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType => IdentifierTypeEnum, InputIdentifier }
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
 import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
@@ -27,10 +27,10 @@ import sangria.schema.{ Context, EnumType, Field, InputObjectType, ObjectType, O
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait IdentifierType {
+trait IdentifierGraphQLType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
 
-  implicit val IdentifierTypeType: EnumType[IdentifierTypeEnum.Value] = deriveEnumType(
+  implicit val IdentifierTypeType: EnumType[IdentifierType.Value] = deriveEnumType(
     EnumTypeDescription("The type of the identifier."),
     DocumentValue("DOI", "The doi identifier."),
     DocumentValue("URN", "The 'urn:nbn' identifier."),
@@ -45,7 +45,7 @@ trait IdentifierType {
       case _ => ctx.deposits.getIdentifiers(ids)
     }
   })
-  val fetchIdentifiersByType = Fetcher((ctx: DataContext, ids: Seq[(DepositId, IdentifierTypeEnum.Value)]) => Future {
+  val fetchIdentifiersByType = Fetcher((ctx: DataContext, ids: Seq[(DepositId, IdentifierType.Value)]) => Future {
     ids match {
       case Seq() => Seq.empty
       case Seq((depositId, identifierType)) => Seq((depositId, identifierType) -> ctx.deposits.getIdentifier(depositId, identifierType))
@@ -103,7 +103,7 @@ trait IdentifierType {
       val ad = node.asInstanceOf[Map[String, Any]]
 
       InputIdentifier(
-        idType = ad("type").asInstanceOf[IdentifierTypeEnum.Value],
+        idType = ad("type").asInstanceOf[IdentifierType.Value],
         idValue = ad("value").asInstanceOf[String],
         timestamp = ad("timestamp").asInstanceOf[Timestamp],
       )
