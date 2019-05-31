@@ -1,0 +1,11 @@
+query {
+    depositor(id: "user001") {
+        deposits(doiAction: {value: "create", filter: LATEST}, orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
+            edges {
+                node {
+                    depositId
+                }
+            }
+        }
+    }
+}

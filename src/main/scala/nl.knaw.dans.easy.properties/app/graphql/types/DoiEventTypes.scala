@@ -61,7 +61,7 @@ trait DoiEventTypes {
 
   implicit val DepositDoiRegisteredFilterType: InputObjectType[DepositDoiRegisteredFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by whether the DOI is registered."),
-    DocumentInputField("label", "If provided, only show deposits with the same value for DOI registered."),
+    DocumentInputField("value", "If provided, only show deposits with the same value for DOI registered."),
     DocumentInputField("filter", "Determine whether to search in current value for DOI registered (`LATEST`, default) or all current and past values (`ALL`)."),
   )
   implicit val DepositDoiRegisteredFilterFromInput: FromInput[DepositDoiRegisteredFilter] = new FromInput[DepositDoiRegisteredFilter] {
@@ -71,7 +71,7 @@ trait DoiEventTypes {
       val ad = node.asInstanceOf[Map[String, Any]]
 
       DepositDoiRegisteredFilter(
-        label = ad("label").asInstanceOf[String],
+        value = ad("value").asInstanceOf[String],
         filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
       )
     }
@@ -79,7 +79,7 @@ trait DoiEventTypes {
 
   implicit val DepositDoiActionFilterType: InputObjectType[DepositDoiActionFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by DOI registration action."),
-    DocumentInputField("label", "If provided, only show deposits with the same value for DOI action."),
+    DocumentInputField("value", "If provided, only show deposits with the same value for DOI action."),
     DocumentInputField("filter", "Determine whether to search in current value for DOI action (`LATEST`, default) or all current and past values (`ALL`)."),
   )
   implicit val DepositDoiActionFilterFromInput: FromInput[DepositDoiActionFilter] = new FromInput[DepositDoiActionFilter] {
@@ -89,7 +89,7 @@ trait DoiEventTypes {
       val ad = node.asInstanceOf[Map[String, Any]]
 
       DepositDoiActionFilter(
-        label = ad("label").asInstanceOf[String],
+        value = ad("value").asInstanceOf[String],
         filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
       )
     }

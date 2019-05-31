@@ -1,5 +1,5 @@
 query {
-    deposits(doiAction: {label: "create", filter: LATEST}, orderBy: {field: DEPOSIT_ID, direction: DESC}) {
+    deposits(doiAction: {value: "create", filter: LATEST}, orderBy: {field: DEPOSIT_ID, direction: DESC}) {
         edges {
             node {
                 depositId

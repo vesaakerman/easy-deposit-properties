@@ -1,0 +1,11 @@
+query {
+    depositor(id: "user001") {
+        deposits(doiRegistered: {value: "yes", filter: LATEST}, orderBy: {field: DEPOSIT_ID, direction: DESC}) {
+            edges {
+                node {
+                    depositId
+                }
+            }
+        }
+    }
+}

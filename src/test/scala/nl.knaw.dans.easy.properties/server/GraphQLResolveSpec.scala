@@ -409,6 +409,26 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
+  it should "resolve 'depositor/listDepositsWithDoiActionAndDepositor/plain.graphql' with 1 calls to the repository" in {
+    val input = graphqlExamplesDir / "depositor" / "listDepositsWithDoiActionAndDepositor" / "plain.graphql"
+
+    inSequence {
+      repository.getDeposits _ expects(Some("user001"), None, None, None, Some(DepositDoiActionFilter("create")), None, None, None, None) once() returning Seq(deposit2, deposit3)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'depositor/listDepositsWithDoiRegisteredAndDepositor/plain.graphql' with 1 calls to the repository" in {
+    val input = graphqlExamplesDir / "depositor" / "listDepositsWithDoiRegisteredAndDepositor" / "plain.graphql"
+
+    inSequence {
+      repository.getDeposits _ expects(Some("user001"), None, None, Some(DepositDoiRegisteredFilter("yes")), None, None, None, None, None) once() returning Seq(deposit2, deposit3)
+    }
+
+    runQuery(input)
+  }
+
   it should "resolve 'depositor/listDepositsWithIngestStepAndDepositor/plain.graphql' with 2 calls to the repository" in {
     val input = graphqlExamplesDir / "depositor" / "listDepositsWithIngestStepAndDepositor" / "plain.graphql"
 
