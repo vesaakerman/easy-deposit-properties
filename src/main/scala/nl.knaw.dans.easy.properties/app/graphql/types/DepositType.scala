@@ -30,7 +30,15 @@ import sangria.schema.{ Argument, Context, DeferredValue, Field, ListType, Objec
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DepositType {
-  this: DepositorType with StateType with IngestStepType with IdentifierType with DoiEventTypes with CuratorType with NodeType with MetaTypes with Scalars =>
+  this: DepositorType
+    with StateType
+    with IngestStepType
+    with IdentifierType
+    with DoiEventTypes
+    with CuratorType
+    with NodeType
+    with MetaTypes
+    with Scalars =>
 
   private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
     name = "type",

@@ -22,7 +22,12 @@ import sangria.relay.{ GlobalId, Identifiable, Node, NodeDefinition }
 import sangria.schema.{ Context, Field, StringType, fields }
 
 trait NodeType {
-  this: DepositType with DepositorType with StateType with IngestStepType with IdentifierType with CuratorType =>
+  this: DepositType
+    with DepositorType
+    with StateType
+    with IngestStepType
+    with IdentifierType
+    with CuratorType =>
 
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[DataContext, Unit]) => {
     if (id.typeName == "Deposit") ctx.ctx.deposits.getDeposit(UUID.fromString(id.id))

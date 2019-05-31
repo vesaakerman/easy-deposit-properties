@@ -25,7 +25,13 @@ import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
-  this: DepositType with StateType with IngestStepType with IdentifierType with DoiEventTypes with CuratorType with Scalars =>
+  this: DepositType
+    with StateType
+    with IngestStepType
+    with IdentifierType
+    with DoiEventTypes
+    with CuratorType
+    with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
     name = "depositId",

@@ -31,7 +31,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait CuratorType {
-  this: DepositType with StateType with IngestStepType with DoiEventTypes with NodeType with MetaTypes with Scalars =>
+  this: DepositType
+    with StateType
+    with IngestStepType
+    with DoiEventTypes
+    with NodeType
+    with MetaTypes
+    with Scalars =>
 
   implicit val currentCuratorHasId: HasId[(DepositId, Option[Curator]), DepositId] = HasId { case (id, _) => id }
   implicit val allCuratorsHasId: HasId[(DepositId, Seq[Curator]), DepositId] = HasId { case (id, _) => id }

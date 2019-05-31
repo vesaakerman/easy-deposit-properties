@@ -22,7 +22,13 @@ import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Context, Field, ObjectType, OptionType, StringType, fields }
 
 trait DepositorType {
-  this: DepositType with StateType with IngestStepType with DoiEventTypes with CuratorType with NodeType with MetaTypes =>
+  this: DepositType
+    with StateType
+    with IngestStepType
+    with DoiEventTypes
+    with CuratorType
+    with NodeType
+    with MetaTypes =>
 
   private val depositorIdField: Field[DataContext, DepositorId] = Field(
     name = "depositorId",

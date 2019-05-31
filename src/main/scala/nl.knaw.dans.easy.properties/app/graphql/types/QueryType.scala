@@ -24,7 +24,16 @@ import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
 
 trait QueryType {
-  this: MetaTypes with DepositType with DepositorType with StateType with IngestStepType with IdentifierType with DoiEventTypes with CuratorType with NodeType with Scalars =>
+  this: DepositType
+    with DepositorType
+    with StateType
+    with IngestStepType
+    with IdentifierType
+    with DoiEventTypes
+    with CuratorType
+    with MetaTypes
+    with NodeType
+    with Scalars =>
 
   private val depositorIdArgument: Argument[Option[DepositorId]] = Argument(
     name = "id",
