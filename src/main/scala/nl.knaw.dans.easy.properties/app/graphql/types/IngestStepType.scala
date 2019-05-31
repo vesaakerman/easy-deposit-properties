@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.{ coercedScalaInput, inputObjectResultInput, optionInput }
@@ -182,5 +182,63 @@ trait IngestStepType {
         timestamp = ad("timestamp").asInstanceOf[Timestamp],
       )
     }
+  }
+
+  @GraphQLDescription("Properties by which ingest steps can be ordered")
+  object IngestStepOrderField extends Enumeration {
+    type IngestStepOrderField = Value
+
+    // @formatter:off
+    @GraphQLDescription("Order ingest steps by step")
+    val STEP    : IngestStepOrderField = Value("STEP")
+    @GraphQLDescription("Order ingest steps by timestamp")
+    val TIMESTAMP: IngestStepOrderField = Value("TIMESTAMP")
+    // @formatter:on
+  }
+  implicit val IngestStepOrderFieldType: EnumType[IngestStepOrderField.Value] = deriveEnumType()
+
+  case class IngestStepOrder(field: IngestStepOrderField.IngestStepOrderField,
+                             direction: OrderDirection.OrderDirection) {
+    lazy val ordering: Ordering[IngestStep] = {
+      val orderByField: Ordering[IngestStep] = field match {
+        case IngestStepOrderField.STEP =>
+          Ordering[IngestStepLabel].on(_.step)
+        case IngestStepOrderField.TIMESTAMP =>
+          Ordering[Timestamp].on(_.timestamp)
+      }
+
+      direction match {
+        case OrderDirection.ASC => orderByField
+        case OrderDirection.DESC => orderByField.reverse
+      }
+    }
+  }
+  implicit val IngestStepOrderInputType: InputObjectType[IngestStepOrder] = deriveInputObjectType(
+    InputObjectTypeDescription("Ordering options for ingest steps"),
+    DocumentInputField("field", "The field to order ingest steps by"),
+    DocumentInputField("direction", "The ordering direction"),
+  )
+  implicit val IngestStepOrderFromInput: FromInput[IngestStepOrder] = new FromInput[IngestStepOrder] {
+    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    override def fromResult(node: marshaller.Node): IngestStepOrder = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      IngestStepOrder(
+        field = ad("field").asInstanceOf[IngestStepOrderField.Value],
+        direction = ad("direction").asInstanceOf[OrderDirection.Value],
+      )
+    }
+  }
+  val optIngestStepOrderArgument: Argument[Option[IngestStepOrder]] = {
+    Argument(
+      name = "orderBy",
+      argumentType = OptionInputType(IngestStepOrderInputType),
+      description = Some("Ordering options for the returned ingest steps."),
+      defaultValue = None,
+      fromInput = optionInput(inputObjectResultInput(IngestStepOrderFromInput)),
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
   }
 }

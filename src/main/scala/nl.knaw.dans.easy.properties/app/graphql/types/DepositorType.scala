@@ -27,7 +27,6 @@ trait DepositorType {
     with IngestStepType
     with DoiEventTypes
     with CuratorType
-    with NodeType
     with MetaTypes =>
 
   private val depositorIdField: Field[DataContext, DepositorId] = Field(

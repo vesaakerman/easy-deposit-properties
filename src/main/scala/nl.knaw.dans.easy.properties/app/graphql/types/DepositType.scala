@@ -37,7 +37,6 @@ trait DepositType {
     with DoiEventTypes
     with CuratorType
     with NodeType
-    with MetaTypes
     with Scalars =>
 
   private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(

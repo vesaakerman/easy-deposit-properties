@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
@@ -186,5 +186,63 @@ trait StateType {
         timestamp = ad("timestamp").asInstanceOf[Timestamp],
       )
     }
+  }
+
+  @GraphQLDescription("Properties by which states can be ordered")
+  object StateOrderField extends Enumeration {
+    type StateOrderField = Value
+
+    // @formatter:off
+    @GraphQLDescription("Order states by label")
+    val LABEL    : StateOrderField = Value("LABEL")
+    @GraphQLDescription("Order states by timestamp")
+    val TIMESTAMP: StateOrderField = Value("TIMESTAMP")
+    // @formatter:on
+  }
+  implicit val StateOrderFieldType: EnumType[StateOrderField.Value] = deriveEnumType()
+
+  case class StateOrder(field: StateOrderField.StateOrderField,
+                        direction: OrderDirection.OrderDirection) {
+    lazy val ordering: Ordering[State] = {
+      val orderByField: Ordering[State] = field match {
+        case StateOrderField.LABEL =>
+          Ordering[StateLabel].on(_.label)
+        case StateOrderField.TIMESTAMP =>
+          Ordering[Timestamp].on(_.timestamp)
+      }
+
+      direction match {
+        case OrderDirection.ASC => orderByField
+        case OrderDirection.DESC => orderByField.reverse
+      }
+    }
+  }
+  implicit val StateOrderInputType: InputObjectType[StateOrder] = deriveInputObjectType(
+    InputObjectTypeDescription("Ordering options for states"),
+    DocumentInputField("field", "The field to order state by"),
+    DocumentInputField("direction", "The ordering direction"),
+  )
+  implicit val StateOrderFromInput: FromInput[StateOrder] = new FromInput[StateOrder] {
+    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    override def fromResult(node: marshaller.Node): StateOrder = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      StateOrder(
+        field = ad("field").asInstanceOf[StateOrderField.Value],
+        direction = ad("direction").asInstanceOf[OrderDirection.Value],
+      )
+    }
+  }
+  val optStateOrderArgument: Argument[Option[StateOrder]] = {
+    Argument(
+      name = "orderBy",
+      argumentType = OptionInputType(StateOrderInputType),
+      description = Some("Ordering options for the returned states."),
+      defaultValue = None,
+      fromInput = optionInput(inputObjectResultInput(StateOrderFromInput)),
+      astDirectives = Vector.empty,
+      astNodes = Vector.empty,
+    )
   }
 }
