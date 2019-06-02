@@ -22,8 +22,8 @@ import nl.knaw.dans.easy.properties.app.model.contentType.ContentTypeValue.Conte
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType, StringType }
 
@@ -47,18 +47,10 @@ trait ContentTypeGraphQLType {
     DocumentInputField("value", "If provided, only show deposits with this content type."),
     DocumentInputField("filter", "Determine whether to search in current content types (`LATEST`, default) or all current and past content types (`ALL`)."),
   )
-  implicit val DepositContentTypeFilterFromInput: FromInput[DepositContentTypeFilter] = new FromInput[DepositContentTypeFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositContentTypeFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositContentTypeFilter(
-        value = ad("value").asInstanceOf[ContentTypeValue],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositContentTypeFilterFromInput: FromInput[DepositContentTypeFilter] = fromInput(ad => DepositContentTypeFilter(
+    value = ad("value").asInstanceOf[ContentTypeValue],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   private val seriesFilterArgument: Argument[SeriesFilter] = Argument(
     name = "contentTypeFilter",
@@ -147,18 +139,10 @@ trait ContentTypeGraphQLType {
     DocumentInputField("value", "The content type associated with this deposit."),
     DocumentInputField("timestamp", "The timestamp at which this springfield configuration was associated with the deposit."),
   )
-  implicit val InputContentTypeFromInput: FromInput[InputContentType] = new FromInput[InputContentType] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): InputContentType = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      InputContentType(
-        value = ad("value").asInstanceOf[ContentTypeValue],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val InputContentTypeFromInput: FromInput[InputContentType] = fromInput(ad => InputContentType(
+    value = ad("value").asInstanceOf[ContentTypeValue],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 
   @GraphQLDescription("Properties by which content types can be ordered")
   object ContentTypeOrderField extends Enumeration {
@@ -194,18 +178,10 @@ trait ContentTypeGraphQLType {
     DocumentInputField("field", "The field to order content types by"),
     DocumentInputField("direction", "The ordering direction"),
   )
-  implicit val ContentTypeOrderFromInput: FromInput[ContentTypeOrder] = new FromInput[ContentTypeOrder] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): ContentTypeOrder = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      ContentTypeOrder(
-        field = ad("field").asInstanceOf[ContentTypeOrderField.Value],
-        direction = ad("direction").asInstanceOf[OrderDirection.Value],
-      )
-    }
-  }
+  implicit val ContentTypeOrderFromInput: FromInput[ContentTypeOrder] = fromInput(ad => ContentTypeOrder(
+    field = ad("field").asInstanceOf[ContentTypeOrderField.Value],
+    direction = ad("direction").asInstanceOf[OrderDirection.Value],
+  ))
   val optContentTypeOrderArgument: Argument[Option[ContentTypeOrder]] = {
     Argument(
       name = "orderBy",

@@ -19,8 +19,8 @@ import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositIsNewVersionFilter, IsNewVersionEvent, SeriesFilter, Timestamp }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.schema.{ Argument, InputObjectType, ObjectType, OptionInputType }
 
 trait CurationEventType {
@@ -39,18 +39,10 @@ trait CurationEventType {
     DocumentInputField("filter", "Determine whether to search in current values (`LATEST`, default) or all current and past values (`ALL`)."),
     RenameInputField("isNewVersion", "value"),
   )
-  implicit val DepositIsNewVersionFilterFromInput: FromInput[DepositIsNewVersionFilter] = new FromInput[DepositIsNewVersionFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositIsNewVersionFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositIsNewVersionFilter(
-        isNewVersion = ad("value").asInstanceOf[Boolean],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositIsNewVersionFilterFromInput: FromInput[DepositIsNewVersionFilter] = fromInput(ad => DepositIsNewVersionFilter(
+    isNewVersion = ad("value").asInstanceOf[Boolean],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   implicit val DepositCurationRequiredFilterType: InputObjectType[DepositCurationRequiredFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The value and filter to be used in searching for deposits by 'curation-required'."),
@@ -58,18 +50,10 @@ trait CurationEventType {
     DocumentInputField("filter", "Determine whether to search in current values (`LATEST`, default) or all current and past values (`ALL`)."),
     RenameInputField("curationRequired", "value"),
   )
-  implicit val DepositCurationRequiredFilterFromInput: FromInput[DepositCurationRequiredFilter] = new FromInput[DepositCurationRequiredFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositCurationRequiredFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositCurationRequiredFilter(
-        curationRequired = ad("value").asInstanceOf[Boolean],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositCurationRequiredFilterFromInput: FromInput[DepositCurationRequiredFilter] = fromInput(ad => DepositCurationRequiredFilter(
+    curationRequired = ad("value").asInstanceOf[Boolean],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   implicit val DepositCurationPerformedFilterType: InputObjectType[DepositCurationPerformedFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The value and filter to be used in searching for deposits by 'curation-performed'."),
@@ -77,18 +61,10 @@ trait CurationEventType {
     DocumentInputField("filter", "Determine whether to search in current values (`LATEST`, default) or all current and past values (`ALL`)."),
     RenameInputField("curationPerformed", "value"),
   )
-  implicit val DepositCurationPerformedFilterFromInput: FromInput[DepositCurationPerformedFilter] = new FromInput[DepositCurationPerformedFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositCurationPerformedFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositCurationPerformedFilter(
-        curationPerformed = ad("value").asInstanceOf[Boolean],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositCurationPerformedFilterFromInput: FromInput[DepositCurationPerformedFilter] = fromInput(ad => DepositCurationPerformedFilter(
+    curationPerformed = ad("value").asInstanceOf[Boolean],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   val depositIsNewVersionFilterArgument: Argument[Option[DepositIsNewVersionFilter]] = {
     Argument(
@@ -139,18 +115,10 @@ trait CurationEventType {
     DocumentInputField("timestamp", "The timestamp at which was decided that this is a new version."),
     RenameInputField("isNewVersion", "value"),
   )
-  implicit val inputIsNewVersionEventFromInput: FromInput[IsNewVersionEvent] = new FromInput[IsNewVersionEvent] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): IsNewVersionEvent = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      IsNewVersionEvent(
-        isNewVersion = ad("value").asInstanceOf[Boolean],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val inputIsNewVersionEventFromInput: FromInput[IsNewVersionEvent] = fromInput(ad => IsNewVersionEvent(
+    isNewVersion = ad("value").asInstanceOf[Boolean],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 
   implicit val CurationRequiredEventType: ObjectType[DataContext, CurationRequiredEvent] = deriveObjectType(
     ObjectTypeDescription("Whether curation by data manager is required."),
@@ -165,18 +133,10 @@ trait CurationEventType {
     DocumentInputField("timestamp", "The timestamp at which was decided that this deposit requires curation."),
     RenameInputField("curationRequired", "value"),
   )
-  implicit val inputCurationRequiredEventFromInput: FromInput[CurationRequiredEvent] = new FromInput[CurationRequiredEvent] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): CurationRequiredEvent = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      CurationRequiredEvent(
-        curationRequired = ad("value").asInstanceOf[Boolean],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val inputCurationRequiredEventFromInput: FromInput[CurationRequiredEvent] = fromInput(ad => CurationRequiredEvent(
+    curationRequired = ad("value").asInstanceOf[Boolean],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 
   implicit val CurationPerformedEventType: ObjectType[DataContext, CurationPerformedEvent] = deriveObjectType(
     ObjectTypeDescription("Whether the deposit has been curated by the data manager."),
@@ -191,16 +151,8 @@ trait CurationEventType {
     DocumentInputField("timestamp", "The timestamp at which the curation was completed."),
     RenameInputField("curationPerformed", "value"),
   )
-  implicit val inputCurationPerformedEventFromInput: FromInput[CurationPerformedEvent] = new FromInput[CurationPerformedEvent] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): CurationPerformedEvent = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      CurationPerformedEvent(
-        curationPerformed = ad("value").asInstanceOf[Boolean],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val inputCurationPerformedEventFromInput: FromInput[CurationPerformedEvent] = fromInput(ad => CurationPerformedEvent(
+    curationPerformed = ad("value").asInstanceOf[Boolean],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 }

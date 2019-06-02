@@ -25,8 +25,10 @@ import sangria.marshalling.ToInput.ScalarToInput
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
 import sangria.relay.{ Identifiable, Node }
 import sangria.schema.{ Argument, EnumType, InputObjectType, OptionInputType }
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.language.implicitConversions
 
 trait MetaTypes {
 
@@ -58,6 +60,16 @@ trait MetaTypes {
         case _ => currentMany(ctx)(ids)
       }
     })
+  }
+
+  implicit def fromInput[T](create: Map[String, Any] => T): FromInput[T] = new FromInput[T] {
+    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    def fromResult(node: marshaller.Node): T = {
+      val ad = node.asInstanceOf[Map[String, Any]]
+
+      create(ad)
+    }
   }
 
   implicit val SeriesFilterType: EnumType[SeriesFilter.Value] = deriveEnumType(

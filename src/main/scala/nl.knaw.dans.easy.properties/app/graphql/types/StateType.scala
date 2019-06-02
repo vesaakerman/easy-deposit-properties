@@ -22,8 +22,8 @@ import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
@@ -52,18 +52,10 @@ trait StateType {
     DocumentInputField("label", "If provided, only show deposits with this state."),
     DocumentInputField("filter", "Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
   )
-  implicit val DepositStateFilterFromInput: FromInput[DepositStateFilter] = new FromInput[DepositStateFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositStateFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositStateFilter(
-        label = ad("label").asInstanceOf[StateLabel],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositStateFilterFromInput: FromInput[DepositStateFilter] = fromInput(ad => DepositStateFilter(
+    label = ad("label").asInstanceOf[StateLabel],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   private val seriesFilterArgument: Argument[SeriesFilter] = Argument(
     name = "stateFilter",
@@ -150,19 +142,11 @@ trait StateType {
     DocumentInputField("description", "Additional information about the state."),
     DocumentInputField("timestamp", "The timestamp at which the deposit got into this state."),
   )
-  implicit val InputStateFromInput: FromInput[InputState] = new FromInput[InputState] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): InputState = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      InputState(
-        label = ad("label").asInstanceOf[StateLabel],
-        description = ad("description").asInstanceOf[String],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val InputStateFromInput: FromInput[InputState] = fromInput(ad => InputState(
+    label = ad("label").asInstanceOf[StateLabel],
+    description = ad("description").asInstanceOf[String],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 
   @GraphQLDescription("Properties by which states can be ordered")
   object StateOrderField extends Enumeration {
@@ -198,18 +182,10 @@ trait StateType {
     DocumentInputField("field", "The field to order state by"),
     DocumentInputField("direction", "The ordering direction"),
   )
-  implicit val StateOrderFromInput: FromInput[StateOrder] = new FromInput[StateOrder] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): StateOrder = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      StateOrder(
-        field = ad("field").asInstanceOf[StateOrderField.Value],
-        direction = ad("direction").asInstanceOf[OrderDirection.Value],
-      )
-    }
-  }
+  implicit val StateOrderFromInput: FromInput[StateOrder] = fromInput(ad => StateOrder(
+    field = ad("field").asInstanceOf[StateOrderField.Value],
+    direction = ad("direction").asInstanceOf[OrderDirection.Value],
+  ))
   val optStateOrderArgument: Argument[Option[StateOrder]] = {
     Argument(
       name = "orderBy",

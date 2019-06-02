@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, Identifie
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
 import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
+import sangria.marshalling.FromInput
 import sangria.relay.Node
 import sangria.schema.{ Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
 
@@ -85,17 +85,9 @@ trait IdentifierGraphQLType {
     RenameInputField("idType", "type"),
     RenameInputField("idValue", "value"),
   )
-  implicit val InputIdentifierFromInput: FromInput[InputIdentifier] = new FromInput[InputIdentifier] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): InputIdentifier = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      InputIdentifier(
-        idType = ad("type").asInstanceOf[IdentifierType.Value],
-        idValue = ad("value").asInstanceOf[String],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val InputIdentifierFromInput: FromInput[InputIdentifier] = fromInput(ad => InputIdentifier(
+    idType = ad("type").asInstanceOf[IdentifierType.Value],
+    idValue = ad("value").asInstanceOf[String],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 }

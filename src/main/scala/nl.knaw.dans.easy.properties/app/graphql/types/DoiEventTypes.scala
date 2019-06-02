@@ -20,8 +20,8 @@ import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.{ DepositDoiActionFilter, DepositDoiRegisteredFilter, DoiAction, DoiActionEvent, DoiRegisteredEvent, SeriesFilter, Timestamp }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.schema.{ Argument, EnumType, InputObjectType, ObjectType, OptionInputType }
 
 trait DoiEventTypes {
@@ -37,36 +37,20 @@ trait DoiEventTypes {
     DocumentInputField("value", "If provided, only show deposits with the same value for DOI registered."),
     DocumentInputField("filter", "Determine whether to search in current value for DOI registered (`LATEST`, default) or all current and past values (`ALL`)."),
   )
-  implicit val DepositDoiRegisteredFilterFromInput: FromInput[DepositDoiRegisteredFilter] = new FromInput[DepositDoiRegisteredFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositDoiRegisteredFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositDoiRegisteredFilter(
-        value = ad("value").asInstanceOf[Boolean],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositDoiRegisteredFilterFromInput: FromInput[DepositDoiRegisteredFilter] = fromInput(ad => DepositDoiRegisteredFilter(
+    value = ad("value").asInstanceOf[Boolean],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   implicit val DepositDoiActionFilterType: InputObjectType[DepositDoiActionFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by DOI registration action."),
     DocumentInputField("value", "If provided, only show deposits with the same value for DOI action."),
     DocumentInputField("filter", "Determine whether to search in current value for DOI action (`LATEST`, default) or all current and past values (`ALL`)."),
   )
-  implicit val DepositDoiActionFilterFromInput: FromInput[DepositDoiActionFilter] = new FromInput[DepositDoiActionFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositDoiActionFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositDoiActionFilter(
-        value = ad("value").asInstanceOf[DoiAction],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositDoiActionFilterFromInput: FromInput[DepositDoiActionFilter] = fromInput(ad => DepositDoiActionFilter(
+    value = ad("value").asInstanceOf[DoiAction],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   val depositDoiRegisteredFilterArgument: Argument[Option[DepositDoiRegisteredFilter]] = {
     Argument(
@@ -104,18 +88,10 @@ trait DoiEventTypes {
     DocumentInputField("value", "Whether the DOI is registered in DataCite."),
     DocumentInputField("timestamp", "The timestamp at which the DOI was registered in DataCite."),
   )
-  implicit val inputDoiRegisteredEventFromInput: FromInput[DoiRegisteredEvent] = new FromInput[DoiRegisteredEvent] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DoiRegisteredEvent = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DoiRegisteredEvent(
-        value = ad("value").asInstanceOf[Boolean],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val inputDoiRegisteredEventFromInput: FromInput[DoiRegisteredEvent] = fromInput(ad => DoiRegisteredEvent(
+    value = ad("value").asInstanceOf[Boolean],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 
   implicit val DoiActionType: EnumType[DoiAction.Value] = deriveEnumType(
     EnumTypeDescription("Whether the DANS-DOI must be created or updated in the DataCite resolver."),
@@ -136,16 +112,8 @@ trait DoiEventTypes {
     DocumentInputField("value", "Whether the DOI must be 'created' or 'updated' when registering in DataCite."),
     DocumentInputField("timestamp", "The timestamp at which this value was added."),
   )
-  implicit val inputDoiActionEventFromInput: FromInput[DoiActionEvent] = new FromInput[DoiActionEvent] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DoiActionEvent = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DoiActionEvent(
-        value = ad("value").asInstanceOf[DoiAction],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val inputDoiActionEventFromInput: FromInput[DoiActionEvent] = fromInput(ad => DoiActionEvent(
+    value = ad("value").asInstanceOf[DoiAction],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 }

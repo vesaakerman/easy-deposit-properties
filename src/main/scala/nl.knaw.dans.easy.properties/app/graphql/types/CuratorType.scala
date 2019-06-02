@@ -21,8 +21,8 @@ import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
@@ -46,18 +46,10 @@ trait CuratorType {
     DocumentInputField("filter", "Determine whether to search in current curator (`LATEST`, default) only or all current and past curators (`ALL`) of this deposit."),
     RenameInputField("curator", "userId"),
   )
-  implicit val DepositCuratorFilterFromInput: FromInput[DepositCuratorFilter] = new FromInput[DepositCuratorFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositCuratorFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositCuratorFilter(
-        curator = ad("userId").asInstanceOf[String],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositCuratorFilterFromInput: FromInput[DepositCuratorFilter] = fromInput(ad => DepositCuratorFilter(
+    curator = ad("userId").asInstanceOf[String],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   private val seriesFilterArgument: Argument[SeriesFilter] = Argument(
     name = "curatorFilter",
@@ -168,19 +160,11 @@ trait CuratorType {
     DocumentInputField("email", "The data manager's email address."),
     DocumentInputField("timestamp", "The timestamp at which the data manager was assigned to this deposit."),
   )
-  implicit val InputCuratorFromInput: FromInput[InputCurator] = new FromInput[InputCurator] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): InputCurator = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      InputCurator(
-        userId = ad("userId").asInstanceOf[String],
-        email = ad("email").asInstanceOf[String],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val InputCuratorFromInput: FromInput[InputCurator] = fromInput(ad => InputCurator(
+    userId = ad("userId").asInstanceOf[String],
+    email = ad("email").asInstanceOf[String],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 
   @GraphQLDescription("Properties by which curators can be ordered")
   object CuratorOrderField extends Enumeration {
@@ -216,18 +200,10 @@ trait CuratorType {
     DocumentInputField("field", "The field to order curators by"),
     DocumentInputField("direction", "The ordering direction"),
   )
-  implicit val CuratorOrderFromInput: FromInput[CuratorOrder] = new FromInput[CuratorOrder] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): CuratorOrder = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      CuratorOrder(
-        field = ad("field").asInstanceOf[CuratorOrderField.Value],
-        direction = ad("direction").asInstanceOf[OrderDirection.Value],
-      )
-    }
-  }
+  implicit val CuratorOrderFromInput: FromInput[CuratorOrder] = fromInput(ad => CuratorOrder(
+    field = ad("field").asInstanceOf[CuratorOrderField.Value],
+    direction = ad("direction").asInstanceOf[OrderDirection.Value],
+  ))
   val optCuratorOrderArgument: Argument[Option[CuratorOrder]] = {
     Argument(
       name = "orderBy",

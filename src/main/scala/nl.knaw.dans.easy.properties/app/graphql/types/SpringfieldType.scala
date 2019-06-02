@@ -20,8 +20,8 @@ import nl.knaw.dans.easy.properties.app.model.springfield.SpringfieldPlayMode.Sp
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, Timestamp, timestampOrdering }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
@@ -77,21 +77,13 @@ trait SpringfieldType {
     DocumentInputField("playmode", "The playmode used in Springfield"),
     DocumentInputField("timestamp", "The timestamp at which this springfield configuration was associated with the deposit."),
   )
-  implicit val inputSpringfieldFromInput: FromInput[InputSpringfield] = new FromInput[InputSpringfield] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): InputSpringfield = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      InputSpringfield(
-        domain = ad("domain").asInstanceOf[String],
-        user = ad("user").asInstanceOf[String],
-        collection = ad("collection").asInstanceOf[String],
-        playmode = ad("playmode").asInstanceOf[SpringfieldPlayMode],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val inputSpringfieldFromInput: FromInput[InputSpringfield] = fromInput(ad => InputSpringfield(
+    domain = ad("domain").asInstanceOf[String],
+    user = ad("user").asInstanceOf[String],
+    collection = ad("collection").asInstanceOf[String],
+    playmode = ad("playmode").asInstanceOf[SpringfieldPlayMode],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 
   @GraphQLDescription("Properties by which springfields can be ordered")
   object SpringfieldOrderField extends Enumeration {
@@ -123,18 +115,10 @@ trait SpringfieldType {
     DocumentInputField("field", "The field to order springfields by"),
     DocumentInputField("direction", "The ordering direction"),
   )
-  implicit val SpringfieldOrderFromInput: FromInput[SpringfieldOrder] = new FromInput[SpringfieldOrder] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): SpringfieldOrder = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      SpringfieldOrder(
-        field = ad("field").asInstanceOf[SpringfieldOrderField.Value],
-        direction = ad("direction").asInstanceOf[OrderDirection.Value],
-      )
-    }
-  }
+  implicit val SpringfieldOrderFromInput: FromInput[SpringfieldOrder] = fromInput(ad => SpringfieldOrder(
+    field = ad("field").asInstanceOf[SpringfieldOrderField.Value],
+    direction = ad("direction").asInstanceOf[OrderDirection.Value],
+  ))
   val optSpringfieldOrderArgument: Argument[Option[SpringfieldOrder]] = {
     Argument(
       name = "orderBy",

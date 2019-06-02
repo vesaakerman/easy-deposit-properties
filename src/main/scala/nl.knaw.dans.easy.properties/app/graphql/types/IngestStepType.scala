@@ -22,8 +22,8 @@ import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestS
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.macros.derive._
+import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput.{ coercedScalaInput, inputObjectResultInput, optionInput }
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
@@ -50,18 +50,10 @@ trait IngestStepType {
     DocumentInputField("label", "If provided, only show deposits with this state."),
     DocumentInputField("filter", "Determine whether to search in current states (`LATEST`, default) or all current and past states (`ALL`)."),
   )
-  implicit val DepositIngestStepFilterFromInput: FromInput[DepositIngestStepFilter] = new FromInput[DepositIngestStepFilter] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): DepositIngestStepFilter = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositIngestStepFilter(
-        label = ad("label").asInstanceOf[IngestStepLabel],
-        filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
-      )
-    }
-  }
+  implicit val DepositIngestStepFilterFromInput: FromInput[DepositIngestStepFilter] = fromInput(ad => DepositIngestStepFilter(
+    label = ad("label").asInstanceOf[IngestStepLabel],
+    filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
+  ))
 
   private val seriesFilterArgument: Argument[SeriesFilter] = Argument(
     name = "ingestStepFilter",
@@ -147,18 +139,10 @@ trait IngestStepType {
     DocumentInputField("step", "The label of the ingest step."),
     DocumentInputField("timestamp", "The timestamp at which the deposit got into this ingest step."),
   )
-  implicit val InputIngestStepFromInput: FromInput[InputIngestStep] = new FromInput[InputIngestStep] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): InputIngestStep = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      InputIngestStep(
-        step = ad("step").asInstanceOf[IngestStepLabel],
-        timestamp = ad("timestamp").asInstanceOf[Timestamp],
-      )
-    }
-  }
+  implicit val InputIngestStepFromInput: FromInput[InputIngestStep] = fromInput(ad => InputIngestStep(
+    step = ad("step").asInstanceOf[IngestStepLabel],
+    timestamp = ad("timestamp").asInstanceOf[Timestamp],
+  ))
 
   @GraphQLDescription("Properties by which ingest steps can be ordered")
   object IngestStepOrderField extends Enumeration {
@@ -194,18 +178,10 @@ trait IngestStepType {
     DocumentInputField("field", "The field to order ingest steps by"),
     DocumentInputField("direction", "The ordering direction"),
   )
-  implicit val IngestStepOrderFromInput: FromInput[IngestStepOrder] = new FromInput[IngestStepOrder] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): IngestStepOrder = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      IngestStepOrder(
-        field = ad("field").asInstanceOf[IngestStepOrderField.Value],
-        direction = ad("direction").asInstanceOf[OrderDirection.Value],
-      )
-    }
-  }
+  implicit val IngestStepOrderFromInput: FromInput[IngestStepOrder] = fromInput(ad => IngestStepOrder(
+    field = ad("field").asInstanceOf[IngestStepOrderField.Value],
+    direction = ad("direction").asInstanceOf[OrderDirection.Value],
+  ))
   val optIngestStepOrderArgument: Argument[Option[IngestStepOrder]] = {
     Argument(
       name = "orderBy",
