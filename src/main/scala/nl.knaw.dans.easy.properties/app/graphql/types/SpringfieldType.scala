@@ -71,10 +71,6 @@ trait SpringfieldType {
     repository.getDepositBySpringfieldId(springfieldId)
   }
 
-  implicit object SpringfieldIdentifiable extends Identifiable[Springfield] {
-    override def id(springfield: Springfield): String = springfield.id
-  }
-
   implicit val SpringfieldType: ObjectType[DataContext, Springfield] = deriveObjectType(
     ObjectTypeDescription("Springfield configuration associated with this deposit."),
     Interfaces[DataContext, Springfield](nodeInterface),

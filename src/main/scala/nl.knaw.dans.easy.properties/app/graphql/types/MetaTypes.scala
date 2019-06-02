@@ -22,12 +22,16 @@ import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.ToInput.ScalarToInput
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
+import sangria.relay.{ Identifiable, Node }
 import sangria.schema.{ Argument, EnumType, InputObjectType, OptionInputType }
 
 trait MetaTypes {
 
   implicit def depositIdTupleHasId[T]: HasId[(DepositId, T), DepositId] = HasId { case (id, _) => id }
+
   implicit def depositIdCompositeKeyTupleHasId[K, T]: HasId[((DepositId, K), T), (DepositId, K)] = HasId { case (id, _) => id }
+
+  implicit def nodeIdentifiable[T <: Node]: Identifiable[T] = _.id
 
   implicit val SeriesFilterType: EnumType[SeriesFilter.Value] = deriveEnumType(
     EnumTypeDescription("Mark a query to only search through current states, or also to include past states."),

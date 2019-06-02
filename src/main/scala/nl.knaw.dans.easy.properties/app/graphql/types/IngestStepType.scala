@@ -140,10 +140,6 @@ trait IngestStepType {
     orderBy.fold(result)(order => result.sorted(order.ordering))
   }
 
-  implicit object IngestStepIdentifiable extends Identifiable[IngestStep] {
-    override def id(step: IngestStep): String = step.id
-  }
-
   implicit lazy val IngestStepType: ObjectType[DataContext, IngestStep] = deriveObjectType(
     ObjectTypeDescription("The ingest step of the deposit."),
     Interfaces[DataContext, IngestStep](nodeInterface),

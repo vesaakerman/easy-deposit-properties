@@ -21,7 +21,7 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
 import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
-import sangria.relay.{ Identifiable, Node }
+import sangria.relay.Node
 import sangria.schema.{ Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -66,10 +66,6 @@ trait IdentifierGraphQLType {
     val identifierId = context.value.id
 
     repository.getDepositByIdentifierId(identifierId)
-  }
-
-  implicit object IdentifierIdentifiable extends Identifiable[Identifier] {
-    override def id(identifier: Identifier): String = identifier.id
   }
 
   implicit val IdentifierObjectType: ObjectType[DataContext, Identifier] = deriveObjectType(

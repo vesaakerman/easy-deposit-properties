@@ -362,9 +362,7 @@ trait DepositType {
       .map { case (_, contentTypes) => orderBy.fold(contentTypes)(order => contentTypes.sorted(order.ordering)) }
   }
 
-  implicit object DepositIdentifiable extends Identifiable[Deposit] {
-    override def id(deposit: Deposit): String = deposit.id.toString
-  }
+  implicit val depositIdentifiable: Identifiable[Deposit] = _.id.toString
 
   // lazy because we need it before being declared (in StateType)
   implicit lazy val DepositType: ObjectType[DataContext, Deposit] = deriveObjectType(

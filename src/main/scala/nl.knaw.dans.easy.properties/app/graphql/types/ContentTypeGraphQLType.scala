@@ -136,10 +136,6 @@ trait ContentTypeGraphQLType {
     orderBy.fold(result)(order => result.sorted(order.ordering))
   }
 
-  implicit object ContentTypeIdentifiable extends Identifiable[ContentType] {
-    override def id(contentType: ContentType): String = contentType.id
-  }
-
   implicit val ContentTypeType: ObjectType[DataContext, ContentType] = deriveObjectType(
     ObjectTypeDescription("A SWORD2 internal property to record the type of messages sent by a client to create the deposit."),
     Interfaces[DataContext, ContentType](nodeInterface),

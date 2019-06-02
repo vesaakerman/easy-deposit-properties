@@ -141,10 +141,6 @@ trait StateType {
     orderBy.fold(result)(order => result.sorted(order.ordering))
   }
 
-  implicit object StateIdentifiable extends Identifiable[State] {
-    override def id(state: State): String = state.id
-  }
-
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
     ObjectTypeDescription("The state of the deposit."),
     Interfaces[DataContext, State](nodeInterface),

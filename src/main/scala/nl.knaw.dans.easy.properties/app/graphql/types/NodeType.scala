@@ -18,8 +18,8 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import java.util.UUID
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import sangria.relay.{ GlobalId, Identifiable, Node, NodeDefinition }
-import sangria.schema.{ Context, Field, StringType, fields }
+import sangria.relay.{ GlobalId, Node, NodeDefinition }
+import sangria.schema.Context
 
 trait NodeType {
   this: DepositType
@@ -41,15 +41,4 @@ trait NodeType {
     else if (id.typeName == "ContentType") ctx.ctx.deposits.getContentTypeById(id.id)
     else None
   }, Node.possibleNodeTypes[DataContext, Node](DepositType, StateType, IngestStepType, IdentifierObjectType, CuratorType, SpringfieldType, ContentTypeType))
-
-  def idFields[T](implicit identifiable: Identifiable[T]): List[Field[Unit, T]] = {
-    fields[Unit, T](
-      Node.globalIdField,
-      Field(
-        name = "rawId",
-        fieldType = StringType,
-        resolve = ctx => identifiable.id(ctx.value),
-      ),
-    )
-  }
 }

@@ -159,10 +159,6 @@ trait CuratorType {
     orderBy.fold(result)(order => result.sorted(order.ordering))
   }
 
-  implicit object CuratorIdentifiable extends Identifiable[Curator] {
-    override def id(curator: Curator): String = curator.id
-  }
-
   implicit lazy val CuratorType: ObjectType[DataContext, Curator] = deriveObjectType(
     ObjectTypeDescription("Data manager responsible for curating this deposit."),
     Interfaces[DataContext, Curator](nodeInterface),
