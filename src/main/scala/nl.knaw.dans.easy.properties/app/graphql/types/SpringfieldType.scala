@@ -18,16 +18,12 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.springfield.SpringfieldPlayMode.SpringfieldPlayMode
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield, SpringfieldPlayMode }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, timestampOrdering }
-import sangria.execution.deferred.Fetcher
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 trait SpringfieldType {
   this: DepositType
@@ -41,20 +37,8 @@ trait SpringfieldType {
     DocumentValue("MENU", "Play audio/video in Springfield as selected in a menu."),
   )
 
-  val fetchCurrentSpringfields = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(id) => Seq(id -> ctx.deposits.getCurrentSpringfield(id))
-      case _ => ctx.deposits.getCurrentSpringfields(ids)
-    }
-  })
-  val fetchAllSpringfields = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(id) => Seq(id -> ctx.deposits.getAllSpringfields(id))
-      case _ => ctx.deposits.getAllSpringfields(ids)
-    }
-  })
+  val fetchCurrentSpringfields: CurrentFetcher[Springfield] = fetchCurrent(_.deposits.getCurrentSpringfield, _.deposits.getCurrentSpringfields)
+  val fetchAllSpringfields: AllFetcher[Springfield] = fetchAll(_.deposits.getAllSpringfields, _.deposits.getAllSpringfields)
 
   private val depositField: Field[DataContext, Springfield] = Field(
     name = "deposit",

@@ -15,15 +15,18 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
+import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
-import sangria.execution.deferred.HasId
+import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.ToInput.ScalarToInput
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
 import sangria.relay.{ Identifiable, Node }
 import sangria.schema.{ Argument, EnumType, InputObjectType, OptionInputType }
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 trait MetaTypes {
 
@@ -32,6 +35,30 @@ trait MetaTypes {
   implicit def depositIdCompositeKeyTupleHasId[K, T]: HasId[((DepositId, K), T), (DepositId, K)] = HasId { case (id, _) => id }
 
   implicit def nodeIdentifiable[T <: Node]: Identifiable[T] = _.id
+
+  type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, Option[T]), (DepositId, Option[T]), DepositId]
+  def fetchCurrent[T](currentOne: DataContext => DepositId => Option[T],
+                      currentMany: DataContext => Seq[DepositId] => Seq[(DepositId, Option[T])]): CurrentFetcher[T] = {
+    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
+      ids match {
+        case Seq() => Seq.empty
+        case Seq(id) => Seq(id -> currentOne(ctx)(id))
+        case _ => currentMany(ctx)(ids)
+      }
+    })
+  }
+
+  type AllFetcher[T] = Fetcher[DataContext, (DepositId, Seq[T]), (DepositId, Seq[T]), DepositId]
+  def fetchAll[T](currentOne: DataContext => DepositId => Seq[T],
+                  currentMany: DataContext => Seq[DepositId] => Seq[(DepositId, Seq[T])]): AllFetcher[T] = {
+    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
+      ids match {
+        case Seq() => Seq.empty
+        case Seq(id) => Seq(id -> currentOne(ctx)(id))
+        case _ => currentMany(ctx)(ids)
+      }
+    })
+  }
 
   implicit val SeriesFilterType: EnumType[SeriesFilter.Value] = deriveEnumType(
     EnumTypeDescription("Mark a query to only search through current states, or also to include past states."),

@@ -20,16 +20,12 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
-import sangria.execution.deferred.Fetcher
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 trait StateType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
@@ -48,20 +44,8 @@ trait StateType {
     DocumentValue("ARCHIVED", "Was successfully archived in the data vault."),
   )
 
-  val fetchCurrentStates = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(id) => Seq(id -> ctx.deposits.getCurrentState(id))
-      case _ => ctx.deposits.getCurrentStates(ids)
-    }
-  })
-  val fetchAllStates = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(id) => Seq(id -> ctx.deposits.getAllStates(id))
-      case _ => ctx.deposits.getAllStates(ids)
-    }
-  })
+  val fetchCurrentStates: CurrentFetcher[State] = fetchCurrent(_.deposits.getCurrentState, _.deposits.getCurrentStates)
+  val fetchAllStates: AllFetcher[State] = fetchAll(_.deposits.getAllStates, _.deposits.getAllStates)
 
   implicit val DepositStateFilterType: InputObjectType[DepositStateFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by state"),

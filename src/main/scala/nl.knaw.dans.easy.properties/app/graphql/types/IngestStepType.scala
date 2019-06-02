@@ -20,16 +20,12 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
-import sangria.execution.deferred.Fetcher
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.{ coercedScalaInput, inputObjectResultInput, optionInput }
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 trait IngestStepType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
@@ -46,20 +42,8 @@ trait IngestStepType {
     DocumentValue("COMPLETED", "The ingest process of this deposit has completed."),
   )
 
-  val fetchCurrentIngestSteps = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(id) => Seq(id -> ctx.deposits.getCurrentIngestStep(id))
-      case _ => ctx.deposits.getCurrentIngestSteps(ids)
-    }
-  })
-  val fetchAllIngestSteps = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(id) => Seq(id -> ctx.deposits.getAllIngestSteps(id))
-      case _ => ctx.deposits.getAllIngestSteps(ids)
-    }
-  })
+  val fetchCurrentIngestSteps: CurrentFetcher[IngestStep] = fetchCurrent(_.deposits.getCurrentIngestStep, _.deposits.getCurrentIngestSteps)
+  val fetchAllIngestSteps: AllFetcher[IngestStep] = fetchAll(_.deposits.getAllIngestSteps, _.deposits.getAllIngestSteps)
 
   implicit val DepositIngestStepFilterType: InputObjectType[DepositIngestStepFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by ingest step"),

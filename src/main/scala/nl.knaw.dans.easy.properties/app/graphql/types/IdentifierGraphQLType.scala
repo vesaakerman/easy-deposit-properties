@@ -38,13 +38,7 @@ trait IdentifierGraphQLType {
     DocumentValue("BAG_STORE", "The bagstore identifier."),
   )
 
-  val fetchIdentifiersByDepositId = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getIdentifiers(depositId))
-      case _ => ctx.deposits.getIdentifiers(ids)
-    }
-  })
+  val fetchIdentifiersByDepositId: AllFetcher[Identifier] = fetchAll(_.deposits.getIdentifiers, _.deposits.getIdentifiers)
   val fetchIdentifiersByType = Fetcher((ctx: DataContext, ids: Seq[(DepositId, IdentifierType.Value)]) => Future {
     ids match {
       case Seq() => Seq.empty

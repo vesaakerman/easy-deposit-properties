@@ -18,47 +18,19 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
-import nl.knaw.dans.easy.properties.app.model.{ DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, SeriesFilter, Timestamp }
-import sangria.execution.deferred.Fetcher
+import nl.knaw.dans.easy.properties.app.model.{ DepositDoiActionFilter, DepositDoiRegisteredFilter, DoiAction, DoiActionEvent, DoiRegisteredEvent, SeriesFilter, Timestamp }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.schema.{ Argument, EnumType, InputObjectType, ObjectType, OptionInputType }
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
 trait DoiEventTypes {
   this: MetaTypes with Scalars =>
 
-  val fetchCurrentDoisRegistered = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getCurrentDoiRegistered(depositId))
-      case _ => ctx.deposits.getCurrentDoisRegistered(ids)
-    }
-  })
-  val fetchAllDoisRegistered = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getAllDoiRegistered(depositId))
-      case _ => ctx.deposits.getAllDoisRegistered(ids)
-    }
-  })
-  val fetchCurrentDoisAction = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getCurrentDoiAction(depositId))
-      case _ => ctx.deposits.getCurrentDoisAction(ids)
-    }
-  })
-  val fetchAllDoisAction = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getAllDoiAction(depositId))
-      case _ => ctx.deposits.getAllDoisAction(ids)
-    }
-  })
+  val fetchCurrentDoisRegistered: CurrentFetcher[DoiRegisteredEvent] = fetchCurrent(_.deposits.getCurrentDoiRegistered, _.deposits.getCurrentDoisRegistered)
+  val fetchAllDoisRegistered: AllFetcher[DoiRegisteredEvent] = fetchAll(_.deposits.getAllDoiRegistered, _.deposits.getAllDoisRegistered)
+  val fetchCurrentDoisAction: CurrentFetcher[DoiActionEvent] = fetchCurrent(_.deposits.getCurrentDoiAction, _.deposits.getCurrentDoisAction)
+  val fetchAllDoisAction: AllFetcher[DoiActionEvent] = fetchAll(_.deposits.getAllDoiAction, _.deposits.getAllDoisAction)
 
   implicit val DepositDoiRegisteredFilterType: InputObjectType[DepositDoiRegisteredFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by whether the DOI is registered."),

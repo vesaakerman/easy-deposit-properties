@@ -20,16 +20,12 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.contentType.ContentTypeValue.ContentTypeValue
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
-import sangria.execution.deferred.Fetcher
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.relay._
-import sangria.schema.{ StringType, Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType, StringType }
 
 trait ContentTypeGraphQLType {
   this: DepositType
@@ -43,20 +39,8 @@ trait ContentTypeGraphQLType {
     DocumentValue("OCTET", "content type 'application/octet-stream'"),
   )
 
-  val fetchCurrentContentTypes = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(id) => Seq(id -> ctx.deposits.getCurrentContentType(id))
-      case _ => ctx.deposits.getCurrentContentTypes(ids)
-    }
-  })
-  val fetchAllContentTypes = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(id) => Seq(id -> ctx.deposits.getAllContentTypes(id))
-      case _ => ctx.deposits.getAllContentTypes(ids)
-    }
-  })
+  val fetchCurrentContentTypes: CurrentFetcher[ContentType] = fetchCurrent(_.deposits.getCurrentContentType, _.deposits.getCurrentContentTypes)
+  val fetchAllContentTypes: AllFetcher[ContentType] = fetchAll(_.deposits.getAllContentTypes, _.deposits.getAllContentTypes)
 
   implicit val DepositContentTypeFilterType: InputObjectType[DepositContentTypeFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by content type."),

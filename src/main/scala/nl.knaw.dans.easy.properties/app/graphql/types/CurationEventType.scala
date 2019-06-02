@@ -17,61 +17,21 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositId, DepositIsNewVersionFilter, IsNewVersionEvent, SeriesFilter, Timestamp }
-import sangria.execution.deferred.Fetcher
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositIsNewVersionFilter, IsNewVersionEvent, SeriesFilter, Timestamp }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
 import sangria.schema.{ Argument, InputObjectType, ObjectType, OptionInputType }
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
 trait CurationEventType {
   this: MetaTypes with Scalars =>
 
-  val fetchCurrentIsNewVersion = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getCurrentIsNewVersionAction(depositId))
-      case _ => ctx.deposits.getCurrentIsNewVersionActions(ids)
-    }
-  })
-  val fetchAllIsNewVersion = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getAllIsNewVersionAction(depositId))
-      case _ => ctx.deposits.getAllIsNewVersionActions(ids)
-    }
-  })
-  val fetchCurrentCurationRequired = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getCurrentCurationRequiredAction(depositId))
-      case _ => ctx.deposits.getCurrentCurationRequiredActions(ids)
-    }
-  })
-  val fetchAllCurationRequired = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getAllCurationRequiredAction(depositId))
-      case _ => ctx.deposits.getAllCurationRequiredActions(ids)
-    }
-  })
-  val fetchCurrentCurationPerformed = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getCurrentCurationPerformedAction(depositId))
-      case _ => ctx.deposits.getCurrentCurationPerformedActions(ids)
-    }
-  })
-  val fetchAllCurationPerformed = Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
-    ids match {
-      case Seq() => Seq.empty
-      case Seq(depositId) => Seq(depositId -> ctx.deposits.getAllCurationPerformedAction(depositId))
-      case _ => ctx.deposits.getAllCurationPerformedActions(ids)
-    }
-  })
+  val fetchCurrentIsNewVersion: CurrentFetcher[IsNewVersionEvent] = fetchCurrent(_.deposits.getCurrentIsNewVersionAction, _.deposits.getCurrentIsNewVersionActions)
+  val fetchAllIsNewVersion: AllFetcher[IsNewVersionEvent] = fetchAll(_.deposits.getAllIsNewVersionAction, _.deposits.getAllIsNewVersionActions)
+  val fetchCurrentCurationRequired: CurrentFetcher[CurationRequiredEvent] = fetchCurrent(_.deposits.getCurrentCurationRequiredAction, _.deposits.getCurrentCurationRequiredActions)
+  val fetchAllCurationRequired: AllFetcher[CurationRequiredEvent] = fetchAll(_.deposits.getAllCurationRequiredAction, _.deposits.getAllCurationRequiredActions)
+  val fetchCurrentCurationPerformed: CurrentFetcher[CurationPerformedEvent] = fetchCurrent(_.deposits.getCurrentCurationPerformedAction, _.deposits.getCurrentCurationPerformedActions)
+  val fetchAllCurationPerformed: AllFetcher[CurationPerformedEvent] = fetchAll(_.deposits.getAllCurationPerformedAction, _.deposits.getAllCurationPerformedActions)
 
   implicit val DepositIsNewVersionFilterType: InputObjectType[DepositIsNewVersionFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The value and filter to be used in searching for deposits by 'is-new-version'."),
