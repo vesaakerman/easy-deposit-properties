@@ -1,0 +1,14 @@
+query {
+    node(id: "U3ByaW5nZmllbGQ6MTA=") {
+        ... on Springfield {
+            domain
+            user
+            collection
+            playmode
+            timestamp
+            deposit {
+                depositId
+            }
+        }
+    }
+}

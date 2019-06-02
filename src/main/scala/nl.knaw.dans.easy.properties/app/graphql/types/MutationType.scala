@@ -19,6 +19,7 @@ import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
 import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
 import sangria.marshalling.FromInput.coercedScalaInput
@@ -32,6 +33,7 @@ trait MutationType {
     with DoiEventTypes
     with CuratorType
     with CurationEventType
+    with SpringfieldType
     with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
@@ -142,6 +144,15 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  private val springfieldArgument: Argument[InputSpringfield] = Argument(
+    name = "springfield",
+    description = Some("The springfield configuration to be associated with this deposit."),
+    defaultValue = None,
+    argumentType = InputSpringfieldType,
+    fromInput = inputSpringfieldFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
 
   private val addDepositField: Field[DataContext, Unit] = Field(
     name = "addDeposit",
@@ -244,6 +255,16 @@ trait MutationType {
     fieldType = OptionType(CurationPerformedEventType),
     resolve = setCurationPerformed,
   )
+  private val setSpringfieldField: Field[DataContext, Unit] = Field(
+    name = "setSpringfield",
+    description = Some("Set the springfield configuration for this deposit."),
+    arguments = List(
+      depositIdArgument,
+      springfieldArgument,
+    ),
+    fieldType = OptionType(SpringfieldType),
+    resolve = setSpringfield,
+  )
 
   private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
     val repository = context.ctx.deposits
@@ -336,6 +357,15 @@ trait MutationType {
     repository.setCurationPerformedAction(depositId, curationPerformed)
   }
 
+  private def setSpringfield(context: Context[DataContext, Unit]): Option[Springfield] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val springfield = context.arg(springfieldArgument)
+
+    repository.setSpringfield(depositId, springfield)
+  }
+
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(
     name = "Mutation",
     description = "The root query for implementing GraphQL mutations.",
@@ -350,6 +380,7 @@ trait MutationType {
       setIsNewVersionField,
       setCurationRequiredField,
       setCurationPerformedField,
+      setSpringfieldField,
     ),
   )
 }

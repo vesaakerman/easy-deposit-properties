@@ -21,12 +21,13 @@ import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
 import nl.knaw.dans.easy.properties.app.model.curator.Curator
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
+import nl.knaw.dans.easy.properties.app.model.springfield.Springfield
 import nl.knaw.dans.easy.properties.app.model.state.State
 import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay._
-import sangria.schema.{ Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionType, StringType }
+import sangria.schema.{ Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -38,6 +39,7 @@ trait DepositType {
     with DoiEventTypes
     with CuratorType
     with CurationEventType
+    with SpringfieldType
     with NodeType
     with Scalars =>
 
@@ -168,6 +170,19 @@ trait DepositType {
     description = Some("List the present and past values for 'curation-performed'."),
     fieldType = ListType(CurationPerformedEventType),
     resolve = getCurationPerformedEvents,
+  )
+  private val springfieldField: Field[DataContext, Deposit] = Field(
+    name = "springfield",
+    description = Some("The springfield configuration currently associated with this deposit."),
+    fieldType = OptionType(SpringfieldType),
+    resolve = getSpringfield,
+  )
+  private val springfieldsField: Field[DataContext, Deposit] = Field(
+    name = "springfields",
+    description = Some("List the present and past values for springfield configuration."),
+    arguments = List(optSpringfieldOrderArgument),
+    fieldType = ListType(SpringfieldType),
+    resolve = getSpringfields,
   )
 
   private def getCurrentState(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[State]] = {
@@ -302,6 +317,21 @@ trait DepositType {
       .map { case (_, events) => events.sortBy(_.timestamp) }
   }
 
+  private def getSpringfield(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Springfield]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchCurrentSpringfields.defer(depositId))
+      .map { case (_, springfield) => springfield }
+  }
+
+  private def getSpringfields(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[Springfield]] = {
+    val depositId = context.value.id
+    val orderBy = context.arg(optSpringfieldOrderArgument)
+
+    DeferredValue(fetchAllSpringfields.defer(depositId))
+      .map { case (_, springfield) => orderBy.fold(springfield)(order => springfield.sorted(order.ordering)) }
+  }
+
   implicit object DepositIdentifiable extends Identifiable[Deposit] {
     override def id(deposit: Deposit): String = deposit.id.toString
   }
@@ -335,6 +365,8 @@ trait DepositType {
       curationRequiredEventsField,
       curationPerformedField,
       curationPerformedEventsField,
+      springfieldField,
+      springfieldsField,
     ),
   )
 

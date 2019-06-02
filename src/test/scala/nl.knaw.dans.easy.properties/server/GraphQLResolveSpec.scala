@@ -23,6 +23,7 @@ import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorF
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepLabel }
+import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DepositIsNewVersionFilter, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
@@ -158,6 +159,22 @@ trait GraphQLResolveSpecTestObjects {
     curationPerformed = false,
     timestamp = DateTime.now(),
   )
+  val springfield1 = Springfield(
+    id = "1",
+    domain = "domain1",
+    user = "user1",
+    collection = "collection1",
+    playmode = SpringfieldPlayMode.CONTINUOUS,
+    timestamp = DateTime.now(),
+  )
+  val springfield2 = Springfield(
+    id = "2",
+    domain = "domain2",
+    user = "user2",
+    collection = "collection2",
+    playmode = SpringfieldPlayMode.MENU,
+    timestamp = DateTime.now(),
+  )
 }
 
 class GraphQLResolveSpec extends TestSupportFixture
@@ -181,7 +198,7 @@ class GraphQLResolveSpec extends TestSupportFixture
       .copyTo(graphqlExamplesDir)
   }
 
-  "graphql" should "resolve 'deposit/findDeposit/plain.graphql' with 15 calls to the repository" in {
+  "graphql" should "resolve 'deposit/findDeposit/plain.graphql' with 17 calls to the repository" in {
     val input = graphqlExamplesDir / "deposit" / "findDeposit" / "plain.graphql"
 
     inSequence {
@@ -215,6 +232,11 @@ class GraphQLResolveSpec extends TestSupportFixture
         repository.getAllCurationPerformedAction _ expects depositId1 once() returning Seq(
           curationPerformed1,
           curationPerformed2,
+        )
+        repository.getCurrentSpringfield _ expects depositId1 once() returning Some(springfield1)
+        (repository.getAllSpringfields(_: DepositId)) expects depositId1 once() returning Seq(
+          springfield1,
+          springfield2,
         )
       }
     }
@@ -286,6 +308,17 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       (repository.getDeposit(_: DepositId)) expects depositId1 once() returning Some(deposit1)
       (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposit/listAllSpringfieldsOfDeposit/plain.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "listAllSpringfieldsOfDeposit" / "plain.graphql"
+
+    inSequence {
+      (repository.getDeposit(_: DepositId)) expects depositId2 once() returning Some(deposit2)
+      (repository.getAllSpringfields(_: DepositId)) expects depositId2 once() returning Seq(springfield1, springfield2)
     }
 
     runQuery(input)
@@ -540,7 +573,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
-  it should "resolve 'deposits/listAllDeposits/plain.graphql' with 9 calls to the repository" in {
+  it should "resolve 'deposits/listAllDeposits/plain.graphql' with 17 calls to the repository" in {
     val input = graphqlExamplesDir / "deposits" / "listAllDeposits" / "plain.graphql"
 
     inSequence {
@@ -585,6 +618,51 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId1 -> Some(curator1),
           depositId2 -> Some(curator2),
           depositId3 -> None,
+        )
+        (repository.getAllCurators(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Seq(curator1),
+          depositId2 -> Seq(curator2, curator1),
+          depositId3 -> Seq.empty,
+        )
+        repository.getCurrentIsNewVersionActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Some(isNewVersion1),
+          depositId2 -> Some(isNewVersion2),
+          depositId3 -> None
+        )
+        repository.getAllIsNewVersionActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Seq(isNewVersion1),
+          depositId2 -> Seq(isNewVersion2),
+          depositId3 -> Seq.empty
+        )
+        repository.getCurrentCurationRequiredActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Some(curationRequired1),
+          depositId2 -> Some(curationRequired2),
+          depositId3 -> None
+        )
+        repository.getAllCurationRequiredActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Seq(curationRequired1),
+          depositId2 -> Seq(curationRequired2, curationRequired1),
+          depositId3 -> Seq.empty
+        )
+        repository.getCurrentCurationPerformedActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Some(curationPerformed1),
+          depositId2 -> Some(curationPerformed2),
+          depositId3 -> None
+        )
+        repository.getAllCurationPerformedActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Seq(curationPerformed1),
+          depositId2 -> Seq(curationPerformed2, curationPerformed1),
+          depositId3 -> Seq.empty
+        )
+        repository.getCurrentSpringfields _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Some(springfield1),
+          depositId2 -> Some(springfield2),
+          depositId3 -> None,
+        )
+        (repository.getAllSpringfields(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Seq(springfield1),
+          depositId2 -> Seq(springfield2, springfield1),
+          depositId3 -> Seq.empty,
         )
       }
     }
@@ -867,6 +945,17 @@ class GraphQLResolveSpec extends TestSupportFixture
       repository.getIngestStepById _ expects "10" once() returning Some(step1)
       repository.getDepositByIngestStepId _ expects step1.id once() returning Some(deposit1)
       repository.getDeposits _ expects(None, None, Some(DepositIngestStepFilter(IngestStepLabel.VALIDATE, SeriesFilter.ALL)), None, None, None, None, None, None) once() returning Seq(deposit1, deposit2)
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'node/onSpringfield.graphql' with 2 calls to the repository" in {
+    val input = graphqlExamplesDir / "node" / "onSpringfield.graphql"
+
+    inSequence {
+      repository.getSpringfieldById _ expects "10" once() returning Some(springfield1)
+      repository.getDepositBySpringfieldId _ expects springfield1.id once() returning Some(deposit1)
     }
 
     runQuery(input)

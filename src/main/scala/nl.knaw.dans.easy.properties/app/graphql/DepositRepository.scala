@@ -20,6 +20,7 @@ import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorF
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State }
 
 trait DepositRepository {
@@ -168,4 +169,20 @@ trait DepositRepository {
   def getAllCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationPerformedEvent])]
 
   def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Option[CurationPerformedEvent]
+
+  //
+
+  def getSpringfieldById(id: String): Option[Springfield]
+
+  def getCurrentSpringfield(id: DepositId): Option[Springfield]
+
+  def getCurrentSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Option[Springfield])]
+
+  def getAllSpringfields(id: DepositId): Seq[Springfield]
+
+  def getAllSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Seq[Springfield])]
+
+  def setSpringfield(id: DepositId, springfield: InputSpringfield): Option[Springfield]
+
+  def getDepositBySpringfieldId(id: String): Option[Deposit]
 }

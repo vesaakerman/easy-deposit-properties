@@ -36,6 +36,44 @@ query ListAllDeposits {
                     email
                     timestamp
                 }
+                curators {
+                    edges {
+                        node {
+                            userId
+                            email
+                            timestamp
+                        }
+                    }
+                }
+                isNewVersion
+                isNewVersionEvents {
+                    isNewVersion
+                    timestamp
+                }
+                curationRequired
+                curationRequiredEvents {
+                    curationRequired
+                    timestamp
+                }
+                curationPerformed
+                curationPerformedEvents {
+                    curationPerformed
+                    timestamp
+                }
+                springfield {
+                    domain
+                    user
+                    collection
+                    playmode
+                    timestamp
+                }
+                springfields {
+                    domain
+                    user
+                    collection
+                    playmode
+                    timestamp
+                }
             }
         }
     }

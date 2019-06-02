@@ -27,7 +27,8 @@ trait NodeType {
     with StateType
     with IngestStepType
     with IdentifierGraphQLType
-    with CuratorType =>
+    with CuratorType
+    with SpringfieldType =>
 
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[DataContext, Unit]) => {
     if (id.typeName == "Deposit") ctx.ctx.deposits.getDeposit(UUID.fromString(id.id))
@@ -35,8 +36,9 @@ trait NodeType {
     else if (id.typeName == "IngestStep") ctx.ctx.deposits.getIngestStepById(id.id)
     else if (id.typeName == "Identifier") ctx.ctx.deposits.getIdentifierById(id.id)
     else if (id.typeName == "Curator") ctx.ctx.deposits.getCuratorById(id.id)
+    else if (id.typeName == "Springfield") ctx.ctx.deposits.getSpringfieldById(id.id)
     else None
-  }, Node.possibleNodeTypes[DataContext, Node](DepositType, StateType, IngestStepType, IdentifierObjectType, CuratorType))
+  }, Node.possibleNodeTypes[DataContext, Node](DepositType, StateType, IngestStepType, IdentifierObjectType, CuratorType, SpringfieldType))
 
   def idFields[T](implicit identifiable: Identifiable[T]): List[Field[Unit, T]] = {
     fields[Unit, T](

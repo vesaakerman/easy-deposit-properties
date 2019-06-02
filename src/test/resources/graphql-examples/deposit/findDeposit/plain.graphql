@@ -51,5 +51,19 @@ query Deposit {
             curationPerformed
             timestamp
         }
+        springfield {
+            domain
+            user
+            collection
+            playmode
+            timestamp
+        }
+        springfields {
+            domain
+            user
+            collection
+            playmode
+            timestamp
+        }
     }
 }

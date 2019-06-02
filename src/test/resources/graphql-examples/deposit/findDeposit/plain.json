@@ -93,6 +93,22 @@
           "curationPerformed": true,
           "timestamp": "2019-01-01T04:04:00.000+01:00"
         }
+      ],
+      "springfield": {
+        "domain": "domain1",
+        "user": "user1",
+        "collection": "collection1",
+        "playmode": "CONTINUOUS",
+        "timestamp": "2019-01-01T00:00:00.000+01:00"
+      },
+      "springfields": [
+        {
+          "domain": "domain1",
+          "user": "user1",
+          "collection": "collection1",
+          "playmode": "CONTINUOUS",
+          "timestamp": "2019-01-01T00:00:00.000+01:00"
+        }
       ]
     }
   }

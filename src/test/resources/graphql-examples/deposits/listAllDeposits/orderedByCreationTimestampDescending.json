@@ -43,7 +43,46 @@
               "userId": "archie001",
               "email": "does.not.exists1@dans.knaw.nl",
               "timestamp": "2019-04-04T00:00:00.000+02:00"
-            }
+            },
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "userId": "archie001",
+                    "email": "does.not.exists1@dans.knaw.nl",
+                    "timestamp": "2019-04-04T00:00:00.000+02:00"
+                  }
+                }
+              ]
+            },
+            "isNewVersion": false,
+            "isNewVersionEvents": [
+              {
+                "isNewVersion": false,
+                "timestamp": "2019-05-05T00:00:00.000+02:00"
+              }
+            ],
+            "curationRequired": true,
+            "curationRequiredEvents": [
+              {
+                "curationRequired": true,
+                "timestamp": "2019-05-05T00:00:00.000+02:00"
+              }
+            ],
+            "curationPerformed": true,
+            "curationPerformedEvents": [
+              {
+                "curationPerformed": false,
+                "timestamp": "2019-05-05T00:00:00.000+02:00"
+              },
+              {
+                "curationPerformed": true,
+                "timestamp": "2019-05-05T04:04:00.000+02:00"
+              }
+            ],
+            "springfield": null,
+            "springfields": [
+            ]
           }
         },
         {
@@ -98,7 +137,46 @@
               "userId": "archie001",
               "email": "does.not.exists1@dans.knaw.nl",
               "timestamp": "2019-04-04T00:00:00.000+02:00"
-            }
+            },
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "userId": "archie001",
+                    "email": "does.not.exists1@dans.knaw.nl",
+                    "timestamp": "2019-04-04T00:00:00.000+02:00"
+                  }
+                }
+              ]
+            },
+            "isNewVersion": true,
+            "isNewVersionEvents": [
+              {
+                "isNewVersion": true,
+                "timestamp": "2019-04-04T00:00:00.000+02:00"
+              }
+            ],
+            "curationRequired": true,
+            "curationRequiredEvents": [
+              {
+                "curationRequired": true,
+                "timestamp": "2019-04-04T00:00:00.000+02:00"
+              }
+            ],
+            "curationPerformed": true,
+            "curationPerformedEvents": [
+              {
+                "curationPerformed": false,
+                "timestamp": "2019-04-04T00:00:00.000+02:00"
+              },
+              {
+                "curationPerformed": true,
+                "timestamp": "2019-04-04T04:04:00.000+02:00"
+              }
+            ],
+            "springfield": null,
+            "springfields": [
+            ]
           }
         },
         {
@@ -135,7 +213,53 @@
               "userId": "archie002",
               "email": "does.not.exists2@dans.knaw.nl",
               "timestamp": "2019-03-03T04:06:00.000+01:00"
-            }
+            },
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "userId": "archie001",
+                    "email": "does.not.exists1@dans.knaw.nl",
+                    "timestamp": "2019-03-03T00:00:00.000+01:00"
+                  }
+                },
+                {
+                  "node": {
+                    "userId": "archie002",
+                    "email": "does.not.exists2@dans.knaw.nl",
+                    "timestamp": "2019-03-03T04:06:00.000+01:00"
+                  }
+                }
+              ]
+            },
+            "isNewVersion": true,
+            "isNewVersionEvents": [
+              {
+                "isNewVersion": true,
+                "timestamp": "2019-03-03T00:00:00.000+01:00"
+              }
+            ],
+            "curationRequired": true,
+            "curationRequiredEvents": [
+              {
+                "curationRequired": true,
+                "timestamp": "2019-03-03T00:00:00.000+01:00"
+              }
+            ],
+            "curationPerformed": true,
+            "curationPerformedEvents": [
+              {
+                "curationPerformed": false,
+                "timestamp": "2019-03-03T00:00:00.000+01:00"
+              },
+              {
+                "curationPerformed": true,
+                "timestamp": "2019-03-03T04:04:00.000+01:00"
+              }
+            ],
+            "springfield": null,
+            "springfields": [
+            ]
           }
         },
         {
@@ -197,7 +321,55 @@
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
             ],
-            "curator": null
+            "curator": null,
+            "curators": {
+              "edges": [
+              ]
+            },
+            "isNewVersion": false,
+            "isNewVersionEvents": [
+              {
+                "isNewVersion": false,
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              }
+            ],
+            "curationRequired": false,
+            "curationRequiredEvents": [
+              {
+                "curationRequired": false,
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              }
+            ],
+            "curationPerformed": false,
+            "curationPerformedEvents": [
+              {
+                "curationPerformed": false,
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              }
+            ],
+            "springfield": {
+              "domain": "domain2",
+              "user": "user2",
+              "collection": "collection2",
+              "playmode": "CONTINUOUS",
+              "timestamp": "2019-02-02T02:02:00.000+01:00"
+            },
+            "springfields": [
+              {
+                "domain": "domain1",
+                "user": "user1",
+                "collection": "collection1",
+                "playmode": "CONTINUOUS",
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              },
+              {
+                "domain": "domain2",
+                "user": "user2",
+                "collection": "collection2",
+                "playmode": "CONTINUOUS",
+                "timestamp": "2019-02-02T02:02:00.000+01:00"
+              }
+            ]
           }
         },
         {
@@ -267,7 +439,66 @@
               "userId": "archie001",
               "email": "does.not.exists1@dans.knaw.nl",
               "timestamp": "2019-01-01T03:03:00.000+01:00"
-            }
+            },
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "userId": "archie002",
+                    "email": "does.not.exists2@dans.knaw.nl",
+                    "timestamp": "2019-01-01T00:00:00.000+01:00"
+                  }
+                },
+                {
+                  "node": {
+                    "userId": "archie001",
+                    "email": "does.not.exists1@dans.knaw.nl",
+                    "timestamp": "2019-01-01T03:03:00.000+01:00"
+                  }
+                }
+              ]
+            },
+            "isNewVersion": false,
+            "isNewVersionEvents": [
+              {
+                "isNewVersion": false,
+                "timestamp": "2019-01-01T00:00:00.000+01:00"
+              }
+            ],
+            "curationRequired": true,
+            "curationRequiredEvents": [
+              {
+                "curationRequired": true,
+                "timestamp": "2019-01-01T00:00:00.000+01:00"
+              }
+            ],
+            "curationPerformed": true,
+            "curationPerformedEvents": [
+              {
+                "curationPerformed": false,
+                "timestamp": "2019-01-01T00:00:00.000+01:00"
+              },
+              {
+                "curationPerformed": true,
+                "timestamp": "2019-01-01T04:04:00.000+01:00"
+              }
+            ],
+            "springfield": {
+              "domain": "domain1",
+              "user": "user1",
+              "collection": "collection1",
+              "playmode": "CONTINUOUS",
+              "timestamp": "2019-01-01T00:00:00.000+01:00"
+            },
+            "springfields": [
+              {
+                "domain": "domain1",
+                "user": "user1",
+                "collection": "collection1",
+                "playmode": "CONTINUOUS",
+                "timestamp": "2019-01-01T00:00:00.000+01:00"
+              }
+            ]
           }
         }
       ]

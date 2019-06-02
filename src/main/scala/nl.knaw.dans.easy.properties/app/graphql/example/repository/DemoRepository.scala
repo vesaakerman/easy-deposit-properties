@@ -21,6 +21,7 @@ import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorF
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
@@ -38,6 +39,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   val isNewVersionRepo: mutable.Map[DepositId, Seq[IsNewVersionEvent]]
   val curationRequiredRepo: mutable.Map[DepositId, Seq[CurationRequiredEvent]]
   val curationPerformedRepo: mutable.Map[DepositId, Seq[CurationPerformedEvent]]
+  val springfieldRepo: mutable.Map[DepositId, Seq[Springfield]]
 
   override def getAllDeposits: Seq[Deposit] = {
     trace(())
@@ -578,5 +580,60 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       Some(action)
     }
     else Option.empty
+  }
+
+  //
+
+  def getSpringfieldById(id: String): Option[Springfield] = {
+    trace(id)
+    springfieldRepo.values.toStream.flatten.find(_.id == id)
+  }
+
+  def getCurrentSpringfield(id: DepositId): Option[Springfield] = {
+    trace(id)
+    springfieldRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  def getCurrentSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Option[Springfield])] = {
+    trace(ids)
+    ids.map(id => id -> springfieldRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  def getAllSpringfields(id: DepositId): Seq[Springfield] = {
+    trace(id)
+    springfieldRepo.getOrElse(id, Seq.empty)
+  }
+
+  def getAllSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Seq[Springfield])] = {
+    trace(ids)
+    ids.map(id => id -> springfieldRepo.getOrElse(id, Seq.empty))
+  }
+
+  def setSpringfield(id: DepositId, springfield: InputSpringfield): Option[Springfield] = {
+    trace(id, springfield)
+    if (depositRepo contains id) {
+      val InputSpringfield(domain, user, collection, playmode, timestamp) = springfield
+
+      val springfieldId = id.toString.last + stepRepo
+        .collectFirst { case (`id`, steps) => steps }
+        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
+        .toString
+      val newSpringfield = Springfield(springfieldId, domain, user, collection, playmode, timestamp)
+
+      if (springfieldRepo contains id)
+        springfieldRepo.update(id, springfieldRepo(id) :+ newSpringfield)
+      else
+        springfieldRepo += (id -> Seq(newSpringfield))
+
+      Some(newSpringfield)
+    }
+    else Option.empty
+  }
+
+  def getDepositBySpringfieldId(id: String): Option[Deposit] = {
+    trace(id)
+    springfieldRepo
+      .collectFirst { case (depositId, springfields) if springfields.exists(_.id == id) => depositId }
+      .flatMap(depositRepo.get)
   }
 }

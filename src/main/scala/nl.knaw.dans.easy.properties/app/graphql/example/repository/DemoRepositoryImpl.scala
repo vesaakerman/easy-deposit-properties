@@ -22,6 +22,7 @@ import nl.knaw.dans.easy.properties.app.model.curator.Curator
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
+import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import org.joda.time.{ DateTime, DateTimeZone }
 
@@ -153,6 +154,10 @@ class DemoRepositoryImpl extends DemoRepository {
   private val curationPerformed50 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 5, 5, 0, 0, timeZone))
   private val curationPerformed51 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 5, 5, 4, 4, timeZone))
 
+  private val springfield10 = Springfield("10", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val springfield20 = Springfield("20", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val springfield21 = Springfield("21", "domain2", "user2", "collection2", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 2, 2, 2, 2, timeZone))
+
   override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
   override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty
   override val stepRepo: mutable.Map[DepositId, Seq[IngestStep]] = mutable.Map.empty
@@ -163,6 +168,7 @@ class DemoRepositoryImpl extends DemoRepository {
   override val isNewVersionRepo: mutable.Map[DepositId, Seq[IsNewVersionEvent]] = mutable.Map.empty
   override val curationRequiredRepo: mutable.Map[DepositId, Seq[CurationRequiredEvent]] = mutable.Map.empty
   override val curationPerformedRepo: mutable.Map[DepositId, Seq[CurationPerformedEvent]] = mutable.Map.empty
+  override val springfieldRepo: mutable.Map[DepositId, Seq[Springfield]] = mutable.Map.empty
 
   resetRepository()
 
@@ -177,6 +183,7 @@ class DemoRepositoryImpl extends DemoRepository {
     resetIsNewVersionRepo()
     resetCurationRequiredRepo()
     resetCurationPerformedRepo()
+    resetSpringfieldRepo()
   }
 
   def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
@@ -296,6 +303,14 @@ class DemoRepositoryImpl extends DemoRepository {
       depositId3 -> Seq(curationPerformed30, curationPerformed31),
       depositId4 -> Seq(curationPerformed40, curationPerformed41),
       depositId5 -> Seq(curationPerformed50, curationPerformed51),
+    )
+  }
+
+  def resetSpringfieldRepo(): mutable.Map[DepositId, Seq[Springfield]] = {
+    springfieldRepo.clear()
+    springfieldRepo ++= Map(
+      depositId1 -> Seq(springfield10),
+      depositId2 -> Seq(springfield20, springfield21),
     )
   }
 }

@@ -246,6 +246,15 @@ type Deposit implements Node {
 
   """List the present and past values for 'curation-performed'."""
   curationPerformedEvents: [CurationPerformedEvent!]!
+
+  """The springfield configuration currently associated with this deposit."""
+  springfield: Springfield
+
+  """List the present and past values for springfield configuration."""
+  springfields(
+    """Ordering options for the returned springfields."""
+    orderBy: SpringfieldOrder
+  ): [Springfield!]!
 }
 
 """A connection to a list of items."""
@@ -667,6 +676,26 @@ input InputIngestStep {
   timestamp: DateTime!
 }
 
+"""Springfield configuration associated with this deposit."""
+input InputSpringfield {
+  """The domain of Springfield"""
+  domain: String!
+
+  """The user of Springfield"""
+  user: String!
+
+  """The collection of Springfield"""
+  collection: String!
+
+  """The playmode used in Springfield"""
+  playmode: SpringfieldPlayMode!
+
+  """
+  The timestamp at which this springfield configuration was associated with the deposit.
+  """
+  timestamp: DateTime!
+}
+
 """The state of a deposit"""
 input InputState {
   """The state label of the deposit."""
@@ -797,6 +826,15 @@ type Mutation {
     """Whether curation is performed on this deposit."""
     curationPerformed: CurationPerformedEventInput!
   ): CurationPerformedEvent
+
+  """Set the springfield configuration for this deposit."""
+  setSpringfield(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The springfield configuration to be associated with this deposit."""
+    springfield: InputSpringfield!
+  ): Springfield
 }
 
 """An object with an ID"""
@@ -920,6 +958,58 @@ enum SeriesFilter {
 
   """Only search through current states."""
   LATEST
+}
+
+"""Springfield configuration associated with this deposit."""
+type Springfield implements Node {
+  """The domain of Springfield"""
+  domain: String!
+
+  """The user of Springfield"""
+  user: String!
+
+  """The collection of Springfield"""
+  collection: String!
+
+  """The playmode used in Springfield"""
+  playmode: SpringfieldPlayMode!
+
+  """
+  The timestamp at which this springfield configuration was associated with the deposit.
+  """
+  timestamp: DateTime!
+
+  """The ID of an object"""
+  id: ID!
+
+  """
+  Returns the deposit that is associated with this particular springfield configuration.
+  """
+  deposit: Deposit
+}
+
+"""Ordering options for springfields"""
+input SpringfieldOrder {
+  """The field to order springfields by"""
+  field: SpringfieldOrderField!
+
+  """The ordering direction"""
+  direction: OrderDirection!
+}
+
+"""Properties by which springfields can be ordered"""
+enum SpringfieldOrderField {
+  """Order springfields by timestamp"""
+  TIMESTAMP
+}
+
+"""The playmode in Springfield for this deposit."""
+enum SpringfieldPlayMode {
+  """Play audio/video in Springfield as selected in a menu."""
+  MENU
+
+  """Play audio/video continuously in Springfield."""
+  CONTINUOUS
 }
 
 """The state of the deposit."""
