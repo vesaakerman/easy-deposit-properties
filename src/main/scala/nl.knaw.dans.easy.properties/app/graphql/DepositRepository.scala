@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql
 
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, DepositContentTypeFilter, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
@@ -36,6 +37,7 @@ trait DepositRepository {
                   isNewVersionFilter: Option[DepositIsNewVersionFilter] = Option.empty,
                   curationRequiredFilter: Option[DepositCurationRequiredFilter] = Option.empty,
                   curationPerformedFilter: Option[DepositCurationPerformedFilter] = Option.empty,
+                  contentTypeFilter: Option[DepositContentTypeFilter] = Option.empty,
                  ): Seq[Deposit]
 
   def getDeposit(id: DepositId): Option[Deposit]
@@ -120,8 +122,6 @@ trait DepositRepository {
 
   def getCuratorById(id: String): Option[Curator]
 
-  def getCuratorByUserId(userId: String): Option[Curator]
-
   def getCurrentCurator(id: DepositId): Option[Curator]
 
   def getAllCurators(id: DepositId): Seq[Curator]
@@ -185,4 +185,20 @@ trait DepositRepository {
   def setSpringfield(id: DepositId, springfield: InputSpringfield): Option[Springfield]
 
   def getDepositBySpringfieldId(id: String): Option[Deposit]
+
+  //
+
+  def getContentTypeById(id: String): Option[ContentType]
+
+  def getCurrentContentType(id: DepositId): Option[ContentType]
+
+  def getCurrentContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Option[ContentType])]
+
+  def getAllContentTypes(id: DepositId): Seq[ContentType]
+
+  def getAllContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Seq[ContentType])]
+
+  def setContentType(id: DepositId, contentType: InputContentType): Option[ContentType]
+
+  def getDepositByContentTypeId(id: String): Option[Deposit]
 }

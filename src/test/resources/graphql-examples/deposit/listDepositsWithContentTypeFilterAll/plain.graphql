@@ -1,0 +1,14 @@
+query ListDepositsWithSameState {
+    deposit(id: "00000000-0000-0000-0000-000000000002") {
+        contentType {
+            value
+            deposits(contentTypeFilter: ALL) {
+                edges {
+                    node {
+                        depositId
+                    }
+                }
+            }
+        }
+    }
+}

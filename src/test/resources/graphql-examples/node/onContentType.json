@@ -1,0 +1,20 @@
+{
+  "data": {
+    "node": {
+      "value": "application/octet-stream",
+      "timestamp": "2019-01-01T00:10:00.000+01:00",
+      "deposit": {
+        "depositId": "00000000-0000-0000-0000-000000000001"
+      },
+      "deposits": {
+        "edges": [
+          {
+            "node": {
+              "depositId": "00000000-0000-0000-0000-000000000001"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

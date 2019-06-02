@@ -36,6 +36,7 @@ trait CuratorType {
     with IngestStepType
     with DoiEventTypes
     with CurationEventType
+    with ContentTypeGraphQLType
     with NodeType
     with MetaTypes
     with Scalars =>
@@ -113,6 +114,7 @@ trait CuratorType {
       depositIsNewVersionFilterArgument,
       depositCurationRequiredFilterArgument,
       depositCurationPerformedFilterArgument,
+      depositContentTypeFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -139,6 +141,7 @@ trait CuratorType {
     val isNewVersion = context.arg(depositIsNewVersionFilterArgument)
     val curationRequired = context.arg(depositCurationRequiredFilterArgument)
     val curationPerformed = context.arg(depositCurationPerformedFilterArgument)
+    val contentType = context.arg(depositContentTypeFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = repository.getDeposits(
@@ -150,6 +153,7 @@ trait CuratorType {
       isNewVersionFilter = isNewVersion,
       curationRequiredFilter = curationRequired,
       curationPerformedFilter = curationPerformed,
+      contentTypeFilter = contentType,
     )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))

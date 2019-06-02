@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 import java.util.{ TimeZone, UUID }
 
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue }
 import nl.knaw.dans.easy.properties.app.model.curator.Curator
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
@@ -158,6 +159,13 @@ class DemoRepositoryImpl extends DemoRepository {
   private val springfield20 = Springfield("20", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 2, 2, 0, 0, timeZone))
   private val springfield21 = Springfield("21", "domain2", "user2", "collection2", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 2, 2, 2, 2, timeZone))
 
+  private val contentType10 = ContentType("10", ContentTypeValue.ZIP, new DateTime(2019, 1, 1, 0, 5, timeZone))
+  private val contentType11 = ContentType("11", ContentTypeValue.OCTET, new DateTime(2019, 1, 1, 0, 10, timeZone))
+  private val contentType20 = ContentType("20", ContentTypeValue.ZIP, new DateTime(2019, 2, 2, 0, 5, timeZone))
+  private val contentType30 = ContentType("30", ContentTypeValue.ZIP, new DateTime(2019, 3, 3, 0, 5, timeZone))
+  private val contentType40 = ContentType("40", ContentTypeValue.ZIP, new DateTime(2019, 4, 4, 0, 5, timeZone))
+  private val contentType50 = ContentType("50", ContentTypeValue.ZIP, new DateTime(2019, 5, 5, 0, 5, timeZone))
+
   override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
   override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty
   override val stepRepo: mutable.Map[DepositId, Seq[IngestStep]] = mutable.Map.empty
@@ -169,6 +177,7 @@ class DemoRepositoryImpl extends DemoRepository {
   override val curationRequiredRepo: mutable.Map[DepositId, Seq[CurationRequiredEvent]] = mutable.Map.empty
   override val curationPerformedRepo: mutable.Map[DepositId, Seq[CurationPerformedEvent]] = mutable.Map.empty
   override val springfieldRepo: mutable.Map[DepositId, Seq[Springfield]] = mutable.Map.empty
+  override val contentTypeRepo: mutable.Map[DepositId, Seq[ContentType]] = mutable.Map.empty
 
   resetRepository()
 
@@ -184,6 +193,7 @@ class DemoRepositoryImpl extends DemoRepository {
     resetCurationRequiredRepo()
     resetCurationPerformedRepo()
     resetSpringfieldRepo()
+    resetContentTypeRepo()
   }
 
   def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
@@ -311,6 +321,17 @@ class DemoRepositoryImpl extends DemoRepository {
     springfieldRepo ++= Map(
       depositId1 -> Seq(springfield10),
       depositId2 -> Seq(springfield20, springfield21),
+    )
+  }
+
+  def resetContentTypeRepo(): mutable.Map[DepositId, Seq[ContentType]] = {
+    contentTypeRepo.clear()
+    contentTypeRepo ++= Map(
+      depositId1 -> Seq(contentType10, contentType11),
+      depositId2 -> Seq(contentType20),
+      depositId3 -> Seq(contentType30),
+      depositId4 -> Seq(contentType40),
+      depositId5 -> Seq(contentType50),
     )
   }
 }

@@ -1,0 +1,11 @@
+query {
+    depositor(id: "user001") {
+        deposits(contentType: {value: ZIP}, orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
+            edges {
+                node {
+                    depositId
+                }
+            }
+        }
+    }
+}

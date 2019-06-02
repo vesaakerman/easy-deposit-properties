@@ -74,6 +74,14 @@ query ListAllDepositsOrderedByDepositIdDescending {
                     playmode
                     timestamp
                 }
+                contentType {
+                    value
+                    timestamp
+                }
+                contentTypes {
+                    value
+                    timestamp
+                }
             }
         }
     }

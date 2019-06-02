@@ -65,5 +65,13 @@ query Deposit {
             playmode
             timestamp
         }
+        contentType {
+            value
+            timestamp
+        }
+        contentTypes {
+            value
+            timestamp
+        }
     }
 }

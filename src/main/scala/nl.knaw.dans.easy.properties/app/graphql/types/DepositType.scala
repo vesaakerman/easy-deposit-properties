@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
+import nl.knaw.dans.easy.properties.app.model.contentType.ContentType
 import nl.knaw.dans.easy.properties.app.model.curator.Curator
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
@@ -40,6 +41,7 @@ trait DepositType {
     with CuratorType
     with CurationEventType
     with SpringfieldType
+    with ContentTypeGraphQLType
     with NodeType
     with Scalars =>
 
@@ -183,6 +185,19 @@ trait DepositType {
     arguments = List(optSpringfieldOrderArgument),
     fieldType = ListType(SpringfieldType),
     resolve = getSpringfields,
+  )
+  private val contentTypeField: Field[DataContext, Deposit] = Field(
+    name = "contentType",
+    description = Some("The content type currently associated with this deposit."),
+    fieldType = OptionType(ContentTypeType),
+    resolve = getContentType,
+  )
+  private val contentTypesField: Field[DataContext, Deposit] = Field(
+    name = "contentTypes",
+    description = Some("List the present and past values of content types."),
+    arguments = List(optContentTypeOrderArgument),
+    fieldType = ListType(ContentTypeType),
+    resolve = getContentTypes,
   )
 
   private def getCurrentState(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[State]] = {
@@ -332,6 +347,21 @@ trait DepositType {
       .map { case (_, springfield) => orderBy.fold(springfield)(order => springfield.sorted(order.ordering)) }
   }
 
+  private def getContentType(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[ContentType]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchCurrentContentTypes.defer(depositId))
+      .map { case (_, contentType) => contentType }
+  }
+
+  private def getContentTypes(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[ContentType]] = {
+    val depositId = context.value.id
+    val orderBy = context.arg(optContentTypeOrderArgument)
+
+    DeferredValue(fetchAllContentTypes.defer(depositId))
+      .map { case (_, contentTypes) => orderBy.fold(contentTypes)(order => contentTypes.sorted(order.ordering)) }
+  }
+
   implicit object DepositIdentifiable extends Identifiable[Deposit] {
     override def id(deposit: Deposit): String = deposit.id.toString
   }
@@ -367,6 +397,8 @@ trait DepositType {
       curationPerformedEventsField,
       springfieldField,
       springfieldsField,
+      contentTypeField,
+      contentTypesField,
     ),
   )
 

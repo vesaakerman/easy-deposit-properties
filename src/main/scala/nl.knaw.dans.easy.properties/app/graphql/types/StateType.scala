@@ -104,7 +104,7 @@ trait StateType {
 
   private val depositField: Field[DataContext, State] = Field(
     name = "deposit",
-    description = Some("Returns the deposit that is associated with this particular ingest step"),
+    description = Some("Returns the deposit that is associated with this particular state"),
     fieldType = OptionType(DepositType),
     resolve = getDepositByState,
   )

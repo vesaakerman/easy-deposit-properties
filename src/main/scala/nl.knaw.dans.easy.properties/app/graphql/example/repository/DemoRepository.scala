@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.example.repository
 
 import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, DepositContentTypeFilter, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
@@ -40,6 +41,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   val curationRequiredRepo: mutable.Map[DepositId, Seq[CurationRequiredEvent]]
   val curationPerformedRepo: mutable.Map[DepositId, Seq[CurationPerformedEvent]]
   val springfieldRepo: mutable.Map[DepositId, Seq[Springfield]]
+  val contentTypeRepo: mutable.Map[DepositId, Seq[ContentType]]
 
   override def getAllDeposits: Seq[Deposit] = {
     trace(())
@@ -55,6 +57,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
                            isNewVersionFilter: Option[DepositIsNewVersionFilter] = Option.empty,
                            curationRequiredFilter: Option[DepositCurationRequiredFilter] = Option.empty,
                            curationPerformedFilter: Option[DepositCurationPerformedFilter] = Option.empty,
+                           contentTypeFilter: Option[DepositContentTypeFilter] = Option.empty,
                           ): Seq[Deposit] = {
     trace(depositorId, stateFilter, ingestStepFilter)
 
@@ -169,7 +172,20 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       case None => withCurationRequired
     }
 
-    withCurationPerformed.map(identity)
+    val withContentType = contentTypeFilter match {
+      case Some(DepositContentTypeFilter(contentType, filter)) =>
+        withCurationPerformed.withFilter(d => {
+          val ct = contentTypeRepo.getOrElse(d.id, Seq.empty)
+          val selectedContentType = filter match {
+            case SeriesFilter.LATEST => ct.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => ct
+          }
+          selectedContentType.exists(_.value == contentType)
+        })
+      case None => withCurationPerformed
+    }
+
+    withContentType.map(identity)
   }
 
   override def getDeposit(id: DepositId): Option[Deposit] = {
@@ -436,11 +452,6 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     curatorRepo.values.toStream.flatten.find(_.id == id)
   }
 
-  override def getCuratorByUserId(userId: String): Option[Curator] = {
-    trace(userId)
-    curatorRepo.values.toStream.flatten.find(_.userId == userId)
-  }
-
   override def getCurrentCurator(id: DepositId): Option[Curator] = {
     trace(id)
     curatorRepo.get(id).flatMap(_.maxByOption(_.timestamp))
@@ -634,6 +645,61 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     trace(id)
     springfieldRepo
       .collectFirst { case (depositId, springfields) if springfields.exists(_.id == id) => depositId }
+      .flatMap(depositRepo.get)
+  }
+
+  //
+
+  def getContentTypeById(id: String): Option[ContentType] = {
+    trace(id)
+    contentTypeRepo.values.toStream.flatten.find(_.id == id)
+  }
+
+  def getCurrentContentType(id: DepositId): Option[ContentType] = {
+    trace(id)
+    contentTypeRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  def getCurrentContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Option[ContentType])] = {
+    trace(ids)
+    ids.map(id => id -> contentTypeRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  def getAllContentTypes(id: DepositId): Seq[ContentType] = {
+    trace(id)
+    contentTypeRepo.getOrElse(id, Seq.empty)
+  }
+
+  def getAllContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Seq[ContentType])] = {
+    trace(ids)
+    ids.map(id => id -> contentTypeRepo.getOrElse(id, Seq.empty))
+  }
+
+  def setContentType(id: DepositId, contentType: InputContentType): Option[ContentType] = {
+    trace(id, contentType)
+    if (depositRepo contains id) {
+      val InputContentType(value, timestamp) = contentType
+
+      val contentTypeId = id.toString.last + stepRepo
+        .collectFirst { case (`id`, steps) => steps }
+        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
+        .toString
+      val newContentType = ContentType(contentTypeId, value, timestamp)
+
+      if (contentTypeRepo contains id)
+        contentTypeRepo.update(id, contentTypeRepo(id) :+ newContentType)
+      else
+        contentTypeRepo += (id -> Seq(newContentType))
+
+      Some(newContentType)
+    }
+    else Option.empty
+  }
+
+  def getDepositByContentTypeId(id: String): Option[Deposit] = {
+    trace(id)
+    contentTypeRepo
+      .collectFirst { case (depositId, contentTypes) if contentTypes.exists(_.id == id) => depositId }
       .flatMap(depositRepo.get)
   }
 }

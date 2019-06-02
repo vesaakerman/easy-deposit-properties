@@ -28,6 +28,7 @@ trait DepositorType {
     with DoiEventTypes
     with CuratorType
     with CurationEventType
+    with ContentTypeGraphQLType
     with MetaTypes =>
 
   private val depositorIdField: Field[DataContext, DepositorId] = Field(
@@ -48,6 +49,7 @@ trait DepositorType {
       depositCurationRequiredFilterArgument,
       depositCurationPerformedFilterArgument,
       depositCuratorFilterArgument,
+      depositContentTypeFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -66,6 +68,7 @@ trait DepositorType {
     val isNewVersion = context.arg(depositIsNewVersionFilterArgument)
     val curationRequired = context.arg(depositCurationRequiredFilterArgument)
     val curationPerformed = context.arg(depositCurationPerformedFilterArgument)
+    val contentType = context.arg(depositContentTypeFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = repository.getDeposits(
@@ -78,6 +81,7 @@ trait DepositorType {
       isNewVersionFilter = isNewVersion,
       curationRequiredFilter = curationRequired,
       curationPerformedFilter = curationPerformed,
+      contentTypeFilter = contentType,
     )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))

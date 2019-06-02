@@ -1,0 +1,18 @@
+query {
+    node(id: "Q29udGVudFR5cGU6MTE=") {
+        ... on ContentType {
+            value
+            timestamp
+            deposit {
+                depositId
+            }
+            deposits(contentTypeFilter: ALL, orderBy: {field: DEPOSIT_ID, direction: ASC}) {
+                edges {
+                    node {
+                        depositId
+                    }
+                }
+            }
+        }
+    }
+}

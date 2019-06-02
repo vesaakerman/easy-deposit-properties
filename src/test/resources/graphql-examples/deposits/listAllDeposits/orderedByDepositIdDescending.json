@@ -82,6 +82,16 @@
             ],
             "springfield": null,
             "springfields": [
+            ],
+            "contentType": {
+              "value": "application/zip",
+              "timestamp": "2019-05-05T00:05:00.000+02:00"
+            },
+            "contentTypes": [
+              {
+                "value": "application/zip",
+                "timestamp": "2019-05-05T00:05:00.000+02:00"
+              }
             ]
           }
         },
@@ -176,6 +186,16 @@
             ],
             "springfield": null,
             "springfields": [
+            ],
+            "contentType": {
+              "value": "application/zip",
+              "timestamp": "2019-04-04T00:05:00.000+02:00"
+            },
+            "contentTypes": [
+              {
+                "value": "application/zip",
+                "timestamp": "2019-04-04T00:05:00.000+02:00"
+              }
             ]
           }
         },
@@ -259,6 +279,16 @@
             ],
             "springfield": null,
             "springfields": [
+            ],
+            "contentType": {
+              "value": "application/zip",
+              "timestamp": "2019-03-03T00:05:00.000+01:00"
+            },
+            "contentTypes": [
+              {
+                "value": "application/zip",
+                "timestamp": "2019-03-03T00:05:00.000+01:00"
+              }
             ]
           }
         },
@@ -368,6 +398,16 @@
                 "collection": "collection2",
                 "playmode": "CONTINUOUS",
                 "timestamp": "2019-02-02T02:02:00.000+01:00"
+              }
+            ],
+            "contentType": {
+              "value": "application/zip",
+              "timestamp": "2019-02-02T00:05:00.000+01:00"
+            },
+            "contentTypes": [
+              {
+                "value": "application/zip",
+                "timestamp": "2019-02-02T00:05:00.000+01:00"
               }
             ]
           }
@@ -497,6 +537,20 @@
                 "collection": "collection1",
                 "playmode": "CONTINUOUS",
                 "timestamp": "2019-01-01T00:00:00.000+01:00"
+              }
+            ],
+            "contentType": {
+              "value": "application/octet-stream",
+              "timestamp": "2019-01-01T00:10:00.000+01:00"
+            },
+            "contentTypes": [
+              {
+                "value": "application/zip",
+                "timestamp": "2019-01-01T00:05:00.000+01:00"
+              },
+              {
+                "value": "application/octet-stream",
+                "timestamp": "2019-01-01T00:10:00.000+01:00"
               }
             ]
           }

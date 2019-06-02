@@ -109,6 +109,20 @@
           "playmode": "CONTINUOUS",
           "timestamp": "2019-01-01T00:00:00.000+01:00"
         }
+      ],
+      "contentType": {
+        "value": "application/octet-stream",
+        "timestamp": "2019-01-01T00:10:00.000+01:00"
+      },
+      "contentTypes": [
+        {
+          "value": "application/zip",
+          "timestamp": "2019-01-01T00:05:00.000+01:00"
+        },
+        {
+          "value": "application/octet-stream",
+          "timestamp": "2019-01-01T00:10:00.000+01:00"
+        }
       ]
     }
   }

@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
@@ -34,6 +35,7 @@ trait MutationType {
     with CuratorType
     with CurationEventType
     with SpringfieldType
+    with ContentTypeGraphQLType
     with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
@@ -153,6 +155,15 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  private val contentTypeArgument: Argument[InputContentType] = Argument(
+    name = "contentType",
+    description = Some("The content type to be associated with this deposit."),
+    defaultValue = None,
+    argumentType = InputContentTypeType,
+    fromInput = InputContentTypeFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
 
   private val addDepositField: Field[DataContext, Unit] = Field(
     name = "addDeposit",
@@ -265,6 +276,16 @@ trait MutationType {
     fieldType = OptionType(SpringfieldType),
     resolve = setSpringfield,
   )
+  private val setContentTypeField: Field[DataContext, Unit] = Field(
+    name = "setContentType",
+    description = Some("Set the content type for this deposit."),
+    arguments = List(
+      depositIdArgument,
+      contentTypeArgument,
+    ),
+    fieldType = OptionType(ContentTypeType),
+    resolve = setContentType,
+  )
 
   private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
     val repository = context.ctx.deposits
@@ -366,6 +387,15 @@ trait MutationType {
     repository.setSpringfield(depositId, springfield)
   }
 
+  private def setContentType(context: Context[DataContext, Unit]): Option[ContentType] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val contentType = context.arg(contentTypeArgument)
+
+    repository.setContentType(depositId, contentType)
+  }
+
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(
     name = "Mutation",
     description = "The root query for implementing GraphQL mutations.",
@@ -381,6 +411,7 @@ trait MutationType {
       setCurationRequiredField,
       setCurationPerformedField,
       setSpringfieldField,
+      setContentTypeField,
     ),
   )
 }

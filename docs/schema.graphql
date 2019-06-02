@@ -1,3 +1,68 @@
+"""
+A SWORD2 internal property to record the type of messages sent by a client to create the deposit.
+"""
+type ContentType implements Node {
+  """
+  The timestamp at which this springfield configuration was associated with the deposit.
+  """
+  timestamp: DateTime!
+
+  """The ID of an object"""
+  id: ID!
+
+  """
+  Returns the deposit that is associated with this particular content type.
+  """
+  deposit: Deposit
+
+  """List all deposits with the same current content type."""
+  deposits(
+    """
+    Determine whether to search in current content types (`LATEST`, default) or all current and past content types (`ALL`).
+    """
+    contentTypeFilter: SeriesFilter! = LATEST
+
+    """Ordering options for the returned deposits."""
+    orderBy: DepositOrder
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): DepositConnection
+
+  """The content type associated with this deposit."""
+  value: String
+}
+
+"""Ordering options for content types"""
+input ContentTypeOrder {
+  """The field to order content types by"""
+  field: ContentTypeOrderField!
+
+  """The ordering direction"""
+  direction: OrderDirection!
+}
+
+"""Properties by which content types can be ordered"""
+enum ContentTypeOrderField {
+  """Order content types by timestamp"""
+  TIMESTAMP
+
+  """Order content types by value"""
+  VALUE
+}
+
+"""
+A SWORD2 internal property to record the type of messages sent by a client to create the deposit.
+"""
+enum ContentTypeValue {
+  """content type 'application/octet-stream'"""
+  OCTET
+
+  """content type 'application/zip'"""
+  ZIP
+}
+
 """Whether the deposit has been curated by the data manager."""
 type CurationPerformedEvent {
   """True if curation by the data manager has been performed."""
@@ -95,6 +160,9 @@ type Curator implements Node {
     List only those deposits that have this specified value for 'curation performed'.
     """
     curationPerformed: DepositCurationPerformedFilter
+
+    """List only those deposits that have this specified content type."""
+    contentType: DepositContentTypeFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
@@ -255,6 +323,15 @@ type Deposit implements Node {
     """Ordering options for the returned springfields."""
     orderBy: SpringfieldOrder
   ): [Springfield!]!
+
+  """The content type currently associated with this deposit."""
+  contentType: ContentType
+
+  """List the present and past values of content types."""
+  contentTypes(
+    """Ordering options for the returned content types."""
+    orderBy: ContentTypeOrder
+  ): [ContentType!]!
 }
 
 """A connection to a list of items."""
@@ -267,6 +344,19 @@ type DepositConnection {
 
   """Identifies the total count of items in the connection."""
   totalCount: Int!
+}
+
+"""
+The label and filter to be used in searching for deposits by content type.
+"""
+input DepositContentTypeFilter {
+  """If provided, only show deposits with this content type."""
+  value: ContentTypeValue!
+
+  """
+  Determine whether to search in current content types (`LATEST`, default) or all current and past content types (`ALL`).
+  """
+  filter: SeriesFilter = LATEST
 }
 
 """
@@ -415,6 +505,9 @@ type Depositor {
 
     """List only those deposits that have this specified data manager."""
     curator: DepositCuratorFilter
+
+    """List only those deposits that have this specified content type."""
+    contentType: DepositContentTypeFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
@@ -643,6 +736,19 @@ enum IngestStepOrderField {
   STEP
 }
 
+"""
+A SWORD2 internal property to record the type of messages sent by a client to create the deposit.
+"""
+input InputContentType {
+  """The content type associated with this deposit."""
+  value: ContentTypeValue!
+
+  """
+  The timestamp at which this springfield configuration was associated with the deposit.
+  """
+  timestamp: DateTime!
+}
+
 """Data manager responsible for curating this deposit."""
 input InputCurator {
   """The data manager's username in EASY."""
@@ -835,6 +941,15 @@ type Mutation {
     """The springfield configuration to be associated with this deposit."""
     springfield: InputSpringfield!
   ): Springfield
+
+  """Set the content type for this deposit."""
+  setContentType(
+    """The deposit's identifier."""
+    depositId: UUID!
+
+    """The content type to be associated with this deposit."""
+    contentType: InputContentType!
+  ): ContentType
 }
 
 """An object with an ID"""
@@ -912,6 +1027,9 @@ type Query {
     List only those deposits that have this specified value for 'curation performed'.
     """
     curationPerformed: DepositCurationPerformedFilter
+
+    """List only those deposits that have this specified content type."""
+    contentType: DepositContentTypeFilter
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
@@ -1026,9 +1144,7 @@ type State implements Node {
   """The ID of an object"""
   id: ID!
 
-  """
-  Returns the deposit that is associated with this particular ingest step
-  """
+  """Returns the deposit that is associated with this particular state"""
   deposit: Deposit
 
   """List all deposits with the same current state label."""

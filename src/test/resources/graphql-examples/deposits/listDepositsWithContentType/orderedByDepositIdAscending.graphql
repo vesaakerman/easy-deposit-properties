@@ -1,0 +1,13 @@
+query {
+    deposits(contentType: {value: ZIP, filter: LATEST}, orderBy: {field: DEPOSIT_ID, direction: ASC}) {
+        edges {
+            node {
+                depositId
+                contentType {
+                    value
+                    timestamp
+                }
+            }
+        }
+    }
+}

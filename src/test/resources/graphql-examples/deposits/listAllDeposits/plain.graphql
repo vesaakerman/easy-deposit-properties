@@ -74,6 +74,14 @@ query ListAllDeposits {
                     playmode
                     timestamp
                 }
+                contentType {
+                    value
+                    timestamp
+                }
+                contentTypes {
+                    value
+                    timestamp
+                }
             }
         }
     }
