@@ -119,6 +119,14 @@ CREATE TABLE DepositCurationEvent (
     FOREIGN KEY (curationType) REFERENCES CurationType (value),
 );
 
+CREATE TABLE SpringfieldPlayMode (
+    value VARCHAR(32) NOT NULL PRIMARY KEY,
+);
+
+INSERT INTO SpringfieldPlayMode (value)
+VALUES ('continuous'),
+       ('menu');
+
 CREATE TABLE DepositSpringfield (
     springfieldId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
@@ -128,6 +136,7 @@ CREATE TABLE DepositSpringfield (
     playmode VARCHAR(32) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    FOREIGN KEY (playmode) REFERENCES SpringfieldPlayMode (value),
 );
 
 CREATE TABLE DepositClientMessageContentType (
