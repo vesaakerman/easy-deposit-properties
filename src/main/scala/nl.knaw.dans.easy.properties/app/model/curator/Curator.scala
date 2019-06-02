@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.app.model.curator
 
-import nl.knaw.dans.easy.properties.app.model.Timestamp
+import nl.knaw.dans.easy.properties.app.model.{ Timestamp, Timestamped }
+import sangria.relay.Node
 
-case class Curator(id: String, userId: String, email: String, timestamp: Timestamp)
+case class Curator(id: String, userId: String, email: String, timestamp: Timestamp) extends Node with Timestamped

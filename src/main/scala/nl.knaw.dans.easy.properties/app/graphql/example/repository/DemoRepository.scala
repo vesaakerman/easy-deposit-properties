@@ -25,7 +25,9 @@ import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilt
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import sangria.relay.Node
 
+import scala.collection.generic.FilterMonadic
 import scala.collection.mutable
 
 trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
@@ -59,7 +61,24 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
                            curationPerformedFilter: Option[DepositCurationPerformedFilter] = Option.empty,
                            contentTypeFilter: Option[DepositContentTypeFilter] = Option.empty,
                           ): Seq[Deposit] = {
-    trace(depositorId, stateFilter, ingestStepFilter)
+    trace(depositorId, stateFilter, ingestStepFilter, doiRegisteredFilter,
+      doiActionFilter, curatorFilter, isNewVersionFilter, curationRequiredFilter,
+      curationPerformedFilter, contentTypeFilter)
+
+    def filter[T <: Timestamped, F <: DepositFilter, V](collection: FilterMonadic[Deposit, Seq[Deposit]])
+                                                       (filter: Option[F], repo: mutable.Map[DepositId, Seq[T]])
+                                                       (get: F => V, label: T => V): FilterMonadic[Deposit, Seq[Deposit]] = {
+      filter.fold(collection)(depositFilter => {
+        collection.withFilter(d => {
+          val ts = repo.getOrElse(d.id, Seq.empty)
+          val selectedTs = depositFilter.filter match {
+            case SeriesFilter.LATEST => ts.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => ts
+          }
+          selectedTs.exists(t => label(t) == get(depositFilter))
+        })
+      })
+    }
 
     val deposits = getAllDeposits
 
@@ -68,122 +87,15 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       case None => deposits.withFilter(_ => true)
     }
 
-    val withState = stateFilter match {
-      case Some(DepositStateFilter(label, filter)) =>
-        fromDepositor.withFilter(d => {
-          val states = stateRepo.getOrElse(d.id, Seq.empty)
-          val selectedStates = filter match {
-            case SeriesFilter.LATEST => states.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => states
-          }
-          selectedStates.exists(_.label == label)
-        })
-      case None => fromDepositor
-    }
-
-    val withIngestStep = ingestStepFilter match {
-      case Some(DepositIngestStepFilter(step, filter)) =>
-        withState.withFilter(d => {
-          val steps = stepRepo.getOrElse(d.id, Seq.empty)
-          val selectedSteps = filter match {
-            case SeriesFilter.LATEST => steps.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => steps
-          }
-          selectedSteps.exists(_.step == step)
-        })
-      case None => withState
-    }
-
-    val withDoiRegistered = doiRegisteredFilter match {
-      case Some(DepositDoiRegisteredFilter(value, filter)) =>
-        withIngestStep.withFilter(d => {
-          val doiRegisteredEvents = doiRegisteredRepo.getOrElse(d.id, Seq.empty)
-          val selectedEvents = filter match {
-            case SeriesFilter.LATEST => doiRegisteredEvents.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => doiRegisteredEvents
-          }
-          selectedEvents.exists(_.value == value)
-        })
-      case None => withIngestStep
-    }
-
-    val withDoiAction = doiActionFilter match {
-      case Some(DepositDoiActionFilter(value, filter)) =>
-        withDoiRegistered.withFilter(d => {
-          val doiActionEvents = doiActionRepo.getOrElse(d.id, Seq.empty)
-          val selectedEvents = filter match {
-            case SeriesFilter.LATEST => doiActionEvents.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => doiActionEvents
-          }
-          selectedEvents.exists(_.value == value)
-        })
-      case None => withDoiRegistered
-    }
-
-    val withCurator = curatorFilter match {
-      case Some(DepositCuratorFilter(curator, filter)) =>
-        withDoiAction.withFilter(d => {
-          val curators = curatorRepo.getOrElse(d.id, Seq.empty)
-          val selectedCurators = filter match {
-            case SeriesFilter.LATEST => curators.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => curators
-          }
-          selectedCurators.exists(_.userId == curator)
-        })
-      case None => withDoiAction
-    }
-
-    val withIsNewVersion = isNewVersionFilter match {
-      case Some(DepositIsNewVersionFilter(isNewVersion, filter)) =>
-        withCurator.withFilter(d => {
-          val inv = isNewVersionRepo.getOrElse(d.id, Seq.empty)
-          val selectedIsNewVersion = filter match {
-            case SeriesFilter.LATEST => inv.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => inv
-          }
-          selectedIsNewVersion.exists(_.isNewVersion == isNewVersion)
-        })
-      case None => withCurator
-    }
-
-    val withCurationRequired = curationRequiredFilter match {
-      case Some(DepositCurationRequiredFilter(curationRequired, filter)) =>
-        withIsNewVersion.withFilter(d => {
-          val cr = curationRequiredRepo.getOrElse(d.id, Seq.empty)
-          val selectedCurationRequired = filter match {
-            case SeriesFilter.LATEST => cr.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => cr
-          }
-          selectedCurationRequired.exists(_.curationRequired == curationRequired)
-        })
-      case None => withIsNewVersion
-    }
-
-    val withCurationPerformed = curationPerformedFilter match {
-      case Some(DepositCurationPerformedFilter(curationPerformed, filter)) =>
-        withCurationRequired.withFilter(d => {
-          val cp = curationPerformedRepo.getOrElse(d.id, Seq.empty)
-          val selectedCurationPerformed = filter match {
-            case SeriesFilter.LATEST => cp.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => cp
-          }
-          selectedCurationPerformed.exists(_.curationPerformed == curationPerformed)
-        })
-      case None => withCurationRequired
-    }
-
-    val withContentType = contentTypeFilter match {
-      case Some(DepositContentTypeFilter(contentType, filter)) =>
-        withCurationPerformed.withFilter(d => {
-          val ct = contentTypeRepo.getOrElse(d.id, Seq.empty)
-          val selectedContentType = filter match {
-            case SeriesFilter.LATEST => ct.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => ct
-          }
-          selectedContentType.exists(_.value == contentType)
-        })
-      case None => withCurationPerformed
-    }
+    val withState = filter(fromDepositor)(stateFilter, stateRepo)(_.label, _.label)
+    val withIngestStep = filter(withState)(ingestStepFilter, stepRepo)(_.label, _.step)
+    val withDoiRegistered = filter(withIngestStep)(doiRegisteredFilter, doiRegisteredRepo)(_.value, _.value)
+    val withDoiAction = filter(withDoiRegistered)(doiActionFilter, doiActionRepo)(_.value, _.value)
+    val withCurator = filter(withDoiAction)(curatorFilter, curatorRepo)(_.curator, _.userId)
+    val withIsNewVersion = filter(withCurator)(isNewVersionFilter, isNewVersionRepo)(_.isNewVersion, _.isNewVersion)
+    val withCurationRequired = filter(withIsNewVersion)(curationRequiredFilter, curationRequiredRepo)(_.curationRequired, _.curationRequired)
+    val withCurationPerformed = filter(withCurationRequired)(curationPerformedFilter, curationPerformedRepo)(_.curationPerformed, _.curationPerformed)
+    val withContentType = filter(withCurationPerformed)(contentTypeFilter, contentTypeRepo)(_.value, _.value)
 
     withContentType.map(identity)
   }
@@ -203,114 +115,138 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     }
   }
 
-  //
-
-  override def getStateById(id: String): Option[State] = {
-    trace(id)
-    stateRepo.values.toStream.flatten.find(_.id == id)
+  private def getObjectById[T <: Node](id: String)(repo: mutable.Map[_, Seq[T]]): Option[T] = {
+    repo.values.toStream.flatten.find(_.id == id)
   }
 
-  override def getCurrentState(id: DepositId): Option[State] = {
-    trace(id)
-    stateRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  private def getCurrentObject[T <: Timestamped](id: DepositId)(repo: mutable.Map[DepositId, Seq[T]]): Option[T] = {
+    repo.get(id).flatMap(_.maxByOption(_.timestamp))
   }
 
-  override def getAllStates(id: DepositId): Seq[State] = {
-    trace(id)
-    stateRepo.getOrElse(id, Seq.empty)
+  private def getCurrentObjects[T <: Timestamped](ids: Seq[DepositId])(repo: mutable.Map[DepositId, Seq[T]]): Seq[(DepositId, Option[T])] = {
+    ids.map(id => id -> getCurrentObject(id)(repo))
   }
 
-  override def getCurrentStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])] = {
-    trace(ids)
-    ids.map(id => id -> stateRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  private def getAllObjects[T](id: DepositId)(repo: mutable.Map[DepositId, Seq[T]]): Seq[T] = {
+    repo.getOrElse(id, Seq.empty)
   }
 
-  override def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Seq[State])] = {
-    trace(ids)
-    ids.map(id => id -> stateRepo.getOrElse(id, Seq.empty))
+  private def getAllObjects[T](ids: Seq[DepositId])(repo: mutable.Map[DepositId, Seq[T]]): Seq[(DepositId, Seq[T])] = {
+    ids.map(id => id -> getAllObjects(id)(repo))
   }
 
-  override def setState(id: DepositId, state: InputState): Option[State] = {
-    trace(id, state)
+  private def setter[I, O <: Node](id: DepositId, input: I)(repo: mutable.Map[DepositId, Seq[O]])(conversion: (String, I) => O): Option[O] = {
     if (depositRepo contains id) {
-      val InputState(label, description, timestamp) = state
-
-      val stateId = id.toString.last + stateRepo
-        .collectFirst { case (`id`, states) => states }
+      val newId = id.toString.last + repo
+        .collectFirst { case (`id`, os) => os }
         .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
         .toString
-      val newState = State(stateId, label, description, timestamp)
+      val newObject = conversion(newId, input)
 
-      if (stateRepo contains id)
-        stateRepo.update(id, stateRepo(id) :+ newState)
+      if (repo contains id)
+        repo.update(id, repo(id) :+ newObject)
       else
-        stateRepo += (id -> Seq(newState))
+        repo += (id -> Seq(newObject))
 
-      Some(newState)
+      Option(newObject)
     }
     else Option.empty
   }
 
+  private def setter[T](id: DepositId, t: T, repo: mutable.Map[DepositId, Seq[T]]): Option[T] = {
+    if (depositRepo contains id) {
+      if (repo contains id)
+        repo.update(id, repo(id) :+ t)
+      else
+        repo += (id -> Seq(t))
+
+      Some(t)
+    }
+    else Option.empty
+  }
+
+  private def getDepositByObjectId[T <: Node](id: String)(repo: mutable.Map[DepositId, Seq[T]]): Option[Deposit] = {
+    repo
+      .collectFirst { case (depositId, ts) if ts.exists(_.id == id) => depositId }
+      .flatMap(depositRepo.get)
+  }
+
+  //
+
+  override def getStateById(id: String): Option[State] = {
+    trace(id)
+    getObjectById(id)(stateRepo)
+  }
+
+  override def getCurrentState(id: DepositId): Option[State] = {
+    trace(id)
+    getCurrentObject(id)(stateRepo)
+  }
+
+  override def getAllStates(id: DepositId): Seq[State] = {
+    trace(id)
+    getAllObjects(id)(stateRepo)
+  }
+
+  override def getCurrentStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])] = {
+    trace(ids)
+    getCurrentObjects(ids)(stateRepo)
+  }
+
+  override def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Seq[State])] = {
+    trace(ids)
+    getAllObjects(ids)(stateRepo)
+  }
+
+  override def setState(id: DepositId, state: InputState): Option[State] = {
+    trace(id, state)
+    setter(id, state)(stateRepo) {
+      case (stateId, InputState(label, description, timestamp)) => State(stateId, label, description, timestamp)
+    }
+  }
+
   override def getDepositByStateId(id: String): Option[Deposit] = {
     trace(id)
-    stateRepo
-      .collectFirst { case (depositId, states) if states.exists(_.id == id) => depositId }
-      .flatMap(depositRepo.get)
+    getDepositByObjectId(id)(stateRepo)
   }
 
   //
 
   override def getIngestStepById(id: String): Option[IngestStep] = {
     trace(id)
-    stepRepo.values.toStream.flatten.find(_.id == id)
+    getObjectById(id)(stepRepo)
   }
 
   override def getCurrentIngestStep(id: DepositId): Option[IngestStep] = {
     trace(id)
-    stepRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(stepRepo)
   }
 
   override def getAllIngestSteps(id: DepositId): Seq[IngestStep] = {
     trace(id)
-    stepRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(stepRepo)
   }
 
   override def getCurrentIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Option[IngestStep])] = {
     trace(ids)
-    ids.map(id => id -> stepRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(stepRepo)
   }
 
   override def getAllIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Seq[IngestStep])] = {
     trace(ids)
-    ids.map(id => id -> stepRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(stepRepo)
   }
 
   override def setIngestStep(id: DepositId, inputStep: InputIngestStep): Option[IngestStep] = {
     trace(id, inputStep)
-    if (depositRepo contains id) {
-      val InputIngestStep(step, timestamp) = inputStep
-
-      val stepId = id.toString.last + stepRepo
-        .collectFirst { case (`id`, steps) => steps }
-        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
-        .toString
-      val newStep = IngestStep(stepId, step, timestamp)
-
-      if (stepRepo contains id)
-        stepRepo.update(id, stepRepo(id) :+ newStep)
-      else
-        stepRepo += (id -> Seq(newStep))
-
-      Some(newStep)
+    setter(id, inputStep)(stepRepo) {
+      case (stepId, InputIngestStep(step, timestamp)) => IngestStep(stepId, step, timestamp)
     }
-    else Option.empty
   }
 
   override def getDepositByIngestStepId(id: String): Option[Deposit] = {
     trace(id)
-    stepRepo
-      .collectFirst { case (depositId, steps) if steps.exists(_.id == id) => depositId }
-      .flatMap(depositRepo.get)
+    getDepositByObjectId(id)(stepRepo)
   }
 
   //
@@ -379,327 +315,239 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   override def getCurrentDoiRegistered(id: DepositId): Option[DoiRegisteredEvent] = {
     trace(id)
-    doiRegisteredRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(doiRegisteredRepo)
   }
 
   override def getCurrentDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiRegisteredEvent])] = {
     trace(ids)
-    ids.map(id => id -> doiRegisteredRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(doiRegisteredRepo)
   }
 
   override def getAllDoiRegistered(id: DepositId): Seq[DoiRegisteredEvent] = {
     trace(id)
-    doiRegisteredRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(doiRegisteredRepo)
   }
 
   override def getAllDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiRegisteredEvent])] = {
     trace(ids)
-    ids.map(id => id -> doiRegisteredRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(doiRegisteredRepo)
   }
 
   override def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Option[DoiRegisteredEvent] = {
     trace(id, registered)
-    if (depositRepo contains id) {
-      if (doiRegisteredRepo contains id)
-        doiRegisteredRepo.update(id, doiRegisteredRepo(id) :+ registered)
-      else
-        doiRegisteredRepo += (id -> Seq(registered))
-
-      Some(registered)
-    }
-    else Option.empty
+    setter(id, registered, doiRegisteredRepo)
   }
 
   //
 
   override def getCurrentDoiAction(id: DepositId): Option[DoiActionEvent] = {
     trace(id)
-    doiActionRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(doiActionRepo)
   }
 
   override def getCurrentDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiActionEvent])] = {
     trace(ids)
-    ids.map(id => id -> doiActionRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(doiActionRepo)
   }
 
   override def getAllDoiAction(id: DepositId): Seq[DoiActionEvent] = {
     trace(id)
-    doiActionRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(doiActionRepo)
   }
 
   override def getAllDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiActionEvent])] = {
     trace(ids)
-    ids.map(id => id -> doiActionRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(doiActionRepo)
   }
 
   override def setDoiAction(id: DepositId, action: DoiActionEvent): Option[DoiActionEvent] = {
     trace(id, action)
-    if (depositRepo contains id) {
-      if (doiActionRepo contains id)
-        doiActionRepo.update(id, doiActionRepo(id) :+ action)
-      else
-        doiActionRepo += (id -> Seq(action))
-
-      Some(action)
-    }
-    else Option.empty
+    setter(id, action, doiActionRepo)
   }
 
   //
 
   override def getCuratorById(id: String): Option[Curator] = {
     trace(id)
-    curatorRepo.values.toStream.flatten.find(_.id == id)
+    getObjectById(id)(curatorRepo)
   }
 
   override def getCurrentCurator(id: DepositId): Option[Curator] = {
     trace(id)
-    curatorRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(curatorRepo)
   }
 
   override def getAllCurators(id: DepositId): Seq[Curator] = {
     trace(id)
-    curatorRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(curatorRepo)
   }
 
   override def getCurrentCurators(ids: Seq[DepositId]): Seq[(DepositId, Option[Curator])] = {
     trace(ids)
-    ids.map(id => id -> curatorRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(curatorRepo)
   }
 
   override def getAllCurators(ids: Seq[DepositId]): Seq[(DepositId, Seq[Curator])] = {
     trace(ids)
-    ids.map(id => id -> curatorRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(curatorRepo)
   }
 
   override def setCurator(id: DepositId, curator: InputCurator): Option[Curator] = {
     trace(id, curator)
-    if (depositRepo contains id) {
-      val InputCurator(userId, email, timestamp) = curator
-
-      val curatorId = id.toString.last + stepRepo
-        .collectFirst { case (`id`, steps) => steps }
-        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
-        .toString
-      val newCurator = Curator(curatorId, userId, email, timestamp)
-
-      if (curatorRepo contains id)
-        curatorRepo.update(id, curatorRepo(id) :+ newCurator)
-      else
-        curatorRepo += (id -> Seq(newCurator))
-
-      Some(newCurator)
+    setter(id, curator)(curatorRepo) {
+      case (curatorId, InputCurator(userId, email, timestamp)) => Curator(curatorId, userId, email, timestamp)
     }
-    else Option.empty
   }
 
   override def getDepositByCuratorId(id: String): Option[Deposit] = {
     trace(id)
-    curatorRepo
-      .collectFirst { case (depositId, curators) if curators.exists(_.id == id) => depositId }
-      .flatMap(depositRepo.get)
+    getDepositByObjectId(id)(curatorRepo)
   }
 
   //
 
   override def getCurrentIsNewVersionAction(id: DepositId): Option[IsNewVersionEvent] = {
-    isNewVersionRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(isNewVersionRepo)
   }
 
   override def getCurrentIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Option[IsNewVersionEvent])] = {
-    ids.map(id => id -> isNewVersionRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(isNewVersionRepo)
   }
 
   override def getAllIsNewVersionAction(id: DepositId): Seq[IsNewVersionEvent] = {
-    isNewVersionRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(isNewVersionRepo)
   }
 
   override def getAllIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[IsNewVersionEvent])] = {
-    ids.map(id => id -> isNewVersionRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(isNewVersionRepo)
   }
 
   override def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Option[IsNewVersionEvent] = {
     trace(id, action)
-    if (depositRepo contains id) {
-      if (isNewVersionRepo contains id)
-        isNewVersionRepo.update(id, isNewVersionRepo(id) :+ action)
-      else
-        isNewVersionRepo += (id -> Seq(action))
-
-      Some(action)
-    }
-    else Option.empty
+    setter(id, action, isNewVersionRepo)
   }
 
   //
 
   override def getCurrentCurationRequiredAction(id: DepositId): Option[CurationRequiredEvent] = {
-    curationRequiredRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(curationRequiredRepo)
   }
 
   override def getCurrentCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationRequiredEvent])] = {
-    ids.map(id => id -> curationRequiredRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(curationRequiredRepo)
   }
 
   override def getAllCurationRequiredAction(id: DepositId): Seq[CurationRequiredEvent] = {
-    curationRequiredRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(curationRequiredRepo)
   }
 
   override def getAllCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationRequiredEvent])] = {
-    ids.map(id => id -> curationRequiredRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(curationRequiredRepo)
   }
 
   override def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Option[CurationRequiredEvent] = {
     trace(id, action)
-    if (depositRepo contains id) {
-      if (curationRequiredRepo contains id)
-        curationRequiredRepo.update(id, curationRequiredRepo(id) :+ action)
-      else
-        curationRequiredRepo += (id -> Seq(action))
-
-      Some(action)
-    }
-    else Option.empty
+    setter(id, action, curationRequiredRepo)
   }
 
   //
 
   override def getCurrentCurationPerformedAction(id: DepositId): Option[CurationPerformedEvent] = {
-    curationPerformedRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(curationPerformedRepo)
   }
 
   override def getCurrentCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationPerformedEvent])] = {
-    ids.map(id => id -> curationPerformedRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(curationPerformedRepo)
   }
 
   override def getAllCurationPerformedAction(id: DepositId): Seq[CurationPerformedEvent] = {
-    curationPerformedRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(curationPerformedRepo)
   }
 
   override def getAllCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationPerformedEvent])] = {
-    ids.map(id => id -> curationPerformedRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(curationPerformedRepo)
   }
 
   override def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Option[CurationPerformedEvent] = {
     trace(id, action)
-    if (depositRepo contains id) {
-      if (curationPerformedRepo contains id)
-        curationPerformedRepo.update(id, curationPerformedRepo(id) :+ action)
-      else
-        curationPerformedRepo += (id -> Seq(action))
-
-      Some(action)
-    }
-    else Option.empty
+    setter(id, action, curationPerformedRepo)
   }
 
   //
 
   def getSpringfieldById(id: String): Option[Springfield] = {
     trace(id)
-    springfieldRepo.values.toStream.flatten.find(_.id == id)
+    getObjectById(id)(springfieldRepo)
   }
 
   def getCurrentSpringfield(id: DepositId): Option[Springfield] = {
     trace(id)
-    springfieldRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(springfieldRepo)
   }
 
   def getCurrentSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Option[Springfield])] = {
     trace(ids)
-    ids.map(id => id -> springfieldRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(springfieldRepo)
   }
 
   def getAllSpringfields(id: DepositId): Seq[Springfield] = {
     trace(id)
-    springfieldRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(springfieldRepo)
   }
 
   def getAllSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Seq[Springfield])] = {
     trace(ids)
-    ids.map(id => id -> springfieldRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(springfieldRepo)
   }
 
   def setSpringfield(id: DepositId, springfield: InputSpringfield): Option[Springfield] = {
     trace(id, springfield)
-    if (depositRepo contains id) {
-      val InputSpringfield(domain, user, collection, playmode, timestamp) = springfield
-
-      val springfieldId = id.toString.last + stepRepo
-        .collectFirst { case (`id`, steps) => steps }
-        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
-        .toString
-      val newSpringfield = Springfield(springfieldId, domain, user, collection, playmode, timestamp)
-
-      if (springfieldRepo contains id)
-        springfieldRepo.update(id, springfieldRepo(id) :+ newSpringfield)
-      else
-        springfieldRepo += (id -> Seq(newSpringfield))
-
-      Some(newSpringfield)
+    setter(id, springfield)(springfieldRepo) {
+      case (springfieldId, InputSpringfield(domain, user, collection, playmode, timestamp)) => Springfield(springfieldId, domain, user, collection, playmode, timestamp)
     }
-    else Option.empty
   }
 
   def getDepositBySpringfieldId(id: String): Option[Deposit] = {
     trace(id)
-    springfieldRepo
-      .collectFirst { case (depositId, springfields) if springfields.exists(_.id == id) => depositId }
-      .flatMap(depositRepo.get)
+    getDepositByObjectId(id)(springfieldRepo)
   }
 
   //
 
   def getContentTypeById(id: String): Option[ContentType] = {
     trace(id)
-    contentTypeRepo.values.toStream.flatten.find(_.id == id)
+    getObjectById(id)(contentTypeRepo)
   }
 
   def getCurrentContentType(id: DepositId): Option[ContentType] = {
     trace(id)
-    contentTypeRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+    getCurrentObject(id)(contentTypeRepo)
   }
 
   def getCurrentContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Option[ContentType])] = {
     trace(ids)
-    ids.map(id => id -> contentTypeRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+    getCurrentObjects(ids)(contentTypeRepo)
   }
 
   def getAllContentTypes(id: DepositId): Seq[ContentType] = {
     trace(id)
-    contentTypeRepo.getOrElse(id, Seq.empty)
+    getAllObjects(id)(contentTypeRepo)
   }
 
   def getAllContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Seq[ContentType])] = {
     trace(ids)
-    ids.map(id => id -> contentTypeRepo.getOrElse(id, Seq.empty))
+    getAllObjects(ids)(contentTypeRepo)
   }
 
   def setContentType(id: DepositId, contentType: InputContentType): Option[ContentType] = {
     trace(id, contentType)
-    if (depositRepo contains id) {
-      val InputContentType(value, timestamp) = contentType
-
-      val contentTypeId = id.toString.last + stepRepo
-        .collectFirst { case (`id`, steps) => steps }
-        .fold(0)(_.maxByOption(_.id).fold(0)(_.id.last.toInt + 1))
-        .toString
-      val newContentType = ContentType(contentTypeId, value, timestamp)
-
-      if (contentTypeRepo contains id)
-        contentTypeRepo.update(id, contentTypeRepo(id) :+ newContentType)
-      else
-        contentTypeRepo += (id -> Seq(newContentType))
-
-      Some(newContentType)
+    setter(id, contentType)(contentTypeRepo) {
+      case (contentTypeId, InputContentType(value, timestamp)) => ContentType(contentTypeId, value, timestamp)
     }
-    else Option.empty
   }
 
   def getDepositByContentTypeId(id: String): Option[Deposit] = {
     trace(id)
-    contentTypeRepo
-      .collectFirst { case (depositId, contentTypes) if contentTypes.exists(_.id == id) => depositId }
-      .flatMap(depositRepo.get)
+    getDepositByObjectId(id)(contentTypeRepo)
   }
 }

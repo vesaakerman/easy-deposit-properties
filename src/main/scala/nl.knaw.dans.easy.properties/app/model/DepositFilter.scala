@@ -15,4 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.model
 
-trait DepositFilter
+import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
+
+trait DepositFilter {
+  def filter: SeriesFilter
+}

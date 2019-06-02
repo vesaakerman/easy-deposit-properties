@@ -15,8 +15,9 @@
  */
 package nl.knaw.dans.easy.properties.app.model.springfield
 
-import nl.knaw.dans.easy.properties.app.model.Timestamp
+import nl.knaw.dans.easy.properties.app.model.{ Timestamp, Timestamped }
 import nl.knaw.dans.easy.properties.app.model.springfield.SpringfieldPlayMode.SpringfieldPlayMode
+import sangria.relay.Node
 
 case class Springfield(id: String,
                        domain: String,
@@ -24,4 +25,4 @@ case class Springfield(id: String,
                        collection: String,
                        playmode: SpringfieldPlayMode,
                        timestamp: Timestamp,
-                      )
+                      ) extends Node with Timestamped

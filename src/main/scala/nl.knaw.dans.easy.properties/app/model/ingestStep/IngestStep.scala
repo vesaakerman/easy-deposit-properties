@@ -15,7 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.model.ingestStep
 
-import nl.knaw.dans.easy.properties.app.model.Timestamp
+import nl.knaw.dans.easy.properties.app.model.{ Timestamp, Timestamped }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
+import sangria.relay.Node
 
-case class IngestStep(id: String, step: IngestStepLabel, timestamp: Timestamp)
+case class IngestStep(id: String, step: IngestStepLabel, timestamp: Timestamp) extends Node with Timestamped

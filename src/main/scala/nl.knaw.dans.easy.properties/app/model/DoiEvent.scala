@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.model
 import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 
-sealed abstract class DoiEvent[T](value: T, timestamp: Timestamp)
+sealed abstract class DoiEvent[T](value: T, timestamp: Timestamp) extends Timestamped
 
 case class DoiRegisteredEvent(value: Boolean, timestamp: Timestamp) extends DoiEvent(value, timestamp)
 case class DoiActionEvent(value: DoiAction, timestamp: Timestamp) extends DoiEvent(value, timestamp)

@@ -15,7 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.model.state
 
-import nl.knaw.dans.easy.properties.app.model.Timestamp
+import nl.knaw.dans.easy.properties.app.model.{ Timestamp, Timestamped }
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
+import sangria.relay.Node
 
-case class State(id: String, label: StateLabel, description: String, timestamp: Timestamp)
+case class State(id: String, label: StateLabel, description: String, timestamp: Timestamp) extends Node with Timestamped

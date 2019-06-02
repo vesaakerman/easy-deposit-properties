@@ -15,7 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.model.identifier
 
-import nl.knaw.dans.easy.properties.app.model.Timestamp
+import nl.knaw.dans.easy.properties.app.model.{ Timestamp, Timestamped }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
+import sangria.relay.Node
 
-case class Identifier(id: String, idType: IdentifierType, idValue: String, timestamp: Timestamp)
+case class Identifier(id: String, idType: IdentifierType, idValue: String, timestamp: Timestamp) extends Node with Timestamped
