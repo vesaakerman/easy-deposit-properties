@@ -169,7 +169,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
   private val graphqlExamplesDir = testDir / "graphql"
   private val repository = mock[DepositRepository]
-  private val servlet = DepositPropertiesGraphQLServlet(repository)
+  private val servlet = DepositPropertiesGraphQLServlet(() => repository)
   private implicit val jsonFormats: Formats = new DefaultFormats {}
 
   addServlet(servlet, "/*")

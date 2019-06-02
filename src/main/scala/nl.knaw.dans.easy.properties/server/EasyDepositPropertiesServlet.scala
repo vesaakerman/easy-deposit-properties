@@ -15,13 +15,11 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import nl.knaw.dans.easy.properties.EasyDepositPropertiesApp
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet._
 import org.scalatra._
 
-class EasyDepositPropertiesServlet(app: EasyDepositPropertiesApp,
-                                   version: String) extends ScalatraServlet
+class EasyDepositPropertiesServlet(version: String) extends ScalatraServlet
   with ServletLogger
   with PlainLogFormatter
   with LogResponseBodyOnError

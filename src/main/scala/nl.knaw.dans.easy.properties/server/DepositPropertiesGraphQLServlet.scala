@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository
 
 object DepositPropertiesGraphQLServlet {
 
-  def apply(repository: DepositRepository): GraphQLServlet[DataContext] = {
-    new GraphQLServlet(DepositSchema, DataContext(repository), deferredResolver)
+  def apply(repository: () => DepositRepository): GraphQLServlet[DataContext] = {
+    new GraphQLServlet(DepositSchema, () => DataContext(repository()), deferredResolver)
   }
 }

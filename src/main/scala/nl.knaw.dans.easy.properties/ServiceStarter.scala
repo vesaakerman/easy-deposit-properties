@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties
 
 import better.files.File
 import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
+import nl.knaw.dans.easy.properties.app.graphql.example.repository.DemoRepositoryImpl
 import nl.knaw.dans.easy.properties.server.{ DepositPropertiesGraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -24,17 +25,15 @@ import org.apache.commons.daemon.{ Daemon, DaemonContext }
 
 class ServiceStarter extends Daemon with DebugEnhancedLogging {
   var database: DatabaseAccess = _
-  var app: EasyDepositPropertiesApp = _
   var service: EasyDepositPropertiesService = _
 
   override def init(context: DaemonContext): Unit = {
     logger.info("Initializing service...")
     val configuration = Configuration(File(System.getProperty("app.home")))
     database = new DatabaseAccess(configuration.databaseConfig)
-    app = new EasyDepositPropertiesApp(configuration)
     service = new EasyDepositPropertiesService(configuration.serverPort, Map(
-      "/" -> new EasyDepositPropertiesServlet(app, configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet(app.repository),
+      "/" -> new EasyDepositPropertiesServlet(configuration.version),
+      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepositoryImpl()),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     logger.info("Service initialized.")

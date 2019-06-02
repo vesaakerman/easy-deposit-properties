@@ -33,7 +33,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.postfixOps
 
 class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
-                          ctx: Ctx,
+                          ctxProvider: () => Ctx,
                           deferredResolver: DeferredResolver[Ctx] = DeferredResolver.empty)
   extends ScalatraServlet
     with FutureSupport
@@ -58,7 +58,7 @@ class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
   }
 
   private def execute(variables: Option[String], operation: Option[String])(queryAst: Document): Future[ActionResult] = {
-    Executor.execute(schema, queryAst, ctx,
+    Executor.execute(schema, queryAst, ctxProvider(),
       operationName = operation,
       variables = parseVariables(variables),
       deferredResolver = deferredResolver

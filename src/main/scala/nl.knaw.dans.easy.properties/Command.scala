@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties
 
 import better.files.File
 import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
+import nl.knaw.dans.easy.properties.app.graphql.example.repository.DemoRepositoryImpl
 import nl.knaw.dans.easy.properties.server.{ DepositPropertiesGraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -33,27 +34,26 @@ object Command extends App with DebugEnhancedLogging {
     verify()
   }
   val database = new DatabaseAccess(configuration.databaseConfig)
-  val app = new EasyDepositPropertiesApp(configuration)
 
-  runSubcommand(app)
+  runSubcommand()
     .doIfSuccess(msg => println(s"OK: $msg"))
     .doIfFailure { case e => logger.error(e.getMessage, e) }
     .doIfFailure { case NonFatal(e) => println(s"FAILED: ${ e.getMessage }") }
 
-  private def runSubcommand(app: EasyDepositPropertiesApp): Try[FeedBackMessage] = {
+  private def runSubcommand(): Try[FeedBackMessage] = {
     commandLine.subcommand
       .collect {
 //      case subcommand1 @ subcommand.subcommand1 => // handle subcommand1
 //      case None => // handle command line without subcommands
-        case commandLine.runService => runAsService(app)
+        case commandLine.runService => runAsService()
       }
       .getOrElse(Failure(new IllegalArgumentException(s"Unknown command: ${ commandLine.subcommand }")))
   }
 
-  private def runAsService(app: EasyDepositPropertiesApp): Try[FeedBackMessage] = Try {
+  private def runAsService(): Try[FeedBackMessage] = Try {
     val service = new EasyDepositPropertiesService(configuration.serverPort, Map(
-      "/" -> new EasyDepositPropertiesServlet(app, configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet(app.repository),
+      "/" -> new EasyDepositPropertiesServlet(configuration.version),
+      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepositoryImpl()),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     Runtime.getRuntime.addShutdownHook(new Thread("service-shutdown") {

@@ -31,8 +31,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
   with EmbeddedJettyContainer
   with ScalatraSuite {
 
-  private val repository = new DemoRepositoryImpl
-  private val servlet = DepositPropertiesGraphQLServlet(repository)
+  private val servlet = DepositPropertiesGraphQLServlet(() => new DemoRepositoryImpl)
 
   addServlet(servlet, "/*")
 
@@ -63,7 +62,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
         val inputBody = compact(render("query" -> graphQLExample.contentAsString))
         val expectedOutput = writePretty(parse(expectedJsonOutput.contentAsString))
 
-        repository.resetRepository()
+        (new DemoRepositoryImpl).resetRepository()
 
         post(uri = "/", body = inputBody.getBytes) {
           body shouldBe expectedOutput
