@@ -21,11 +21,11 @@ import nl.knaw.dans.easy.properties.app.model.curator.Curator
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.state.State
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay._
-import sangria.schema.{ Argument, Context, DeferredValue, Field, ListType, ObjectType, OptionType, StringType }
+import sangria.schema.{ Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionType, StringType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -36,6 +36,7 @@ trait DepositType {
     with IdentifierGraphQLType
     with DoiEventTypes
     with CuratorType
+    with CurationEventType
     with NodeType
     with Scalars =>
 
@@ -131,6 +132,42 @@ trait DepositType {
     fieldType = OptionType(curatorConnectionType),
     resolve = ctx => getAllCurators(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
+  private val isNewVersionField: Field[DataContext, Deposit] = Field(
+    name = "isNewVersion",
+    description = Some("Whether this deposit is a new version."),
+    fieldType = OptionType(BooleanType),
+    resolve = getIsNewVersion,
+  )
+  private val isNewVersionEventsField: Field[DataContext, Deposit] = Field(
+    name = "isNewVersionEvents",
+    description = Some("List the present and past values for 'is-new-version'."),
+    fieldType = ListType(IsNewVersionEventType),
+    resolve = getIsNewVersionEvents,
+  )
+  private val curationRequiredField: Field[DataContext, Deposit] = Field(
+    name = "curationRequired",
+    description = Some("Whether this deposit requires curation."),
+    fieldType = OptionType(BooleanType),
+    resolve = getCurationRequired,
+  )
+  private val curationRequiredEventsField: Field[DataContext, Deposit] = Field(
+    name = "curationRequiredEvents",
+    description = Some("List the present and past values for 'curation-required'."),
+    fieldType = ListType(CurationRequiredEventType),
+    resolve = getCurationRequiredEvents,
+  )
+  private val curationPerformedField: Field[DataContext, Deposit] = Field(
+    name = "curationPerformed",
+    description = Some("Whether curation on this deposit has been performed."),
+    fieldType = OptionType(BooleanType),
+    resolve = getCurationPerformed,
+  )
+  private val curationPerformedEventsField: Field[DataContext, Deposit] = Field(
+    name = "curationPerformedEvents",
+    description = Some("List the present and past values for 'curation-performed'."),
+    fieldType = ListType(CurationPerformedEventType),
+    resolve = getCurationPerformedEvents,
+  )
 
   private def getCurrentState(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[State]] = {
     val id = context.value.id
@@ -222,6 +259,48 @@ trait DepositType {
       .map { case (_, curators) => orderBy.fold(curators)(order => curators.sorted(order.ordering)) }
   }
 
+  private def getIsNewVersion(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchCurrentIsNewVersion.defer(depositId))
+      .map { case (_, isNewVersion) => isNewVersion.map(_.isNewVersion) }
+  }
+
+  private def getIsNewVersionEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[IsNewVersionEvent]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchAllIsNewVersion.defer(depositId))
+      .map { case (_, events) => events.sortBy(_.timestamp) }
+  }
+
+  private def getCurationRequired(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchCurrentCurationRequired.defer(depositId))
+      .map { case (_, curationRequired) => curationRequired.map(_.curationRequired) }
+  }
+
+  private def getCurationRequiredEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[CurationRequiredEvent]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchAllCurationRequired.defer(depositId))
+      .map { case (_, events) => events.sortBy(_.timestamp) }
+  }
+
+  private def getCurationPerformed(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchCurrentCurationPerformed.defer(depositId))
+      .map { case (_, curationPerformed) => curationPerformed.map(_.curationPerformed) }
+  }
+
+  private def getCurationPerformedEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[CurationPerformedEvent]] = {
+    val depositId = context.value.id
+
+    DeferredValue(fetchAllCurationPerformed.defer(depositId))
+      .map { case (_, events) => events.sortBy(_.timestamp) }
+  }
+
   implicit object DepositIdentifiable extends Identifiable[Deposit] {
     override def id(deposit: Deposit): String = deposit.id.toString
   }
@@ -249,6 +328,12 @@ trait DepositType {
       doiActionEventsField,
       curatorField,
       curatorsField,
+      isNewVersionField,
+      isNewVersionEventsField,
+      curationRequiredField,
+      curationRequiredEventsField,
+      curationPerformedField,
+      curationPerformedEventsField,
     ),
   )
 

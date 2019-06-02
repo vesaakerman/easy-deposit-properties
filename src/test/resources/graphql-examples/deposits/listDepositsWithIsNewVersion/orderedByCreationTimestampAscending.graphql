@@ -1,0 +1,13 @@
+query {
+    deposits(isNewVersion: {value: true, filter: LATEST}, orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
+        edges {
+            node {
+                depositId
+                isNewVersionEvents {
+                    isNewVersion
+                    timestamp
+                }
+            }
+        }
+    }
+}

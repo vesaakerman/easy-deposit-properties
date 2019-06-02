@@ -1,0 +1,13 @@
+query {
+    deposits(curationRequired: {value: true, filter: LATEST}, orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
+        edges {
+            node {
+                depositId
+                curationRequiredEvents {
+                    curationRequired
+                    timestamp
+                }
+            }
+        }
+    }
+}

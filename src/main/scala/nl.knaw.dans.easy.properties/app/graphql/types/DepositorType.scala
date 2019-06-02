@@ -27,6 +27,7 @@ trait DepositorType {
     with IngestStepType
     with DoiEventTypes
     with CuratorType
+    with CurationEventType
     with MetaTypes =>
 
   private val depositorIdField: Field[DataContext, DepositorId] = Field(
@@ -43,6 +44,9 @@ trait DepositorType {
       depositIngestStepFilterArgument,
       depositDoiRegisteredFilterArgument,
       depositDoiActionFilterArgument,
+      depositIsNewVersionFilterArgument,
+      depositCurationRequiredFilterArgument,
+      depositCurationPerformedFilterArgument,
       depositCuratorFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
@@ -59,6 +63,9 @@ trait DepositorType {
     val doiRegistered = context.arg(depositDoiRegisteredFilterArgument)
     val doiAction = context.arg(depositDoiActionFilterArgument)
     val curator = context.arg(depositCuratorFilterArgument)
+    val isNewVersion = context.arg(depositIsNewVersionFilterArgument)
+    val curationRequired = context.arg(depositCurationRequiredFilterArgument)
+    val curationPerformed = context.arg(depositCurationPerformedFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = repository.getDeposits(
@@ -68,6 +75,9 @@ trait DepositorType {
       doiRegisteredFilter = doiRegistered,
       doiActionFilter = doiAction,
       curatorFilter = curator,
+      isNewVersionFilter = isNewVersion,
+      curationRequiredFilter = curationRequired,
+      curationPerformedFilter = curationPerformed,
     )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))

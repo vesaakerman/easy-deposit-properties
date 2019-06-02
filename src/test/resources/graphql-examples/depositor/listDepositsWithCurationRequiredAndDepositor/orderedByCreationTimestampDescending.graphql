@@ -1,0 +1,11 @@
+query {
+    depositor(id: "user001") {
+        deposits(curationRequired: {value: true, filter: LATEST}, orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
+            edges {
+                node {
+                    depositId
+                }
+            }
+        }
+    }
+}

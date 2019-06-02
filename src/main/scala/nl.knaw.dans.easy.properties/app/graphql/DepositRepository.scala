@@ -32,6 +32,9 @@ trait DepositRepository {
                   doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
                   doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
                   curatorFilter: Option[DepositCuratorFilter] = Option.empty,
+                  isNewVersionFilter: Option[DepositIsNewVersionFilter] = Option.empty,
+                  curationRequiredFilter: Option[DepositCurationRequiredFilter] = Option.empty,
+                  curationPerformedFilter: Option[DepositCurationPerformedFilter] = Option.empty,
                  ): Seq[Deposit]
 
   def getDeposit(id: DepositId): Option[Deposit]
@@ -129,4 +132,40 @@ trait DepositRepository {
   def setCurator(id: DepositId, curator: InputCurator): Option[Curator]
 
   def getDepositByCuratorId(id: String): Option[Deposit]
+
+  //
+
+  def getCurrentIsNewVersionAction(id: DepositId): Option[IsNewVersionEvent]
+
+  def getCurrentIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Option[IsNewVersionEvent])]
+
+  def getAllIsNewVersionAction(id: DepositId): Seq[IsNewVersionEvent]
+
+  def getAllIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[IsNewVersionEvent])]
+
+  def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Option[IsNewVersionEvent]
+
+  //
+
+  def getCurrentCurationRequiredAction(id: DepositId): Option[CurationRequiredEvent]
+
+  def getCurrentCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationRequiredEvent])]
+
+  def getAllCurationRequiredAction(id: DepositId): Seq[CurationRequiredEvent]
+
+  def getAllCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationRequiredEvent])]
+
+  def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Option[CurationRequiredEvent]
+
+  //
+
+  def getCurrentCurationPerformedAction(id: DepositId): Option[CurationPerformedEvent]
+
+  def getCurrentCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationPerformedEvent])]
+
+  def getAllCurationPerformedAction(id: DepositId): Seq[CurationPerformedEvent]
+
+  def getAllCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationPerformedEvent])]
+
+  def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Option[CurationPerformedEvent]
 }

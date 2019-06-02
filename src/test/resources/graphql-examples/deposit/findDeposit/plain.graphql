@@ -36,5 +36,20 @@ query Deposit {
             email
             timestamp
         }
+        isNewVersion
+        isNewVersionEvents {
+            isNewVersion
+            timestamp
+        }
+        curationRequired
+        curationRequiredEvents {
+            curationRequired
+            timestamp
+        }
+        curationPerformed
+        curationPerformedEvents {
+            curationPerformed
+            timestamp
+        }
     }
 }

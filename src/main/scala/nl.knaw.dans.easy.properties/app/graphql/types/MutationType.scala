@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, DoiActionEvent, DoiRegisteredEvent, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
 
@@ -31,6 +31,7 @@ trait MutationType {
     with IdentifierGraphQLType
     with DoiEventTypes
     with CuratorType
+    with CurationEventType
     with Scalars =>
 
   private val depositIdArgument: Argument[DepositId] = Argument(
@@ -114,6 +115,33 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  private val isNewVersionArgument: Argument[IsNewVersionEvent] = Argument(
+    name = "isNewVersion",
+    description = Some("Whether this deposit is a new version."),
+    defaultValue = None,
+    argumentType = InputIsNewVersionEventType,
+    fromInput = inputIsNewVersionEventFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curationRequiredArgument: Argument[CurationRequiredEvent] = Argument(
+    name = "curationRequired",
+    description = Some("Whether this deposit requires curation."),
+    defaultValue = None,
+    argumentType = InputCurationRequiredEventType,
+    fromInput = inputCurationRequiredEventFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curationPerformedArgument: Argument[CurationPerformedEvent] = Argument(
+    name = "curationPerformed",
+    description = Some("Whether curation is performed on this deposit."),
+    defaultValue = None,
+    argumentType = InputCurationPerformedEventType,
+    fromInput = inputCurationPerformedEventFromInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
 
   private val addDepositField: Field[DataContext, Unit] = Field(
     name = "addDeposit",
@@ -186,6 +214,36 @@ trait MutationType {
     fieldType = OptionType(CuratorType),
     resolve = setCurator,
   )
+  private val setIsNewVersionField: Field[DataContext, Unit] = Field(
+    name = "setIsNewVersion",
+    description = Some("Set whether this deposit is a new version."),
+    arguments = List(
+      depositIdArgument,
+      isNewVersionArgument,
+    ),
+    fieldType = OptionType(IsNewVersionEventType),
+    resolve = setIsNewVersion,
+  )
+  private val setCurationRequiredField: Field[DataContext, Unit] = Field(
+    name = "setCurationRequired",
+    description = Some("Set whether this deposit requires curation."),
+    arguments = List(
+      depositIdArgument,
+      curationRequiredArgument,
+    ),
+    fieldType = OptionType(CurationRequiredEventType),
+    resolve = setCurationRequired,
+  )
+  private val setCurationPerformedField: Field[DataContext, Unit] = Field(
+    name = "setCurationPerformed",
+    description = Some("Set whether curation is performed on this deposit."),
+    arguments = List(
+      depositIdArgument,
+      curationPerformedArgument,
+    ),
+    fieldType = OptionType(CurationPerformedEventType),
+    resolve = setCurationPerformed,
+  )
 
   private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
     val repository = context.ctx.deposits
@@ -251,6 +309,33 @@ trait MutationType {
     repository.setCurator(depositId, curator)
   }
 
+  private def setIsNewVersion(context: Context[DataContext, Unit]): Option[IsNewVersionEvent] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val isNewVersion = context.arg(isNewVersionArgument)
+
+    repository.setIsNewVersionAction(depositId, isNewVersion)
+  }
+
+  private def setCurationRequired(context: Context[DataContext, Unit]): Option[CurationRequiredEvent] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val curationRequired = context.arg(curationRequiredArgument)
+
+    repository.setCurationRequiredAction(depositId, curationRequired)
+  }
+
+  private def setCurationPerformed(context: Context[DataContext, Unit]): Option[CurationPerformedEvent] = {
+    val repository = context.ctx.deposits
+
+    val depositId = context.arg(depositIdArgument)
+    val curationPerformed = context.arg(curationPerformedArgument)
+
+    repository.setCurationPerformedAction(depositId, curationPerformed)
+  }
+
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(
     name = "Mutation",
     description = "The root query for implementing GraphQL mutations.",
@@ -262,6 +347,9 @@ trait MutationType {
       setDoiRegisteredField,
       setDoiActionField,
       setCuratorField,
+      setIsNewVersionField,
+      setCurationRequiredField,
+      setCurationPerformedField,
     ),
   )
 }

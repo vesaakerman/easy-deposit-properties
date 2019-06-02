@@ -31,6 +31,7 @@ trait QueryType {
     with IdentifierGraphQLType
     with DoiEventTypes
     with CuratorType
+    with CurationEventType
     with MetaTypes
     with NodeType
     with Scalars =>
@@ -88,6 +89,9 @@ trait QueryType {
       depositDoiRegisteredFilterArgument,
       depositDoiActionFilterArgument,
       depositCuratorFilterArgument,
+      depositIsNewVersionFilterArgument,
+      depositCurationRequiredFilterArgument,
+      depositCurationPerformedFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -129,6 +133,9 @@ trait QueryType {
     val doiRegistered = context.arg(depositDoiRegisteredFilterArgument)
     val doiAction = context.arg(depositDoiActionFilterArgument)
     val curator = context.arg(depositCuratorFilterArgument)
+    val isNewVersion = context.arg(depositIsNewVersionFilterArgument)
+    val curationRequired = context.arg(depositCurationRequiredFilterArgument)
+    val curationPerformed = context.arg(depositCurationPerformedFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = repository.getDeposits(
@@ -137,6 +144,9 @@ trait QueryType {
       doiRegisteredFilter = doiRegistered,
       doiActionFilter = doiAction,
       curatorFilter = curator,
+      isNewVersionFilter = isNewVersion,
+      curationRequiredFilter = curationRequired,
+      curationPerformedFilter = curationPerformed,
     )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))

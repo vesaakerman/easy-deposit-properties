@@ -131,6 +131,28 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private val curator51 = Curator("51", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 0, 0, timeZone))
 
+  private val isNewVersion10 = IsNewVersionEvent(isNewVersion = false, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val isNewVersion20 = IsNewVersionEvent(isNewVersion = false, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val isNewVersion30 = IsNewVersionEvent(isNewVersion = true, new DateTime(2019, 3, 3, 0, 0, timeZone))
+  private val isNewVersion40 = IsNewVersionEvent(isNewVersion = true, new DateTime(2019, 4, 4, 0, 0, timeZone))
+  private val isNewVersion50 = IsNewVersionEvent(isNewVersion = false, new DateTime(2019, 5, 5, 0, 0, timeZone))
+
+  private val curationRequired10 = CurationRequiredEvent(curationRequired = true, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val curationRequired20 = CurationRequiredEvent(curationRequired = false, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val curationRequired30 = CurationRequiredEvent(curationRequired = true, new DateTime(2019, 3, 3, 0, 0, timeZone))
+  private val curationRequired40 = CurationRequiredEvent(curationRequired = true, new DateTime(2019, 4, 4, 0, 0, timeZone))
+  private val curationRequired50 = CurationRequiredEvent(curationRequired = true, new DateTime(2019, 5, 5, 0, 0, timeZone))
+
+  private val curationPerformed10 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val curationPerformed11 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 1, 1, 4, 4, timeZone))
+  private val curationPerformed20 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val curationPerformed30 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 3, 3, 0, 0, timeZone))
+  private val curationPerformed31 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 3, 3, 4, 4, timeZone))
+  private val curationPerformed40 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 4, 4, 0, 0, timeZone))
+  private val curationPerformed41 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 4, 4, 4, 4, timeZone))
+  private val curationPerformed50 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 5, 5, 0, 0, timeZone))
+  private val curationPerformed51 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 5, 5, 4, 4, timeZone))
+
   override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
   override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty
   override val stepRepo: mutable.Map[DepositId, Seq[IngestStep]] = mutable.Map.empty
@@ -138,6 +160,9 @@ class DemoRepositoryImpl extends DemoRepository {
   override val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = mutable.Map.empty
   override val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]] = mutable.Map.empty
   override val curatorRepo: mutable.Map[DepositId, Seq[Curator]] = mutable.Map.empty
+  override val isNewVersionRepo: mutable.Map[DepositId, Seq[IsNewVersionEvent]] = mutable.Map.empty
+  override val curationRequiredRepo: mutable.Map[DepositId, Seq[CurationRequiredEvent]] = mutable.Map.empty
+  override val curationPerformedRepo: mutable.Map[DepositId, Seq[CurationPerformedEvent]] = mutable.Map.empty
 
   resetRepository()
 
@@ -149,6 +174,9 @@ class DemoRepositoryImpl extends DemoRepository {
     resetDoiRegisteredRepo()
     resetDoiActionRepo()
     resetCuratorRepo()
+    resetIsNewVersionRepo()
+    resetCurationRequiredRepo()
+    resetCurationPerformedRepo()
   }
 
   def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
@@ -235,6 +263,39 @@ class DemoRepositoryImpl extends DemoRepository {
       depositId3 -> Seq(curator31, curator32),
       depositId4 -> Seq(curator41),
       depositId5 -> Seq(curator51),
+    )
+  }
+
+  def resetIsNewVersionRepo(): mutable.Map[DepositId, Seq[IsNewVersionEvent]] = {
+    isNewVersionRepo.clear()
+    isNewVersionRepo ++= Map(
+      depositId1 -> Seq(isNewVersion10),
+      depositId2 -> Seq(isNewVersion20),
+      depositId3 -> Seq(isNewVersion30),
+      depositId4 -> Seq(isNewVersion40),
+      depositId5 -> Seq(isNewVersion50),
+    )
+  }
+
+  def resetCurationRequiredRepo(): mutable.Map[DepositId, Seq[CurationRequiredEvent]] = {
+    curationRequiredRepo.clear()
+    curationRequiredRepo ++= Map(
+      depositId1 -> Seq(curationRequired10),
+      depositId2 -> Seq(curationRequired20),
+      depositId3 -> Seq(curationRequired30),
+      depositId4 -> Seq(curationRequired40),
+      depositId5 -> Seq(curationRequired50),
+    )
+  }
+
+  def resetCurationPerformedRepo(): mutable.Map[DepositId, Seq[CurationPerformedEvent]] = {
+    curationPerformedRepo.clear()
+    curationPerformedRepo ++= Map(
+      depositId1 -> Seq(curationPerformed10, curationPerformed11),
+      depositId2 -> Seq(curationPerformed20),
+      depositId3 -> Seq(curationPerformed30, curationPerformed31),
+      depositId4 -> Seq(curationPerformed40, curationPerformed41),
+      depositId5 -> Seq(curationPerformed50, curationPerformed51),
     )
   }
 }

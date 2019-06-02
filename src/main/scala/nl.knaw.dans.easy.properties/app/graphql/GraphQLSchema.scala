@@ -22,6 +22,7 @@ import sangria.schema._
 object GraphQLSchema extends Scalars
   with NodeType
   with MetaTypes
+  with CurationEventType
   with DoiEventTypes
   with IdentifierGraphQLType
   with IngestStepType
@@ -40,5 +41,8 @@ object GraphQLSchema extends Scalars
     fetchCurrentDoisRegistered, fetchAllDoisRegistered,
     fetchCurrentDoisAction, fetchAllDoisAction,
     fetchCurrentCurators, fetchAllCurators,
+    fetchCurrentIsNewVersion, fetchAllIsNewVersion,
+    fetchCurrentCurationRequired, fetchAllCurationRequired,
+    fetchCurrentCurationPerformed, fetchAllCurationPerformed,
   )
 }

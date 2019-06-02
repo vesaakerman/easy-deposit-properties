@@ -35,6 +35,7 @@ trait CuratorType {
     with StateType
     with IngestStepType
     with DoiEventTypes
+    with CurationEventType
     with NodeType
     with MetaTypes
     with Scalars =>
@@ -109,6 +110,9 @@ trait CuratorType {
       depositIngestStepFilterArgument,
       depositDoiRegisteredFilterArgument,
       depositDoiActionFilterArgument,
+      depositIsNewVersionFilterArgument,
+      depositCurationRequiredFilterArgument,
+      depositCurationPerformedFilterArgument,
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
@@ -132,6 +136,9 @@ trait CuratorType {
     val ingestStepInput = context.arg(depositIngestStepFilterArgument)
     val doiRegistered = context.arg(depositDoiRegisteredFilterArgument)
     val doiAction = context.arg(depositDoiActionFilterArgument)
+    val isNewVersion = context.arg(depositIsNewVersionFilterArgument)
+    val curationRequired = context.arg(depositCurationRequiredFilterArgument)
+    val curationPerformed = context.arg(depositCurationPerformedFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
     val result = repository.getDeposits(
@@ -139,7 +146,10 @@ trait CuratorType {
       ingestStepFilter = ingestStepInput,
       doiRegisteredFilter = doiRegistered,
       doiActionFilter = doiAction,
-      curatorFilter = Some(DepositCuratorFilter(label, curatorFilter))
+      curatorFilter = Some(DepositCuratorFilter(label, curatorFilter)),
+      isNewVersionFilter = isNewVersion,
+      curationRequiredFilter = curationRequired,
+      curationPerformedFilter = curationPerformed,
     )
 
     orderBy.fold(result)(order => result.sorted(order.ordering))

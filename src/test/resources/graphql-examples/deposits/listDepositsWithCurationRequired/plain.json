@@ -1,0 +1,52 @@
+{
+  "data": {
+    "deposits": {
+      "edges": [
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000005",
+            "curationRequiredEvents": [
+              {
+                "curationRequired": true,
+                "timestamp": "2019-05-05T00:00:00.000+02:00"
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000004",
+            "curationRequiredEvents": [
+              {
+                "curationRequired": true,
+                "timestamp": "2019-04-04T00:00:00.000+02:00"
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "curationRequiredEvents": [
+              {
+                "curationRequired": true,
+                "timestamp": "2019-01-01T00:00:00.000+01:00"
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000003",
+            "curationRequiredEvents": [
+              {
+                "curationRequired": true,
+                "timestamp": "2019-03-03T00:00:00.000+01:00"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

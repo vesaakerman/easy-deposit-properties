@@ -1,0 +1,6 @@
+mutation {
+    setCurationRequired(depositId: "00000000-0000-0000-0000-000000000001", curationRequired: {value: true, timestamp: "2019-05-31T19:31:00+02:00"}) {
+        curationRequired
+        timestamp
+    }
+}

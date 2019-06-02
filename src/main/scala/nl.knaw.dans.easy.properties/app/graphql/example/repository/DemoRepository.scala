@@ -35,6 +35,9 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]]
   val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]]
   val curatorRepo: mutable.Map[DepositId, Seq[Curator]]
+  val isNewVersionRepo: mutable.Map[DepositId, Seq[IsNewVersionEvent]]
+  val curationRequiredRepo: mutable.Map[DepositId, Seq[CurationRequiredEvent]]
+  val curationPerformedRepo: mutable.Map[DepositId, Seq[CurationPerformedEvent]]
 
   override def getAllDeposits: Seq[Deposit] = {
     trace(())
@@ -47,6 +50,9 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
                            doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
                            doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
                            curatorFilter: Option[DepositCuratorFilter] = Option.empty,
+                           isNewVersionFilter: Option[DepositIsNewVersionFilter] = Option.empty,
+                           curationRequiredFilter: Option[DepositCurationRequiredFilter] = Option.empty,
+                           curationPerformedFilter: Option[DepositCurationPerformedFilter] = Option.empty,
                           ): Seq[Deposit] = {
     trace(depositorId, stateFilter, ingestStepFilter)
 
@@ -122,7 +128,46 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       case None => withDoiAction
     }
 
-    withCurator.map(identity)
+    val withIsNewVersion = isNewVersionFilter match {
+      case Some(DepositIsNewVersionFilter(isNewVersion, filter)) =>
+        withCurator.withFilter(d => {
+          val inv = isNewVersionRepo.getOrElse(d.id, Seq.empty)
+          val selectedIsNewVersion = filter match {
+            case SeriesFilter.LATEST => inv.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => inv
+          }
+          selectedIsNewVersion.exists(_.isNewVersion == isNewVersion)
+        })
+      case None => withCurator
+    }
+
+    val withCurationRequired = curationRequiredFilter match {
+      case Some(DepositCurationRequiredFilter(curationRequired, filter)) =>
+        withIsNewVersion.withFilter(d => {
+          val cr = curationRequiredRepo.getOrElse(d.id, Seq.empty)
+          val selectedCurationRequired = filter match {
+            case SeriesFilter.LATEST => cr.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => cr
+          }
+          selectedCurationRequired.exists(_.curationRequired == curationRequired)
+        })
+      case None => withIsNewVersion
+    }
+
+    val withCurationPerformed = curationPerformedFilter match {
+      case Some(DepositCurationPerformedFilter(curationPerformed, filter)) =>
+        withCurationRequired.withFilter(d => {
+          val cp = curationPerformedRepo.getOrElse(d.id, Seq.empty)
+          val selectedCurationPerformed = filter match {
+            case SeriesFilter.LATEST => cp.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => cp
+          }
+          selectedCurationPerformed.exists(_.curationPerformed == curationPerformed)
+        })
+      case None => withCurationRequired
+    }
+
+    withCurationPerformed.map(identity)
   }
 
   override def getDeposit(id: DepositId): Option[Deposit] = {
@@ -440,5 +485,98 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     curatorRepo
       .collectFirst { case (depositId, curators) if curators.exists(_.id == id) => depositId }
       .flatMap(depositRepo.get)
+  }
+
+  //
+
+  override def getCurrentIsNewVersionAction(id: DepositId): Option[IsNewVersionEvent] = {
+    isNewVersionRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  override def getCurrentIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Option[IsNewVersionEvent])] = {
+    ids.map(id => id -> isNewVersionRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  override def getAllIsNewVersionAction(id: DepositId): Seq[IsNewVersionEvent] = {
+    isNewVersionRepo.getOrElse(id, Seq.empty)
+  }
+
+  override def getAllIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[IsNewVersionEvent])] = {
+    ids.map(id => id -> isNewVersionRepo.getOrElse(id, Seq.empty))
+  }
+
+  override def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Option[IsNewVersionEvent] = {
+    trace(id, action)
+    if (depositRepo contains id) {
+      if (isNewVersionRepo contains id)
+        isNewVersionRepo.update(id, isNewVersionRepo(id) :+ action)
+      else
+        isNewVersionRepo += (id -> Seq(action))
+
+      Some(action)
+    }
+    else Option.empty
+  }
+
+  //
+
+  override def getCurrentCurationRequiredAction(id: DepositId): Option[CurationRequiredEvent] = {
+    curationRequiredRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  override def getCurrentCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationRequiredEvent])] = {
+    ids.map(id => id -> curationRequiredRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  override def getAllCurationRequiredAction(id: DepositId): Seq[CurationRequiredEvent] = {
+    curationRequiredRepo.getOrElse(id, Seq.empty)
+  }
+
+  override def getAllCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationRequiredEvent])] = {
+    ids.map(id => id -> curationRequiredRepo.getOrElse(id, Seq.empty))
+  }
+
+  override def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Option[CurationRequiredEvent] = {
+    trace(id, action)
+    if (depositRepo contains id) {
+      if (curationRequiredRepo contains id)
+        curationRequiredRepo.update(id, curationRequiredRepo(id) :+ action)
+      else
+        curationRequiredRepo += (id -> Seq(action))
+
+      Some(action)
+    }
+    else Option.empty
+  }
+
+  //
+
+  override def getCurrentCurationPerformedAction(id: DepositId): Option[CurationPerformedEvent] = {
+    curationPerformedRepo.get(id).flatMap(_.maxByOption(_.timestamp))
+  }
+
+  override def getCurrentCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationPerformedEvent])] = {
+    ids.map(id => id -> curationPerformedRepo.get(id).flatMap(_.maxByOption(_.timestamp)))
+  }
+
+  override def getAllCurationPerformedAction(id: DepositId): Seq[CurationPerformedEvent] = {
+    curationPerformedRepo.getOrElse(id, Seq.empty)
+  }
+
+  override def getAllCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationPerformedEvent])] = {
+    ids.map(id => id -> curationPerformedRepo.getOrElse(id, Seq.empty))
+  }
+
+  override def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Option[CurationPerformedEvent] = {
+    trace(id, action)
+    if (depositRepo contains id) {
+      if (curationPerformedRepo contains id)
+        curationPerformedRepo.update(id, curationPerformedRepo(id) :+ action)
+      else
+        curationPerformedRepo += (id -> Seq(action))
+
+      Some(action)
+    }
+    else Option.empty
   }
 }
