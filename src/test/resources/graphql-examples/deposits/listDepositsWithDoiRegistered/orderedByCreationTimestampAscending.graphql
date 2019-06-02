@@ -1,5 +1,5 @@
 query {
-    deposits(doiRegistered: {value: "yes", filter: LATEST}, orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
+    deposits(doiRegistered: {value: true, filter: LATEST}, orderBy: {field: CREATION_TIMESTAMP, direction: ASC}) {
         edges {
             node {
                 depositId

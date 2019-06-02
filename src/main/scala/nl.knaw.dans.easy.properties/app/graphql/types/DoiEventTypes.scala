@@ -71,7 +71,7 @@ trait DoiEventTypes {
       val ad = node.asInstanceOf[Map[String, Any]]
 
       DepositDoiRegisteredFilter(
-        value = ad("value").asInstanceOf[String],
+        value = ad("value").asInstanceOf[Boolean],
         filter = ad("filter").asInstanceOf[Option[SeriesFilter]].getOrElse(SeriesFilter.LATEST),
       )
     }
@@ -138,7 +138,7 @@ trait DoiEventTypes {
       val ad = node.asInstanceOf[Map[String, Any]]
 
       DoiRegisteredEvent(
-        value = ad("value").asInstanceOf[String],
+        value = ad("value").asInstanceOf[Boolean],
         timestamp = ad("timestamp").asInstanceOf[Timestamp],
       )
     }

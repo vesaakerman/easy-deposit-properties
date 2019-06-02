@@ -1,5 +1,5 @@
 query {
-    deposits(doiRegistered: {value: "yes", filter: LATEST}) {
+    deposits(doiRegistered: {value: true, filter: LATEST}) {
         edges {
             node {
                 depositId

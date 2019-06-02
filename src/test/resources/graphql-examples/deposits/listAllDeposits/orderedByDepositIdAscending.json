@@ -43,14 +43,14 @@
                 "timestamp": "2019-01-01T00:03:00.000+01:00"
               }
             ],
-            "doiRegistered": "yes",
+            "doiRegistered": true,
             "doiRegisteredEvents": [
               {
-                "value": "no",
+                "value": false,
                 "timestamp": "2019-01-01T00:00:00.000+01:00"
               },
               {
-                "value": "yes",
+                "value": true,
                 "timestamp": "2019-01-01T04:07:00.000+01:00"
               }
             ],
@@ -113,14 +113,14 @@
                 "timestamp": "2019-02-02T00:03:00.000+01:00"
               }
             ],
-            "doiRegistered": "yes",
+            "doiRegistered": true,
             "doiRegisteredEvents": [
               {
-                "value": "no",
+                "value": false,
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               },
               {
-                "value": "yes",
+                "value": true,
                 "timestamp": "2019-02-02T02:07:00.000+01:00"
               }
             ],
@@ -249,10 +249,10 @@
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               }
             ],
-            "doiRegistered": "no",
+            "doiRegistered": false,
             "doiRegisteredEvents": [
               {
-                "value": "no",
+                "value": false,
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               }
             ],

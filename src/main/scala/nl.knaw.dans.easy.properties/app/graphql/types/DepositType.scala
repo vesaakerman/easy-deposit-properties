@@ -98,7 +98,7 @@ trait DepositType {
   private val doiRegisteredField: Field[DataContext, Deposit] = Field(
     name = "doiRegistered",
     description = Some("Returns whether the DOI is registered in DataCite."),
-    fieldType = OptionType(StringType),
+    fieldType = OptionType(BooleanType),
     resolve = getDoiRegistered,
   )
   private val doiRegisteredEventsField: Field[DataContext, Deposit] = Field(
@@ -216,7 +216,7 @@ trait DepositType {
       .map { case (_, identifiers) => identifiers }
   }
 
-  private def getDoiRegistered(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[String]] = {
+  private def getDoiRegistered(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
     val depositId = context.value.id
 
     DeferredValue(fetchCurrentDoisRegistered.defer(depositId))

@@ -17,10 +17,10 @@ package nl.knaw.dans.easy.properties.app.model
 
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 
-sealed abstract class DoiEvent(value: String, timestamp: Timestamp)
+sealed abstract class DoiEvent[T](value: T, timestamp: Timestamp)
 
-case class DoiRegisteredEvent(value: String, timestamp: Timestamp) extends DoiEvent(value, timestamp)
+case class DoiRegisteredEvent(value: Boolean, timestamp: Timestamp) extends DoiEvent(value, timestamp)
 case class DoiActionEvent(value: String, timestamp: Timestamp) extends DoiEvent(value, timestamp)
 
-case class DepositDoiRegisteredFilter(value: String, filter: SeriesFilter = SeriesFilter.LATEST) extends DepositFilter
+case class DepositDoiRegisteredFilter(value: Boolean, filter: SeriesFilter = SeriesFilter.LATEST) extends DepositFilter
 case class DepositDoiActionFilter(value: String, filter: SeriesFilter = SeriesFilter.LATEST) extends DepositFilter

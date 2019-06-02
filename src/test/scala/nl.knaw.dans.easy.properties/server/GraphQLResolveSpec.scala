@@ -107,11 +107,11 @@ trait GraphQLResolveSpecTestObjects {
     timestamp = DateTime.now(),
   )
   val doiRegisteredEvent1 = DoiRegisteredEvent(
-    value = "yes",
+    value = true,
     timestamp = DateTime.now(),
   )
   val doiRegisteredEvent2 = DoiRegisteredEvent(
-    value = "no",
+    value = false,
     timestamp = DateTime.now(),
   )
   val doiActionEvent1 = DoiActionEvent(
@@ -482,7 +482,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "depositor" / "listDepositsWithDoiRegisteredAndDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(Some("user001"), None, None, Some(DepositDoiRegisteredFilter("yes")), None, None, None, None, None) once() returning Seq(deposit2, deposit3)
+      repository.getDeposits _ expects(Some("user001"), None, None, Some(DepositDoiRegisteredFilter(value = true)), None, None, None, None, None) once() returning Seq(deposit2, deposit3)
     }
 
     runQuery(input)
@@ -701,7 +701,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listDepositsWithDoiRegistered" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, None, Some(DepositDoiRegisteredFilter("yes", SeriesFilter.LATEST)), None, None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
+      repository.getDeposits _ expects(None, None, None, Some(DepositDoiRegisteredFilter(value = true, SeriesFilter.LATEST)), None, None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getCurrentDoisRegistered(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
         depositId1 -> Some(doiRegisteredEvent1),
         depositId2 -> Some(doiRegisteredEvent2),

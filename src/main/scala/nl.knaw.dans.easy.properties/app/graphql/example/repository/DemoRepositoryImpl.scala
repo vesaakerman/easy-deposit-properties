@@ -108,11 +108,11 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private val identifier51 = Identifier("51", IdentifierType.BAG_STORE, depositId5.toString, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
-  private val doiRegistered10 = DoiRegisteredEvent("no", new DateTime(2019, 1, 1, 0, 0, timeZone))
-  private val doiRegistered11 = DoiRegisteredEvent("yes", new DateTime(2019, 1, 1, 4, 7, timeZone))
-  private val doiRegistered20 = DoiRegisteredEvent("no", new DateTime(2019, 2, 2, 0, 0, timeZone))
-  private val doiRegistered21 = DoiRegisteredEvent("yes", new DateTime(2019, 2, 2, 2, 7, timeZone))
-  private val doiRegistered50 = DoiRegisteredEvent("no", new DateTime(2019, 5, 5, 0, 0, timeZone))
+  private val doiRegistered10 = DoiRegisteredEvent(value = false, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val doiRegistered11 = DoiRegisteredEvent(value = true, new DateTime(2019, 1, 1, 4, 7, timeZone))
+  private val doiRegistered20 = DoiRegisteredEvent(value = false, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val doiRegistered21 = DoiRegisteredEvent(value = true, new DateTime(2019, 2, 2, 2, 7, timeZone))
+  private val doiRegistered50 = DoiRegisteredEvent(value = false, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
   private val doiAction10 = DoiActionEvent("update", new DateTime(2019, 1, 1, 0, 0, timeZone))
   private val doiAction11 = DoiActionEvent("none", new DateTime(2019, 1, 1, 4, 5, timeZone))
