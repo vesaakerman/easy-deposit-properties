@@ -147,14 +147,13 @@ trait IngestStepType {
   implicit lazy val IngestStepType: ObjectType[DataContext, IngestStep] = deriveObjectType(
     ObjectTypeDescription("The ingest step of the deposit."),
     Interfaces[DataContext, IngestStep](nodeInterface),
-    ExcludeFields("id"),
     DocumentField("step", "The label of the ingest step."),
     DocumentField("timestamp", "The timestamp at which the deposit got into this ingest step."),
     AddFields(
-      Node.globalIdField[DataContext, IngestStep],
       depositField,
       depositsField,
     ),
+    ReplaceField("id", Node.globalIdField[DataContext, IngestStep]),
   )
 
   val ConnectionDefinition(_, ingestStepConnectionType) = ExtendedConnection.definition[DataContext, ExtendedConnection, IngestStep](

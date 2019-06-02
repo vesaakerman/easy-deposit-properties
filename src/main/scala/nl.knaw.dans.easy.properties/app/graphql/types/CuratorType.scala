@@ -166,15 +166,14 @@ trait CuratorType {
   implicit lazy val CuratorType: ObjectType[DataContext, Curator] = deriveObjectType(
     ObjectTypeDescription("Data manager responsible for curating this deposit."),
     Interfaces[DataContext, Curator](nodeInterface),
-    ExcludeFields("id"),
     DocumentField("userId", "The data manager's username in EASY."),
     DocumentField("email", "The data manager's email address."),
     DocumentField("timestamp", "The timestamp at which the data manager was assigned to this deposit."),
     AddFields(
-      Node.globalIdField[DataContext, Curator],
       depositField,
       depositsField,
-    )
+    ),
+    ReplaceField("id", Node.globalIdField[DataContext, Curator]),
   )
 
   val ConnectionDefinition(_, curatorConnectionType) = ExtendedConnection.definition[DataContext, ExtendedConnection, Curator](

@@ -148,15 +148,14 @@ trait StateType {
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
     ObjectTypeDescription("The state of the deposit."),
     Interfaces[DataContext, State](nodeInterface),
-    ExcludeFields("id"),
     DocumentField("label", "The state label of the deposit."),
     DocumentField("description", "Additional information about the state."),
     DocumentField("timestamp", "The timestamp at which the deposit got into this state."),
     AddFields(
-      Node.globalIdField[DataContext, State],
       depositField,
       depositsField,
     ),
+    ReplaceField("id", Node.globalIdField[DataContext, State]),
   )
 
   val ConnectionDefinition(_, stateConnectionType) = ExtendedConnection.definition[DataContext, ExtendedConnection, State](

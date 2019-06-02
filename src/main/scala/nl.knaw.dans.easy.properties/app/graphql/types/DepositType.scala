@@ -373,14 +373,12 @@ trait DepositType {
     RenameField("id", "depositId"),
     DocumentField("id", "The identifier of the deposit."),
     DocumentField("creationTimestamp", "The moment this deposit was created."),
-    ExcludeFields("depositorId"),
     AddFields(
       Node.globalIdField[DataContext, Deposit],
       stateField,
       statesField,
       ingestStepField,
       ingestStepsField,
-      depositorField,
       identifierField,
       identifiersField,
       doiRegisteredField,
@@ -400,6 +398,7 @@ trait DepositType {
       contentTypeField,
       contentTypesField,
     ),
+    ReplaceField("depositorId", depositorField),
   )
 
   lazy val ConnectionDefinition(_, depositConnectionType) = ExtendedConnection.definition[DataContext, ExtendedConnection, Deposit](

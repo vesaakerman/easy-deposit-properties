@@ -75,16 +75,15 @@ trait IdentifierGraphQLType {
   implicit val IdentifierObjectType: ObjectType[DataContext, Identifier] = deriveObjectType(
     ObjectTypeDescription("An identifier related to a deposit."),
     Interfaces[DataContext, Identifier](nodeInterface),
-    ExcludeFields("id"),
     DocumentField("idType", "The type of identifier."),
     DocumentField("idValue", "The value of the identifier."),
     DocumentField("timestamp", "The timestamp at which the identifier got added to this deposit."),
     RenameField("idType", "type"),
     RenameField("idValue", "value"),
     AddFields(
-      Node.globalIdField[DataContext, Identifier],
       depositField,
-    )
+    ),
+    ReplaceField("id", Node.globalIdField[DataContext, Identifier]),
   )
 
   implicit val InputIdentifierType: InputObjectType[InputIdentifier] = deriveInputObjectType(

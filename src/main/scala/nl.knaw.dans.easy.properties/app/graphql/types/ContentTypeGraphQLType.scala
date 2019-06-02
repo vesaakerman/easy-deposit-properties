@@ -143,19 +143,18 @@ trait ContentTypeGraphQLType {
   implicit val ContentTypeType: ObjectType[DataContext, ContentType] = deriveObjectType(
     ObjectTypeDescription("A SWORD2 internal property to record the type of messages sent by a client to create the deposit."),
     Interfaces[DataContext, ContentType](nodeInterface),
-    ExcludeFields("id"),
     DocumentField("timestamp", "The timestamp at which this springfield configuration was associated with the deposit."),
     AddFields(
-      Node.globalIdField[DataContext, ContentType],
       depositField,
       depositsField,
     ),
+    ReplaceField("id", Node.globalIdField[DataContext, ContentType]),
     ReplaceField("value", Field(
       name = "value",
       description = Some("The content type associated with this deposit."),
       fieldType = OptionType(StringType),
       resolve = ctx => ctx.value.value.toString,
-    ))
+    )),
   )
 
   val ConnectionDefinition(_, contentTypeConnectionType) = ExtendedConnection.definition[DataContext, ExtendedConnection, ContentType](

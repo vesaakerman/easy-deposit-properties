@@ -78,16 +78,15 @@ trait SpringfieldType {
   implicit val SpringfieldType: ObjectType[DataContext, Springfield] = deriveObjectType(
     ObjectTypeDescription("Springfield configuration associated with this deposit."),
     Interfaces[DataContext, Springfield](nodeInterface),
-    ExcludeFields("id"),
     DocumentField("domain", "The domain of Springfield"),
     DocumentField("user", "The user of Springfield"),
     DocumentField("collection", "The collection of Springfield"),
     DocumentField("playmode", "The playmode used in Springfield"),
     DocumentField("timestamp", "The timestamp at which this springfield configuration was associated with the deposit."),
     AddFields(
-      Node.globalIdField[DataContext, Springfield],
       depositField,
-    )
+    ),
+    ReplaceField("id", Node.globalIdField[DataContext, Springfield]),
   )
 
   implicit val InputSpringfieldType: InputObjectType[InputSpringfield] = deriveInputObjectType(
@@ -126,7 +125,7 @@ trait SpringfieldType {
   implicit val SpringfieldOrderFieldType: EnumType[SpringfieldOrderField.Value] = deriveEnumType()
 
   case class SpringfieldOrder(field: SpringfieldOrderField.SpringfieldOrderField,
-                          direction: OrderDirection.OrderDirection) {
+                              direction: OrderDirection.OrderDirection) {
     lazy val ordering: Ordering[Springfield] = {
       val orderByField: Ordering[Springfield] = field match {
         case SpringfieldOrderField.TIMESTAMP =>
