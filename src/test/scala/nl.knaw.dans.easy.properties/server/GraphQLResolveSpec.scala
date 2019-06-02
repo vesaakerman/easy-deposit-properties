@@ -24,7 +24,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.Identifi
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, State, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DepositIsNewVersionFilter, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DepositIsNewVersionFilter, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter }
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
@@ -115,11 +115,11 @@ trait GraphQLResolveSpecTestObjects {
     timestamp = DateTime.now(),
   )
   val doiActionEvent1 = DoiActionEvent(
-    value = "create",
+    value = DoiAction.CREATE,
     timestamp = DateTime.now(),
   )
   val doiActionEvent2 = DoiActionEvent(
-    value = "update",
+    value = DoiAction.UPDATE,
     timestamp = DateTime.now(),
   )
   val curator1 = Curator(
@@ -472,7 +472,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "depositor" / "listDepositsWithDoiActionAndDepositor" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(Some("user001"), None, None, None, Some(DepositDoiActionFilter("create")), None, None, None, None) once() returning Seq(deposit2, deposit3)
+      repository.getDeposits _ expects(Some("user001"), None, None, None, Some(DepositDoiActionFilter(DoiAction.CREATE)), None, None, None, None) once() returning Seq(deposit2, deposit3)
     }
 
     runQuery(input)
@@ -686,7 +686,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "deposits" / "listDepositsWithDoiAction" / "plain.graphql"
 
     inSequence {
-      repository.getDeposits _ expects(None, None, None, None, Some(DepositDoiActionFilter("create", SeriesFilter.LATEST)), None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
+      repository.getDeposits _ expects(None, None, None, None, Some(DepositDoiActionFilter(DoiAction.CREATE, SeriesFilter.LATEST)), None, None, None, None) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getCurrentDoisAction(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
         depositId1 -> Some(doiActionEvent1),
         depositId2 -> Some(doiActionEvent2),

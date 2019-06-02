@@ -5,19 +5,19 @@
         {
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000002",
-            "doiAction": "create"
+            "doiAction": "CREATE"
           }
         },
         {
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000004",
-            "doiAction": "create"
+            "doiAction": "CREATE"
           }
         },
         {
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000003",
-            "doiAction": "create"
+            "doiAction": "CREATE"
           }
         }
       ]

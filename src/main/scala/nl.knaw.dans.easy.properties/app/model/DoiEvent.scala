@@ -15,12 +15,23 @@
  */
 package nl.knaw.dans.easy.properties.app.model
 
+import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 
 sealed abstract class DoiEvent[T](value: T, timestamp: Timestamp)
 
 case class DoiRegisteredEvent(value: Boolean, timestamp: Timestamp) extends DoiEvent(value, timestamp)
-case class DoiActionEvent(value: String, timestamp: Timestamp) extends DoiEvent(value, timestamp)
+case class DoiActionEvent(value: DoiAction, timestamp: Timestamp) extends DoiEvent(value, timestamp)
 
 case class DepositDoiRegisteredFilter(value: Boolean, filter: SeriesFilter = SeriesFilter.LATEST) extends DepositFilter
-case class DepositDoiActionFilter(value: String, filter: SeriesFilter = SeriesFilter.LATEST) extends DepositFilter
+case class DepositDoiActionFilter(value: DoiAction, filter: SeriesFilter = SeriesFilter.LATEST) extends DepositFilter
+
+object DoiAction extends Enumeration {
+  type DoiAction = Value
+
+  // @formatter:off
+  val CREATE: DoiAction = Value("CREATE")
+  val UPDATE: DoiAction = Value("UPDATE")
+  val NONE:   DoiAction = Value("NONE")
+  // @formatter:on
+}

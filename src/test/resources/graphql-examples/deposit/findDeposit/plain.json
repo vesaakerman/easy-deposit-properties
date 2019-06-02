@@ -53,14 +53,14 @@
           "timestamp": "2019-01-01T04:07:00.000+01:00"
         }
       ],
-      "doiAction": "none",
+      "doiAction": "NONE",
       "doiActionEvents": [
         {
-          "value": "update",
+          "value": "UPDATE",
           "timestamp": "2019-01-01T00:00:00.000+01:00"
         },
         {
-          "value": "none",
+          "value": "NONE",
           "timestamp": "2019-01-01T04:05:00.000+01:00"
         }
       ],

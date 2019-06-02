@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
 import nl.knaw.dans.easy.properties.app.model.curator.Curator
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
@@ -110,7 +111,7 @@ trait DepositType {
   private val doiActionField: Field[DataContext, Deposit] = Field(
     name = "doiAction",
     description = Some("Returns whether the DOI should be 'created' or 'updated' on registration in DataCite"),
-    fieldType = OptionType(StringType),
+    fieldType = OptionType(DoiActionType),
     resolve = getDoiAction,
   )
   private val doiActionEventsField: Field[DataContext, Deposit] = Field(
@@ -230,7 +231,7 @@ trait DepositType {
       .map { case (_, events) => events.sortBy(_.timestamp) }
   }
 
-  private def getDoiAction(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[String]] = {
+  private def getDoiAction(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[DoiAction]] = {
     val depositId = context.value.id
 
     DeferredValue(fetchCurrentDoisAction.defer(depositId))

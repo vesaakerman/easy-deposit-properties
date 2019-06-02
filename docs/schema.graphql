@@ -199,7 +199,7 @@ type Deposit implements Node {
   identifiers: [Identifier!]!
 
   """Returns whether the DOI is registered in DataCite."""
-  doiRegistered: String
+  doiRegistered: Boolean
 
   """
   Lists all state changes related to the registration of the DOI in DataCite
@@ -209,7 +209,7 @@ type Deposit implements Node {
   """
   Returns whether the DOI should be 'created' or 'updated' on registration in DataCite
   """
-  doiAction: String
+  doiAction: DoiAction
 
   """
   Lists all state changes related to whether the DOI should be 'created' or 'updated' on registration in DataCite
@@ -307,7 +307,7 @@ The label and filter to be used in searching for deposits by DOI registration ac
 """
 input DepositDoiActionFilter {
   """If provided, only show deposits with the same value for DOI action."""
-  value: String!
+  value: DoiAction!
 
   """
   Determine whether to search in current value for DOI action (`LATEST`, default) or all current and past values (`ALL`).
@@ -322,7 +322,7 @@ input DepositDoiRegisteredFilter {
   """
   If provided, only show deposits with the same value for DOI registered.
   """
-  value: String!
+  value: Boolean!
 
   """
   Determine whether to search in current value for DOI registered (`LATEST`,
@@ -445,12 +445,37 @@ input DepositStateFilter {
   filter: SeriesFilter = LATEST
 }
 
+"""
+Whether the DANS-DOI must be created or updated in the DataCite resolver.
+"""
+enum DoiAction {
+  """None action must be taken for this DANS-DOI in the DataCite resolver."""
+  NONE
+
+  """The DANS-DOI must be updated in the DataCite resolver."""
+  UPDATE
+
+  """The DANS-DOI must be created in the DataCite resolver."""
+  CREATE
+}
+
 """A DOI action event related to a deposit"""
 type DoiActionEvent {
   """
   Whether the DOI must be 'created' or 'updated' when registering in DataCite.
   """
-  value: String!
+  value: DoiAction!
+
+  """The timestamp at which this value was added."""
+  timestamp: DateTime!
+}
+
+"""A DOI action event related to a deposit"""
+input DoiActionEventInput {
+  """
+  Whether the DOI must be 'created' or 'updated' when registering in DataCite.
+  """
+  value: DoiAction!
 
   """The timestamp at which this value was added."""
   timestamp: DateTime!
@@ -459,7 +484,7 @@ type DoiActionEvent {
 """A DOI registration event related to a deposit"""
 type DoiRegisteredEvent {
   """Whether the DOI is registered in DataCite."""
-  value: String!
+  value: Boolean!
 
   """The timestamp at which the DOI was registered in DataCite."""
   timestamp: DateTime!
@@ -468,7 +493,7 @@ type DoiRegisteredEvent {
 """A DOI registration event related to a deposit"""
 input DoiRegisteredEventInput {
   """Whether the DOI is registered in DataCite."""
-  value: String!
+  value: Boolean!
 
   """The timestamp at which the DOI was registered in DataCite."""
   timestamp: DateTime!
@@ -734,7 +759,7 @@ type Mutation {
     depositId: UUID!
 
     """The DOI action event to be set."""
-    doiAction: DoiRegisteredEventInput!
+    doiAction: DoiActionEventInput!
   ): DoiActionEvent
 
   """Assign a data manager to the deposit identified by 'id'."""

@@ -54,10 +54,10 @@
                 "timestamp": "2019-02-02T02:07:00.000+01:00"
               }
             ],
-            "doiAction": "create",
+            "doiAction": "CREATE",
             "doiActionEvents": [
               {
-                "value": "create",
+                "value": "CREATE",
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
             ],
@@ -94,10 +94,10 @@
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               }
             ],
-            "doiAction": "update",
+            "doiAction": "UPDATE",
             "doiActionEvents": [
               {
-                "value": "update",
+                "value": "UPDATE",
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               }
             ],
@@ -149,10 +149,10 @@
             "doiRegistered": null,
             "doiRegisteredEvents": [
             ],
-            "doiAction": "create",
+            "doiAction": "CREATE",
             "doiActionEvents": [
               {
-                "value": "create",
+                "value": "CREATE",
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
             ],
@@ -215,14 +215,14 @@
                 "timestamp": "2019-01-01T04:07:00.000+01:00"
               }
             ],
-            "doiAction": "none",
+            "doiAction": "NONE",
             "doiActionEvents": [
               {
-                "value": "update",
+                "value": "UPDATE",
                 "timestamp": "2019-01-01T00:00:00.000+01:00"
               },
               {
-                "value": "none",
+                "value": "NONE",
                 "timestamp": "2019-01-01T04:05:00.000+01:00"
               }
             ],
@@ -256,10 +256,10 @@
             "doiRegistered": null,
             "doiRegisteredEvents": [
             ],
-            "doiAction": "create",
+            "doiAction": "CREATE",
             "doiActionEvents": [
               {
-                "value": "create",
+                "value": "CREATE",
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
             ],

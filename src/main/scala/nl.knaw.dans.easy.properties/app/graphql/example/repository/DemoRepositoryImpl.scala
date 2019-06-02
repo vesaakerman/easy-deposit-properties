@@ -114,12 +114,12 @@ class DemoRepositoryImpl extends DemoRepository {
   private val doiRegistered21 = DoiRegisteredEvent(value = true, new DateTime(2019, 2, 2, 2, 7, timeZone))
   private val doiRegistered50 = DoiRegisteredEvent(value = false, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
-  private val doiAction10 = DoiActionEvent("update", new DateTime(2019, 1, 1, 0, 0, timeZone))
-  private val doiAction11 = DoiActionEvent("none", new DateTime(2019, 1, 1, 4, 5, timeZone))
-  private val doiAction20 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0, timeZone))
-  private val doiAction30 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0, timeZone))
-  private val doiAction40 = DoiActionEvent("create", new DateTime(2019, 2, 2, 0, 0, timeZone))
-  private val doiAction50 = DoiActionEvent("update", new DateTime(2019, 5, 5, 0, 0, timeZone))
+  private val doiAction10 = DoiActionEvent(DoiAction.UPDATE, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val doiAction11 = DoiActionEvent(DoiAction.NONE, new DateTime(2019, 1, 1, 4, 5, timeZone))
+  private val doiAction20 = DoiActionEvent(DoiAction.CREATE, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val doiAction30 = DoiActionEvent(DoiAction.CREATE, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val doiAction40 = DoiActionEvent(DoiAction.CREATE, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  private val doiAction50 = DoiActionEvent(DoiAction.UPDATE, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
   private val curator11 = Curator("11", "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 1, 1, 0, 0, timeZone))
   private val curator12 = Curator("12", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 3, 3, timeZone))
