@@ -15,14 +15,14 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
-import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, DepositContentTypeFilter, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
+import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
-import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
-import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DepositIsNewVersionFilter, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent }
+import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent }
 
 trait DepositRepository {
 
@@ -42,11 +42,11 @@ trait DepositRepository {
 
   def getCurrentState(id: DepositId): Option[State]
 
-  def getAllStates(id: DepositId): Seq[State]
+  def getAllStates(id: DepositId): Option[Seq[State]]
 
   def getCurrentStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])]
 
-  def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Seq[State])]
+  def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[State]])]
 
   def setState(id: DepositId, state: InputState): Option[State]
 
@@ -58,11 +58,11 @@ trait DepositRepository {
 
   def getCurrentIngestStep(id: DepositId): Option[IngestStep]
 
-  def getAllIngestSteps(id: DepositId): Seq[IngestStep]
+  def getAllIngestSteps(id: DepositId): Option[Seq[IngestStep]]
 
   def getCurrentIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Option[IngestStep])]
 
-  def getAllIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Seq[IngestStep])]
+  def getAllIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[IngestStep]])]
 
   def setIngestStep(id: DepositId, step: InputIngestStep): Option[IngestStep]
 
@@ -76,11 +76,11 @@ trait DepositRepository {
 
   def getIdentifier(idType: IdentifierType, idValue: String): Option[Identifier]
 
-  def getIdentifiers(id: DepositId): Seq[Identifier]
+  def getIdentifiers(id: DepositId): Option[Seq[Identifier]]
 
   def getIdentifiersForTypes(ids: Seq[(DepositId, IdentifierType)]): Seq[((DepositId, IdentifierType), Option[Identifier])]
 
-  def getIdentifiers(ids: Seq[DepositId]): Seq[(DepositId, Seq[Identifier])]
+  def getIdentifiers(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Identifier]])]
 
   def addIdentifier(id: DepositId, identifier: InputIdentifier): Option[Identifier]
 
@@ -92,9 +92,9 @@ trait DepositRepository {
 
   def getCurrentDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiRegisteredEvent])]
 
-  def getAllDoiRegistered(id: DepositId): Seq[DoiRegisteredEvent]
+  def getAllDoiRegistered(id: DepositId): Option[Seq[DoiRegisteredEvent]]
 
-  def getAllDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiRegisteredEvent])]
+  def getAllDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[DoiRegisteredEvent]])]
 
   def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Option[DoiRegisteredEvent]
 
@@ -104,9 +104,9 @@ trait DepositRepository {
 
   def getCurrentDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiActionEvent])]
 
-  def getAllDoiAction(id: DepositId): Seq[DoiActionEvent]
+  def getAllDoiAction(id: DepositId): Option[Seq[DoiActionEvent]]
 
-  def getAllDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Seq[DoiActionEvent])]
+  def getAllDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[DoiActionEvent]])]
 
   def setDoiAction(id: DepositId, action: DoiActionEvent): Option[DoiActionEvent]
 
@@ -116,11 +116,11 @@ trait DepositRepository {
 
   def getCurrentCurator(id: DepositId): Option[Curator]
 
-  def getAllCurators(id: DepositId): Seq[Curator]
+  def getAllCurators(id: DepositId): Option[Seq[Curator]]
 
   def getCurrentCurators(ids: Seq[DepositId]): Seq[(DepositId, Option[Curator])]
 
-  def getAllCurators(ids: Seq[DepositId]): Seq[(DepositId, Seq[Curator])]
+  def getAllCurators(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Curator]])]
 
   def setCurator(id: DepositId, curator: InputCurator): Option[Curator]
 
@@ -132,9 +132,9 @@ trait DepositRepository {
 
   def getCurrentIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Option[IsNewVersionEvent])]
 
-  def getAllIsNewVersionAction(id: DepositId): Seq[IsNewVersionEvent]
+  def getAllIsNewVersionAction(id: DepositId): Option[Seq[IsNewVersionEvent]]
 
-  def getAllIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[IsNewVersionEvent])]
+  def getAllIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[IsNewVersionEvent]])]
 
   def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Option[IsNewVersionEvent]
 
@@ -144,9 +144,9 @@ trait DepositRepository {
 
   def getCurrentCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationRequiredEvent])]
 
-  def getAllCurationRequiredAction(id: DepositId): Seq[CurationRequiredEvent]
+  def getAllCurationRequiredAction(id: DepositId): Option[Seq[CurationRequiredEvent]]
 
-  def getAllCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationRequiredEvent])]
+  def getAllCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[CurationRequiredEvent]])]
 
   def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Option[CurationRequiredEvent]
 
@@ -156,9 +156,9 @@ trait DepositRepository {
 
   def getCurrentCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationPerformedEvent])]
 
-  def getAllCurationPerformedAction(id: DepositId): Seq[CurationPerformedEvent]
+  def getAllCurationPerformedAction(id: DepositId): Option[Seq[CurationPerformedEvent]]
 
-  def getAllCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Seq[CurationPerformedEvent])]
+  def getAllCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[CurationPerformedEvent]])]
 
   def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Option[CurationPerformedEvent]
 
@@ -170,9 +170,9 @@ trait DepositRepository {
 
   def getCurrentSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Option[Springfield])]
 
-  def getAllSpringfields(id: DepositId): Seq[Springfield]
+  def getAllSpringfields(id: DepositId): Option[Seq[Springfield]]
 
-  def getAllSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Seq[Springfield])]
+  def getAllSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Springfield]])]
 
   def setSpringfield(id: DepositId, springfield: InputSpringfield): Option[Springfield]
 
@@ -186,9 +186,9 @@ trait DepositRepository {
 
   def getCurrentContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Option[ContentType])]
 
-  def getAllContentTypes(id: DepositId): Seq[ContentType]
+  def getAllContentTypes(id: DepositId): Option[Seq[ContentType]]
 
-  def getAllContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Seq[ContentType])]
+  def getAllContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[ContentType]])]
 
   def setContentType(id: DepositId, contentType: InputContentType): Option[ContentType]
 

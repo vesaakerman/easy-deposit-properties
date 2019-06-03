@@ -217,43 +217,43 @@ class GraphQLResolveSpec extends TestSupportFixture
       inAnyOrder {
         repository.getCurrentState _ expects depositId1 once() returning Some(state1)
         repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1)
-        (repository.getIdentifiers(_: DepositId)) expects depositId1 once() returning Seq(identifier1, identifier2)
+        (repository.getIdentifiers(_: DepositId)) expects depositId1 once() returning Option(Seq(identifier1, identifier2))
         repository.getCurrentDoiRegistered _ expects depositId1 once() returning Some(doiRegisteredEvent1)
-        repository.getAllDoiRegistered _ expects depositId1 once() returning Seq(
+        repository.getAllDoiRegistered _ expects depositId1 once() returning Option(Seq(
           doiRegisteredEvent1,
           doiRegisteredEvent2,
-        )
+        ))
         repository.getCurrentDoiAction _ expects depositId1 once() returning Some(doiActionEvent1)
-        repository.getAllDoiAction _ expects depositId1 once() returning Seq(
+        repository.getAllDoiAction _ expects depositId1 once() returning Option(Seq(
           doiActionEvent1,
           doiActionEvent2,
-        )
+        ))
         repository.getCurrentCurator _ expects depositId1 once() returning Some(curator1)
         repository.getCurrentIsNewVersionAction _ expects depositId1 once() returning Some(isNewVersion1)
-        repository.getAllIsNewVersionAction _ expects depositId1 once() returning Seq(
+        repository.getAllIsNewVersionAction _ expects depositId1 once() returning Option(Seq(
           isNewVersion1,
           isNewVersion2,
-        )
+        ))
         repository.getCurrentCurationRequiredAction _ expects depositId1 once() returning Some(curationRequired1)
-        repository.getAllCurationRequiredAction _ expects depositId1 once() returning Seq(
+        repository.getAllCurationRequiredAction _ expects depositId1 once() returning Option(Seq(
           curationRequired1,
           curationRequired2,
-        )
+        ))
         repository.getCurrentCurationPerformedAction _ expects depositId1 once() returning Some(curationPerformed1)
-        repository.getAllCurationPerformedAction _ expects depositId1 once() returning Seq(
+        repository.getAllCurationPerformedAction _ expects depositId1 once() returning Option(Seq(
           curationPerformed1,
           curationPerformed2,
-        )
+        ))
         repository.getCurrentSpringfield _ expects depositId1 once() returning Some(springfield1)
-        (repository.getAllSpringfields(_: DepositId)) expects depositId1 once() returning Seq(
+        (repository.getAllSpringfields(_: DepositId)) expects depositId1 once() returning Option(Seq(
           springfield1,
           springfield2,
-        )
+        ))
         repository.getCurrentContentType _ expects depositId1 once() returning Some(contentType1)
-        (repository.getAllContentTypes(_: DepositId)) expects depositId1 once() returning Seq(
+        (repository.getAllContentTypes(_: DepositId)) expects depositId1 once() returning Option(Seq(
           contentType1,
           contentType2,
-        )
+        ))
       }
     }
 
@@ -279,7 +279,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3, step1, step2)
+      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Option(Seq(step1, step2, step3, step1, step2))
     }
 
     runQuery(input)
@@ -290,7 +290,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3, step1, step2)
+      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Option(Seq(step1, step2, step3, step1, step2))
     }
 
     runQuery(input)
@@ -301,7 +301,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3, step1, step2)
+      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Option(Seq(step1, step2, step3, step1, step2))
     }
 
     runQuery(input)
@@ -312,7 +312,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllContentTypes(_: DepositId)) expects depositId1 once() returning Seq(contentType2, contentType1)
+      (repository.getAllContentTypes(_: DepositId)) expects depositId1 once() returning Option(Seq(contentType2, contentType1))
     }
 
     runQuery(input)
@@ -323,7 +323,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllCurators(_: DepositId)) expects depositId1 once() returning Seq(curator1, curator2)
+      (repository.getAllCurators(_: DepositId)) expects depositId1 once() returning Option(Seq(curator1, curator2))
     }
 
     runQuery(input)
@@ -334,7 +334,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3)
+      (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Option(Seq(step1, step2, step3))
     }
 
     runQuery(input)
@@ -345,7 +345,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId2 once() returning Some(deposit2)
-      (repository.getAllSpringfields(_: DepositId)) expects depositId2 once() returning Seq(springfield1, springfield2)
+      (repository.getAllSpringfields(_: DepositId)) expects depositId2 once() returning Option(Seq(springfield1, springfield2))
     }
 
     runQuery(input)
@@ -356,7 +356,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3)
+      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Option(Seq(state1, state2, state3))
     }
 
     runQuery(input)
@@ -480,7 +480,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3, state1, state2)
+      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Option(Seq(state1, state2, state3, state1, state2))
     }
 
     runQuery(input)
@@ -491,7 +491,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3, state1, state2)
+      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Option(Seq(state1, state2, state3, state1, state2))
     }
 
     runQuery(input)
@@ -502,7 +502,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning Some(deposit1)
-      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3, state1, state2)
+      (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Option(Seq(state1, state2, state3, state1, state2))
     }
 
     runQuery(input)
@@ -515,9 +515,9 @@ class GraphQLResolveSpec extends TestSupportFixture
 
     repository.getDeposits _ expects DepositFilters() once() returning Seq(deposit1, deposit2, deposit3)
     (repository.getAllStates(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-      depositId1 -> Seq(state1, state2),
-      depositId2 -> Seq(state2, state3),
-      depositId3 -> Seq.empty,
+      depositId1 -> Option(Seq(state1, state2)),
+      depositId2 -> Option(Seq(state2, state3)),
+      depositId3 -> Option.empty,
     )
     repository.getDepositsAggregated _ expects Seq(
       DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.DRAFT))),
@@ -673,9 +673,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> Some(step3),
         )
         (repository.getIdentifiers(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(identifier1, identifier2),
-          depositId2 -> Seq(identifier2, identifier3),
-          depositId3 -> Seq.empty,
+          depositId1 -> Option(Seq(identifier1, identifier2)),
+          depositId2 -> Option(Seq(identifier2, identifier3)),
+          depositId3 -> Option.empty,
         )
         repository.getCurrentDoisRegistered _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(doiRegisteredEvent1),
@@ -683,9 +683,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> None,
         )
         repository.getAllDoisRegistered _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(doiRegisteredEvent1, doiRegisteredEvent2),
-          depositId2 -> Seq(doiRegisteredEvent2),
-          depositId3 -> Seq.empty,
+          depositId1 -> Option(Seq(doiRegisteredEvent1, doiRegisteredEvent2)),
+          depositId2 -> Option(Seq(doiRegisteredEvent2)),
+          depositId3 -> Option.empty,
         )
         repository.getCurrentDoisAction _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(doiActionEvent1),
@@ -693,9 +693,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> None,
         )
         repository.getAllDoisAction _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(doiActionEvent1, doiActionEvent2),
-          depositId2 -> Seq(doiActionEvent2),
-          depositId3 -> Seq.empty,
+          depositId1 -> Option(Seq(doiActionEvent1, doiActionEvent2)),
+          depositId2 -> Option(Seq(doiActionEvent2)),
+          depositId3 -> Option.empty,
         )
         repository.getCurrentCurators _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(curator1),
@@ -703,9 +703,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> None,
         )
         (repository.getAllCurators(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(curator1),
-          depositId2 -> Seq(curator2, curator1),
-          depositId3 -> Seq.empty,
+          depositId1 -> Option(Seq(curator1)),
+          depositId2 -> Option(Seq(curator2, curator1)),
+          depositId3 -> Option.empty,
         )
         repository.getCurrentIsNewVersionActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(isNewVersion1),
@@ -713,9 +713,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> None
         )
         repository.getAllIsNewVersionActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(isNewVersion1),
-          depositId2 -> Seq(isNewVersion2),
-          depositId3 -> Seq.empty
+          depositId1 -> Option(Seq(isNewVersion1)),
+          depositId2 -> Option(Seq(isNewVersion2)),
+          depositId3 -> Option.empty
         )
         repository.getCurrentCurationRequiredActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(curationRequired1),
@@ -723,9 +723,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> None
         )
         repository.getAllCurationRequiredActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(curationRequired1),
-          depositId2 -> Seq(curationRequired2, curationRequired1),
-          depositId3 -> Seq.empty
+          depositId1 -> Option(Seq(curationRequired1)),
+          depositId2 -> Option(Seq(curationRequired2, curationRequired1)),
+          depositId3 -> Option.empty
         )
         repository.getCurrentCurationPerformedActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(curationPerformed1),
@@ -733,9 +733,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> None
         )
         repository.getAllCurationPerformedActions _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(curationPerformed1),
-          depositId2 -> Seq(curationPerformed2, curationPerformed1),
-          depositId3 -> Seq.empty
+          depositId1 -> Option(Seq(curationPerformed1)),
+          depositId2 -> Option(Seq(curationPerformed2, curationPerformed1)),
+          depositId3 -> Option.empty
         )
         repository.getCurrentSpringfields _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(springfield1),
@@ -743,9 +743,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> None,
         )
         (repository.getAllSpringfields(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(springfield1),
-          depositId2 -> Seq(springfield2, springfield1),
-          depositId3 -> Seq.empty,
+          depositId1 -> Option(Seq(springfield1)),
+          depositId2 -> Option(Seq(springfield2, springfield1)),
+          depositId3 -> Option.empty,
         )
         repository.getCurrentContentTypes _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(contentType1),
@@ -753,9 +753,9 @@ class GraphQLResolveSpec extends TestSupportFixture
           depositId3 -> None,
         )
         (repository.getAllContentTypes(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-          depositId1 -> Seq(contentType1),
-          depositId2 -> Seq(contentType2, contentType1),
-          depositId3 -> Seq.empty,
+          depositId1 -> Option(Seq(contentType1)),
+          depositId2 -> Option(Seq(contentType2, contentType1)),
+          depositId3 -> Option.empty,
         )
       }
     }
@@ -769,9 +769,9 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposits _ expects DepositFilters() once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getAllCurators(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-        depositId1 -> Seq(curator2, curator1),
-        depositId2 -> Seq(curator2, curator1),
-        depositId3 -> Seq(curator2, curator1),
+        depositId1 -> Option(Seq(curator2, curator1)),
+        depositId2 -> Option(Seq(curator2, curator1)),
+        depositId3 -> Option(Seq(curator2, curator1)),
       )
     }
 
@@ -784,9 +784,9 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposits _ expects DepositFilters() once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getAllIngestSteps(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-        depositId1 -> Seq(step1, step2),
-        depositId2 -> Seq(step2, step3),
-        depositId3 -> Seq(step3, step1),
+        depositId1 -> Option(Seq(step1, step2)),
+        depositId2 -> Option(Seq(step2, step3)),
+        depositId3 -> Option(Seq(step3, step1)),
       )
     }
 
@@ -799,9 +799,9 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposits _ expects DepositFilters() once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getAllStates(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-        depositId1 -> Seq(state1, state2),
-        depositId2 -> Seq(state2, state3),
-        depositId3 -> Seq(state3, state1),
+        depositId1 -> Option(Seq(state1, state2)),
+        depositId2 -> Option(Seq(state2, state3)),
+        depositId3 -> Option(Seq(state3, state1)),
       )
     }
 
@@ -829,9 +829,9 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposits _ expects DepositFilters(curationPerformedFilter = Some(DepositCurationPerformedFilter(curationPerformed = true))) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getAllCurationPerformedActions(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-        depositId1 -> Seq(curationPerformed1),
-        depositId2 -> Seq(curationPerformed2),
-        depositId3 -> Seq.empty,
+        depositId1 -> Option(Seq(curationPerformed1)),
+        depositId2 -> Option(Seq(curationPerformed2)),
+        depositId3 -> Option.empty,
       )
     }
 
@@ -844,9 +844,9 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposits _ expects DepositFilters(curationRequiredFilter = Some(DepositCurationRequiredFilter(curationRequired = true))) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getAllCurationRequiredActions(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-        depositId1 -> Seq(curationRequired1),
-        depositId2 -> Seq(curationRequired2),
-        depositId3 -> Seq.empty,
+        depositId1 -> Option(Seq(curationRequired1)),
+        depositId2 -> Option(Seq(curationRequired2)),
+        depositId3 -> Option.empty,
       )
     }
 
@@ -919,9 +919,9 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposits _ expects DepositFilters(isNewVersionFilter = Some(DepositIsNewVersionFilter(isNewVersion = true))) once() returning Seq(deposit1, deposit2, deposit3)
       (repository.getAllIsNewVersionActions(_: Seq[DepositId])) expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
-        depositId1 -> Seq(isNewVersion1),
-        depositId2 -> Seq(isNewVersion2),
-        depositId3 -> Seq.empty,
+        depositId1 -> Option(Seq(isNewVersion1)),
+        depositId2 -> Option(Seq(isNewVersion2)),
+        depositId3 -> Option.empty,
       )
     }
 

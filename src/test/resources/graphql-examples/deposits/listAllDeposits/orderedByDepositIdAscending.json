@@ -286,8 +286,7 @@
               }
             ],
             "doiRegistered": null,
-            "doiRegisteredEvents": [
-            ],
+            "doiRegisteredEvents": null,
             "doiAction": "CREATE",
             "doiActionEvents": [
               {
@@ -344,8 +343,7 @@
               }
             ],
             "springfield": null,
-            "springfields": [
-            ],
+            "springfields": null,
             "contentType": {
               "value": "application/zip",
               "timestamp": "2019-03-03T00:05:00.000+01:00"
@@ -397,8 +395,7 @@
               }
             ],
             "doiRegistered": null,
-            "doiRegisteredEvents": [
-            ],
+            "doiRegisteredEvents": null,
             "doiAction": "CREATE",
             "doiActionEvents": [
               {
@@ -448,8 +445,7 @@
               }
             ],
             "springfield": null,
-            "springfields": [
-            ],
+            "springfields": null,
             "contentType": {
               "value": "application/zip",
               "timestamp": "2019-04-04T00:05:00.000+02:00"
@@ -541,8 +537,7 @@
               }
             ],
             "springfield": null,
-            "springfields": [
-            ],
+            "springfields": null,
             "contentType": {
               "value": "application/zip",
               "timestamp": "2019-05-05T00:05:00.000+02:00"
