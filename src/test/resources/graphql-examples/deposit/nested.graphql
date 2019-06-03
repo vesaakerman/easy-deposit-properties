@@ -1,0 +1,65 @@
+query {
+    deposits {
+        edges {
+            node {
+                depositId
+                states {
+                    edges {
+                        node {
+                            label
+                            deposits {
+                                edges {
+                                    node {
+                                        depositId
+                                        states {
+                                            edges {
+                                                node {
+                                                    label
+                                                    deposits {
+                                                        edges {
+                                                            node {
+                                                                depositId
+                                                                states {
+                                                                    edges {
+                                                                        node {
+                                                                            label
+                                                                            deposits {
+                                                                                edges {
+                                                                                    node {
+                                                                                        depositId
+                                                                                        states {
+                                                                                            edges {
+                                                                                                node {
+                                                                                                    label
+                                                                                                    deposits {
+                                                                                                        edges {
+                                                                                                            node {
+                                                                                                                depositId
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

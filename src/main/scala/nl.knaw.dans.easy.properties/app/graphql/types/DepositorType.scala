@@ -18,8 +18,11 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
+import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.relay.{ Connection, ConnectionArgs }
-import sangria.schema.{ Context, Field, ObjectType, OptionType, StringType, fields }
+import sangria.schema.{ Context, DeferredValue, Field, ObjectType, OptionType, StringType, fields }
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DepositorType {
   this: DepositType
@@ -53,12 +56,10 @@ trait DepositorType {
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDeposits(context: Context[DataContext, DepositorId]): Seq[Deposit] = {
-    val repository = context.ctx.deposits
-
+  private def getDeposits(context: Context[DataContext, DepositorId]): DeferredValue[DataContext, Seq[Deposit]] = {
     val depositorId = context.value
     val stateInput = context.arg(depositStateFilterArgument)
     val ingestStepInput = context.arg(depositIngestStepFilterArgument)
@@ -71,7 +72,7 @@ trait DepositorType {
     val contentType = context.arg(depositContentTypeFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = repository.getDeposits(
+    DeferredValue(depositsFetcher.defer(DepositFilters(
       depositorId = Some(depositorId),
       stateFilter = stateInput,
       ingestStepFilter = ingestStepInput,
@@ -82,9 +83,7 @@ trait DepositorType {
       curationRequiredFilter = curationRequired,
       curationPerformedFilter = curationPerformed,
       contentTypeFilter = contentType,
-    )
-
-    orderBy.fold(result)(order => result.sorted(order.ordering))
+    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
   }
 
   implicit val DepositorType: ObjectType[DataContext, DepositorId] = ObjectType(

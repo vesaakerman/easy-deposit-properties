@@ -19,9 +19,12 @@ import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId }
+import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay.{ Connection, ConnectionArgs }
-import sangria.schema.{ Argument, Context, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
+import sangria.schema.{ Argument, Context, DeferredValue, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait QueryType {
   this: DepositType
@@ -97,7 +100,7 @@ trait QueryType {
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
   private val depositorField: Field[DataContext, Unit] = Field(
     name = "depositor",
@@ -127,9 +130,7 @@ trait QueryType {
     repository.getDeposit(depositId)
   }
 
-  private def getDeposits(context: Context[DataContext, Unit]): Seq[Deposit] = {
-    val repository = context.ctx.deposits
-
+  private def getDeposits(context: Context[DataContext, Unit]): DeferredValue[DataContext, Seq[Deposit]] = {
     val stateInput = context.arg(depositStateFilterArgument)
     val ingestStepInput = context.arg(depositIngestStepFilterArgument)
     val doiRegistered = context.arg(depositDoiRegisteredFilterArgument)
@@ -141,7 +142,7 @@ trait QueryType {
     val contentType = context.arg(depositContentTypeFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = repository.getDeposits(
+    DeferredValue(depositsFetcher.defer(DepositFilters(
       stateFilter = stateInput,
       ingestStepFilter = ingestStepInput,
       doiRegisteredFilter = doiRegistered,
@@ -151,9 +152,7 @@ trait QueryType {
       curationRequiredFilter = curationRequired,
       curationPerformedFilter = curationPerformed,
       contentTypeFilter = contentType
-    )
-
-    orderBy.fold(result)(order => result.sorted(order.ordering))
+    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
   }
 
   private def getDepositor(context: Context[DataContext, Unit]): Option[DepositorId] = {

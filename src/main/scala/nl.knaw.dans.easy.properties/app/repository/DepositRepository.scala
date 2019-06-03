@@ -28,17 +28,9 @@ trait DepositRepository {
 
   def getAllDeposits: Seq[Deposit]
 
-  def getDeposits(depositorId: Option[DepositorId] = Option.empty,
-                  stateFilter: Option[DepositStateFilter] = Option.empty,
-                  ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
-                  doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
-                  doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
-                  curatorFilter: Option[DepositCuratorFilter] = Option.empty,
-                  isNewVersionFilter: Option[DepositIsNewVersionFilter] = Option.empty,
-                  curationRequiredFilter: Option[DepositCurationRequiredFilter] = Option.empty,
-                  curationPerformedFilter: Option[DepositCurationPerformedFilter] = Option.empty,
-                  contentTypeFilter: Option[DepositContentTypeFilter] = Option.empty,
-                 ): Seq[Deposit]
+  def getDeposits(filters: DepositFilters): Seq[Deposit]
+
+  def getDepositsAggregated(filters: Seq[DepositFilters]): Seq[(DepositFilters, Seq[Deposit])]
 
   def getDeposit(id: DepositId): Option[Deposit]
 

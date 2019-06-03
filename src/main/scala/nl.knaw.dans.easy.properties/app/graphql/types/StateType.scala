@@ -21,11 +21,14 @@ import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
 import sangria.relay._
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
+import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait StateType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
@@ -92,7 +95,7 @@ trait StateType {
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
   private def getDepositByState(context: Context[DataContext, State]): Option[Deposit] = {
@@ -103,18 +106,14 @@ trait StateType {
     repository.getDepositByStateId(stateId)
   }
 
-  private def getDeposits(context: Context[DataContext, State]): Seq[Deposit] = {
-    val repository = context.ctx.deposits
-
+  private def getDeposits(context: Context[DataContext, State]): DeferredValue[DataContext, Seq[Deposit]] = {
     val label = context.value.label
     val stateFilter = context.arg(seriesFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = repository.getDeposits(
+    DeferredValue(depositsFetcher.defer(DepositFilters(
       stateFilter = Some(DepositStateFilter(label, stateFilter))
-    )
-
-    orderBy.fold(result)(order => result.sorted(order.ordering))
+    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
   }
 
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(

@@ -39,6 +39,7 @@ trait MetaTypes {
   implicit def nodeIdentifiable[T <: Node]: Identifiable[T] = _.id
 
   type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, Option[T]), (DepositId, Option[T]), DepositId]
+
   def fetchCurrent[T](currentOne: DataContext => DepositId => Option[T],
                       currentMany: DataContext => Seq[DepositId] => Seq[(DepositId, Option[T])]): CurrentFetcher[T] = {
     Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
@@ -51,6 +52,7 @@ trait MetaTypes {
   }
 
   type AllFetcher[T] = Fetcher[DataContext, (DepositId, Seq[T]), (DepositId, Seq[T]), DepositId]
+
   def fetchAll[T](currentOne: DataContext => DepositId => Seq[T],
                   currentMany: DataContext => Seq[DepositId] => Seq[(DepositId, Seq[T])]): AllFetcher[T] = {
     Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {

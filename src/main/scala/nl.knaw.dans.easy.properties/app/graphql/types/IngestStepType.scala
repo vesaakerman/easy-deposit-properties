@@ -21,11 +21,14 @@ import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput.{ coercedScalaInput, inputObjectResultInput, optionInput }
 import sangria.relay._
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
+import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestStepType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
@@ -91,7 +94,7 @@ trait IngestStepType {
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
   private def getDepositByIngestStep(context: Context[DataContext, IngestStep]): Option[Deposit] = {
@@ -102,18 +105,14 @@ trait IngestStepType {
     repository.getDepositByIngestStepId(stepId)
   }
 
-  private def getDeposits(context: Context[DataContext, IngestStep]): Seq[Deposit] = {
-    val repository = context.ctx.deposits
-
+  private def getDeposits(context: Context[DataContext, IngestStep]): DeferredValue[DataContext, Seq[Deposit]] = {
     val step = context.value.step
     val stepFilter = context.arg(seriesFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = repository.getDeposits(
+    DeferredValue(depositsFetcher.defer(DepositFilters(
       ingestStepFilter = Some(DepositIngestStepFilter(step, stepFilter))
-    )
-
-    orderBy.fold(result)(order => result.sorted(order.ordering))
+    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
   }
 
   implicit lazy val IngestStepType: ObjectType[DataContext, IngestStep] = deriveObjectType(

@@ -15,14 +15,14 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
-import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, DepositContentTypeFilter, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
+import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
-import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStep, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
-import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositFilter, DepositId, DepositIsNewVersionFilter, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter, Timestamped, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter, Timestamped, timestampOrdering }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import sangria.relay.Node
 
@@ -49,20 +49,8 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.values.toSeq
   }
 
-  override def getDeposits(depositorId: Option[DepositorId] = Option.empty,
-                           stateFilter: Option[DepositStateFilter] = Option.empty,
-                           ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
-                           doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
-                           doiActionFilter: Option[DepositDoiActionFilter] = Option.empty,
-                           curatorFilter: Option[DepositCuratorFilter] = Option.empty,
-                           isNewVersionFilter: Option[DepositIsNewVersionFilter] = Option.empty,
-                           curationRequiredFilter: Option[DepositCurationRequiredFilter] = Option.empty,
-                           curationPerformedFilter: Option[DepositCurationPerformedFilter] = Option.empty,
-                           contentTypeFilter: Option[DepositContentTypeFilter] = Option.empty,
-                          ): Seq[Deposit] = {
-    trace(depositorId, stateFilter, ingestStepFilter, doiRegisteredFilter,
-      doiActionFilter, curatorFilter, isNewVersionFilter, curationRequiredFilter,
-      curationPerformedFilter, contentTypeFilter)
+  override def getDeposits(filters: DepositFilters): Seq[Deposit] = {
+    trace(filters)
 
     def filter[T <: Timestamped, F <: DepositFilter, V](collection: FilterMonadic[Deposit, Seq[Deposit]])
                                                        (filter: Option[F], repo: mutable.Map[DepositId, Seq[T]])
@@ -78,6 +66,8 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
         })
       })
     }
+
+    val DepositFilters(depositorId, stateFilter, ingestStepFilter, doiRegisteredFilter, doiActionFilter, curatorFilter, isNewVersionFilter, curationRequiredFilter, curationPerformedFilter, contentTypeFilter) = filters
 
     val deposits = getAllDeposits
 
@@ -97,6 +87,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     val withContentType = filter(withCurationPerformed)(contentTypeFilter, contentTypeRepo)(_.value, _.value)
 
     withContentType.map(identity)
+  }
+
+  override def getDepositsAggregated(filters: Seq[DepositFilters]): Seq[(DepositFilters, Seq[Deposit])] = {
+    trace(filters)
+    filters.map(filter => filter -> getDeposits(filter))
   }
 
   override def getDeposit(id: DepositId): Option[Deposit] = {

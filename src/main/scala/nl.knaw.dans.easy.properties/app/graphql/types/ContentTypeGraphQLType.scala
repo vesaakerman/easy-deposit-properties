@@ -21,11 +21,14 @@ import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.contentType.ContentTypeValue.ContentTypeValue
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
 import sangria.relay._
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType, StringType }
+import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType, StringType }
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait ContentTypeGraphQLType {
   this: DepositType
@@ -87,7 +90,7 @@ trait ContentTypeGraphQLType {
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
   private def getDepositByContentType(context: Context[DataContext, ContentType]): Option[Deposit] = {
@@ -98,18 +101,14 @@ trait ContentTypeGraphQLType {
     repository.getDepositByContentTypeId(contentTypeId)
   }
 
-  private def getDeposits(context: Context[DataContext, ContentType]): Seq[Deposit] = {
-    val repository = context.ctx.deposits
-
+  private def getDeposits(context: Context[DataContext, ContentType]): DeferredValue[DataContext, Seq[Deposit]] = {
     val contentType = context.value.value
     val contentTypeFilter = context.arg(seriesFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = repository.getDeposits(
+    DeferredValue(depositsFetcher.defer(DepositFilters(
       contentTypeFilter = Some(DepositContentTypeFilter(contentType, contentTypeFilter))
-    )
-
-    orderBy.fold(result)(order => result.sorted(order.ordering))
+    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
   }
 
   implicit val ContentTypeType: ObjectType[DataContext, ContentType] = deriveObjectType(

@@ -7,9 +7,6 @@ type ContentType implements Node {
   """
   timestamp: DateTime!
 
-  """The ID of an object"""
-  id: ID!
-
   """
   Returns the deposit that is associated with this particular content type.
   """
@@ -29,6 +26,9 @@ type ContentType implements Node {
     first: Int
     last: Int
   ): DepositConnection
+
+  """The ID of an object"""
+  id: ID!
 
   """The content type associated with this deposit."""
   value: String
@@ -114,9 +114,6 @@ type Curator implements Node {
   """The timestamp at which the data manager was assigned to this deposit."""
   timestamp: DateTime!
 
-  """The ID of an object"""
-  id: ID!
-
   """
   Returns the deposit that is associated with this particular curator object.
   """
@@ -171,6 +168,9 @@ type Curator implements Node {
     first: Int
     last: Int
   ): DepositConnection
+
+  """The ID of an object"""
+  id: ID!
 }
 
 """A connection to a list of items."""
@@ -254,9 +254,6 @@ type Deposit implements Node {
     last: Int
   ): IngestStepConnection
 
-  """Information about the depositor that submitted this deposit."""
-  depositor: Depositor!
-
   """Return the identifier of the given type related to this deposit"""
   identifier(
     """Find the identifier with this specific type."""
@@ -332,6 +329,9 @@ type Deposit implements Node {
     """Ordering options for the returned content types."""
     orderBy: ContentTypeOrder
   ): [ContentType!]!
+
+  """Information about the depositor that submitted this deposit."""
+  depositor: Depositor!
 }
 
 """A connection to a list of items."""
@@ -612,13 +612,13 @@ type Identifier implements Node {
   """The timestamp at which the identifier got added to this deposit."""
   timestamp: DateTime!
 
-  """The ID of an object"""
-  id: ID!
-
   """
   Returns the deposit that is associated with this particular ingest step
   """
   deposit: Deposit
+
+  """The ID of an object"""
+  id: ID!
 }
 
 """The type of the identifier."""
@@ -644,9 +644,6 @@ type IngestStep implements Node {
   """The timestamp at which the deposit got into this ingest step."""
   timestamp: DateTime!
 
-  """The ID of an object"""
-  id: ID!
-
   """
   Returns the deposit that is associated with this particular ingest step
   """
@@ -666,6 +663,9 @@ type IngestStep implements Node {
     first: Int
     last: Int
   ): DepositConnection
+
+  """The ID of an object"""
+  id: ID!
 }
 
 """A connection to a list of items."""
@@ -1097,13 +1097,13 @@ type Springfield implements Node {
   """
   timestamp: DateTime!
 
-  """The ID of an object"""
-  id: ID!
-
   """
   Returns the deposit that is associated with this particular springfield configuration.
   """
   deposit: Deposit
+
+  """The ID of an object"""
+  id: ID!
 }
 
 """Ordering options for springfields"""
@@ -1141,9 +1141,6 @@ type State implements Node {
   """The timestamp at which the deposit got into this state."""
   timestamp: DateTime!
 
-  """The ID of an object"""
-  id: ID!
-
   """Returns the deposit that is associated with this particular state"""
   deposit: Deposit
 
@@ -1161,6 +1158,9 @@ type State implements Node {
     first: Int
     last: Int
   ): DepositConnection
+
+  """The ID of an object"""
+  id: ID!
 }
 
 """A connection to a list of items."""

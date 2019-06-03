@@ -25,12 +25,15 @@ import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.springfield.Springfield
 import nl.knaw.dans.easy.properties.app.model.state.State
 import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.repository.DepositFilters
+import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay._
 import sangria.schema.{ Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 trait DepositType {
   this: DepositorType
@@ -44,6 +47,16 @@ trait DepositType {
     with ContentTypeGraphQLType
     with NodeType
     with Scalars =>
+
+  implicit val depositsHasId: HasId[(DepositFilters, Seq[Deposit]), DepositFilters] = HasId { case (filters, _) => filters }
+
+  val depositsFetcher = Fetcher((ctx: DataContext, filters: Seq[DepositFilters]) => Future {
+    filters match {
+      case Seq() => Seq.empty
+      case Seq(filter) => Seq(filter -> ctx.deposits.getDeposits(filter))
+      case _ => ctx.deposits.getDepositsAggregated(filters)
+    }
+  })
 
   private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
     name = "type",

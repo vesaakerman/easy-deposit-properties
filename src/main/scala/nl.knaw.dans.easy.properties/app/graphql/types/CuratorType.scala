@@ -20,11 +20,14 @@ import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
 import sangria.relay._
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
+import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait CuratorType {
   this: DepositType
@@ -94,7 +97,7 @@ trait CuratorType {
       optDepositOrderArgument,
     ) ++ Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => ExtendedConnection.connectionFromSeq(getDeposits(ctx), ConnectionArgs(ctx)),
+    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
   private def getDepositByCurator(context: Context[DataContext, Curator]): Option[Deposit] = {
@@ -105,9 +108,7 @@ trait CuratorType {
     repository.getDepositByCuratorId(curatorId)
   }
 
-  private def getDeposits(context: Context[DataContext, Curator]): Seq[Deposit] = {
-    val repository = context.ctx.deposits
-
+  private def getDeposits(context: Context[DataContext, Curator]): DeferredValue[DataContext, Seq[Deposit]] = {
     val label = context.value.userId
     val curatorFilter = context.arg(seriesFilterArgument)
     val stateInput = context.arg(depositStateFilterArgument)
@@ -120,7 +121,7 @@ trait CuratorType {
     val contentType = context.arg(depositContentTypeFilterArgument)
     val orderBy = context.arg(optDepositOrderArgument)
 
-    val result = repository.getDeposits(
+    DeferredValue(depositsFetcher.defer(DepositFilters(
       stateFilter = stateInput,
       ingestStepFilter = ingestStepInput,
       doiRegisteredFilter = doiRegistered,
@@ -130,9 +131,7 @@ trait CuratorType {
       curationRequiredFilter = curationRequired,
       curationPerformedFilter = curationPerformed,
       contentTypeFilter = contentType,
-    )
-
-    orderBy.fold(result)(order => result.sorted(order.ordering))
+    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
   }
 
   implicit lazy val CuratorType: ObjectType[DataContext, Curator] = deriveObjectType(
