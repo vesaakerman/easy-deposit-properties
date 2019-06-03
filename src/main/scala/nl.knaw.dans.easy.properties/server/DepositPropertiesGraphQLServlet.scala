@@ -16,7 +16,8 @@
 package nl.knaw.dans.easy.properties.server
 
 import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
-import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, DepositRepository }
+import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.repository.DepositRepository
 
 object DepositPropertiesGraphQLServlet {
 

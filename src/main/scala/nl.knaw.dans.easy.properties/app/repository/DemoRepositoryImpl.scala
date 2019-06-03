@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.graphql.example.repository
+package nl.knaw.dans.easy.properties.app.repository
 
 import java.util.{ TimeZone, UUID }
 

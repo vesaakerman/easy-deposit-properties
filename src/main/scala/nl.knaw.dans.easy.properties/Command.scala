@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties
 
 import better.files.File
 import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
-import nl.knaw.dans.easy.properties.app.graphql.example.repository.DemoRepositoryImpl
+import nl.knaw.dans.easy.properties.app.repository.DemoRepositoryImpl
 import nl.knaw.dans.easy.properties.server.{ DepositPropertiesGraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging

@@ -18,7 +18,6 @@ package nl.knaw.dans.easy.properties.server
 import java.util.UUID
 
 import better.files.File
-import nl.knaw.dans.easy.properties.app.graphql.DepositRepository
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
@@ -27,6 +26,7 @@ import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilt
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DepositIsNewVersionFilter, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter }
+import nl.knaw.dans.easy.properties.app.repository.DepositRepository
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing

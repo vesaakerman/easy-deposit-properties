@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.server
 
 import better.files.File
 import better.files.File.currentWorkingDirectory
-import nl.knaw.dans.easy.properties.app.graphql.example.repository.DemoRepositoryImpl
+import nl.knaw.dans.easy.properties.app.repository.DemoRepositoryImpl
 import nl.knaw.dans.easy.properties.fixture.TestSupportFixture
 import org.json4s.JsonDSL._
 import org.json4s.ext.UUIDSerializer
