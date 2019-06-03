@@ -8,8 +8,7 @@ easy-deposit-properties
 SYNOPSIS
 --------
 
-    easy-deposit-properties (synopsis of command line parameters)
-    easy-deposit-properties (... possibly multiple lines for subcommands)
+    easy-deposit-properties run-service
 
 
 DESCRIPTION
@@ -33,7 +32,17 @@ ARGUMENTS
 EXAMPLES
 --------
 
-    easy-deposit-properties -o value
+    easy-deposit-properties run-service
+
+
+GRAPHQL INTERFACE
+-----------------
+
+1. build `easy-deposit-properties` using `mvn clean install`
+2. make sure the [dans-dev-tools](https://github.com/DANS-KNAW/dans-dev-tools) are installed properly
+3. call `run-reset-env.sh` from the root of the project
+4. call `run-service.sh` from the root of the project
+5. in your browser, go to http://localhost:20200/graphiql
 
 
 GRAPHQL SCHEMA

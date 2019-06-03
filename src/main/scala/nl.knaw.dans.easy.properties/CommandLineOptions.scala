@@ -21,13 +21,11 @@ class CommandLineOptions(args: Array[String], configuration: Configuration) exte
   appendDefaultToDescription = true
   editBuilder(_.setHelpWidth(110))
   printedName = "easy-deposit-properties"
-  version(configuration.version)
   private val SUBCOMMAND_SEPARATOR = "---\n"
   val description: String = s"""Service for keeping track of the deposit properties"""
   val synopsis: String =
     s"""
-       |  $printedName (synopsis of command line parameters)
-       |  $printedName (... possibly multiple lines for subcommands)""".stripMargin
+       |  $printedName run-service""".stripMargin
 
   version(s"$printedName v${ configuration.version }")
   banner(
