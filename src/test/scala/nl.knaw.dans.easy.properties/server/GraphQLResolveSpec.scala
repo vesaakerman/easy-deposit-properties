@@ -1081,11 +1081,12 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
-  it should "resolve 'node/onState.graphql' with 2 calls to the repository" in {
+  it should "resolve 'node/onState.graphql' with 3 calls to the repository" in {
     val input = graphqlExamplesDir / "node" / "onState.graphql"
 
     inSequence {
       repository.getStateById _ expects "15" once() returning Some(state2)
+      repository.getDepositByStateId _ expects state2.id once() returning Some(deposit1)
       repository.getDeposits _ expects DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.DRAFT, SeriesFilter.ALL))) once() returning Seq(deposit1, deposit3)
     }
 
