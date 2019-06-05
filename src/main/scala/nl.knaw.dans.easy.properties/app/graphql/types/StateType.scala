@@ -29,6 +29,7 @@ import sangria.relay._
 import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 
 trait StateType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
@@ -98,12 +99,12 @@ trait StateType {
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDepositByState(context: Context[DataContext, State]): Option[Deposit] = {
+  private def getDepositByState(context: Context[DataContext, State]): Try[Option[Deposit]] = {
     val repository = context.ctx.deposits
 
     val stateId = context.value.id
 
-    repository.getDepositByStateId(stateId)
+    repository.getDepositByStateId(stateId).toTry
   }
 
   private def getDeposits(context: Context[DataContext, State]): DeferredValue[DataContext, Seq[Deposit]] = {

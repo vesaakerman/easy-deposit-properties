@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
+import cats.syntax.either._
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
@@ -25,7 +26,7 @@ import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.springfield.Springfield
 import nl.knaw.dans.easy.properties.app.model.state.State
 import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, timestampOrdering }
-import nl.knaw.dans.easy.properties.app.repository.DepositFilters
+import nl.knaw.dans.easy.properties.app.repository.{ DepositFilters, QueryError }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
@@ -33,7 +34,6 @@ import sangria.relay._
 import sangria.schema.{ Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 trait DepositType {
   this: DepositorType
@@ -50,11 +50,11 @@ trait DepositType {
 
   implicit val depositsHasId: HasId[(DepositFilters, Seq[Deposit]), DepositFilters] = HasId { case (filters, _) => filters }
 
-  val depositsFetcher = Fetcher((ctx: DataContext, filters: Seq[DepositFilters]) => Future {
+  val depositsFetcher = Fetcher((ctx: DataContext, filters: Seq[DepositFilters]) => {
     filters match {
-      case Seq() => Seq.empty
-      case Seq(filter) => Seq(filter -> ctx.deposits.getDeposits(filter))
-      case _ => ctx.deposits.getDepositsAggregated(filters)
+      case Seq() => Seq.empty.asRight[QueryError].toFuture
+      case Seq(filter) => ctx.deposits.getDeposits(filter).map(deposits => Seq(filter -> deposits)).toFuture
+      case _ => ctx.deposits.getDepositsAggregated(filters).toFuture
     }
   })
 

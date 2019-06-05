@@ -15,9 +15,12 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
+import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.repository._
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.repository.QueryErrorOr
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
@@ -26,8 +29,6 @@ import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMars
 import sangria.relay.{ Identifiable, Node }
 import sangria.schema.{ Argument, EnumType, InputObjectType, OptionInputType }
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.language.implicitConversions
 
 trait MetaTypes {
@@ -40,26 +41,26 @@ trait MetaTypes {
 
   type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, Option[T]), (DepositId, Option[T]), DepositId]
 
-  def fetchCurrent[T](currentOne: DataContext => DepositId => Option[T],
-                      currentMany: DataContext => Seq[DepositId] => Seq[(DepositId, Option[T])]): CurrentFetcher[T] = {
-    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
+  def fetchCurrent[T](currentOne: DataContext => DepositId => QueryErrorOr[Option[T]],
+                      currentMany: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Option[T])]]): CurrentFetcher[T] = {
+    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => {
       ids match {
-        case Seq() => Seq.empty
-        case Seq(id) => Seq(id -> currentOne(ctx)(id))
-        case _ => currentMany(ctx)(ids)
+        case Seq() => Seq.empty.asRight[QueryError].toFuture
+        case Seq(id) => currentOne(ctx)(id).map(optT => Seq(id -> optT)).toFuture
+        case _ => currentMany(ctx)(ids).toFuture
       }
     })
   }
 
   type AllFetcher[T] = Fetcher[DataContext, (DepositId, Option[Seq[T]]), (DepositId, Option[Seq[T]]), DepositId]
 
-  def fetchAll[T](currentOne: DataContext => DepositId => Option[Seq[T]],
-                  currentMany: DataContext => Seq[DepositId] => Seq[(DepositId, Option[Seq[T]])]): AllFetcher[T] = {
-    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => Future {
+  def fetchAll[T](currentOne: DataContext => DepositId => QueryErrorOr[Option[Seq[T]]],
+                  currentMany: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Option[Seq[T]])]]): AllFetcher[T] = {
+    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => {
       ids match {
-        case Seq() => Seq.empty
-        case Seq(id) => Seq(id -> currentOne(ctx)(id))
-        case _ => currentMany(ctx)(ids)
+        case Seq() => Seq.empty.asRight[QueryError].toFuture
+        case Seq(id) => currentOne(ctx)(id).map(optSeqT => Seq(id -> optSeqT)).toFuture
+        case _ => currentMany(ctx)(ids).toFuture
       }
     })
   }

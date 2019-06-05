@@ -26,171 +26,171 @@ import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, Curation
 
 trait DepositRepository {
 
-  def getAllDeposits: Seq[Deposit]
+  def getAllDeposits: QueryErrorOr[Seq[Deposit]]
 
-  def getDeposits(filters: DepositFilters): Seq[Deposit]
+  def getDeposits(filters: DepositFilters): QueryErrorOr[Seq[Deposit]]
 
-  def getDepositsAggregated(filters: Seq[DepositFilters]): Seq[(DepositFilters, Seq[Deposit])]
+  def getDepositsAggregated(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]]
 
-  def getDeposit(id: DepositId): Option[Deposit]
+  def getDeposit(id: DepositId): QueryErrorOr[Option[Deposit]]
 
   def addDeposit(deposit: Deposit): Either[MutationError, Deposit]
 
   //
 
-  def getStateById(id: String): Option[State]
+  def getStateById(id: String): QueryErrorOr[Option[State]]
 
-  def getCurrentState(id: DepositId): Option[State]
+  def getCurrentState(id: DepositId): QueryErrorOr[Option[State]]
 
-  def getAllStates(id: DepositId): Option[Seq[State]]
+  def getAllStates(id: DepositId): QueryErrorOr[Option[Seq[State]]]
 
-  def getCurrentStates(ids: Seq[DepositId]): Seq[(DepositId, Option[State])]
+  def getCurrentStates(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[State])]]
 
-  def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[State]])]
+  def getAllStates(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[State]])]]
 
   def setState(id: DepositId, state: InputState): Either[MutationError, State]
 
-  def getDepositByStateId(id: String): Option[Deposit]
+  def getDepositByStateId(id: String): QueryErrorOr[Option[Deposit]]
 
   //
 
-  def getIngestStepById(id: String): Option[IngestStep]
+  def getIngestStepById(id: String): QueryErrorOr[Option[IngestStep]]
 
-  def getCurrentIngestStep(id: DepositId): Option[IngestStep]
+  def getCurrentIngestStep(id: DepositId): QueryErrorOr[Option[IngestStep]]
 
-  def getAllIngestSteps(id: DepositId): Option[Seq[IngestStep]]
+  def getAllIngestSteps(id: DepositId): QueryErrorOr[Option[Seq[IngestStep]]]
 
-  def getCurrentIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Option[IngestStep])]
+  def getCurrentIngestSteps(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IngestStep])]]
 
-  def getAllIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[IngestStep]])]
+  def getAllIngestSteps(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[IngestStep]])]]
 
   def setIngestStep(id: DepositId, step: InputIngestStep): Either[MutationError, IngestStep]
 
-  def getDepositByIngestStepId(id: String): Option[Deposit]
+  def getDepositByIngestStepId(id: String): QueryErrorOr[Option[Deposit]]
 
   //
 
-  def getIdentifierById(id: String): Option[Identifier]
+  def getIdentifierById(id: String): QueryErrorOr[Option[Identifier]]
 
-  def getIdentifier(id: DepositId, idType: IdentifierType): Option[Identifier]
+  def getIdentifier(id: DepositId, idType: IdentifierType): QueryErrorOr[Option[Identifier]]
 
-  def getIdentifier(idType: IdentifierType, idValue: String): Option[Identifier]
+  def getIdentifier(idType: IdentifierType, idValue: String): QueryErrorOr[Option[Identifier]]
 
-  def getIdentifiers(id: DepositId): Option[Seq[Identifier]]
+  def getIdentifiers(id: DepositId): QueryErrorOr[Option[Seq[Identifier]]]
 
-  def getIdentifiersForTypes(ids: Seq[(DepositId, IdentifierType)]): Seq[((DepositId, IdentifierType), Option[Identifier])]
+  def getIdentifiersForTypes(ids: Seq[(DepositId, IdentifierType)]): QueryErrorOr[Seq[((DepositId, IdentifierType), Option[Identifier])]]
 
-  def getIdentifiers(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Identifier]])]
+  def getIdentifiers(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Identifier]])]]
 
   def addIdentifier(id: DepositId, identifier: InputIdentifier): Either[MutationError, Identifier]
 
-  def getDepositByIdentifierId(id: String): Option[Deposit]
+  def getDepositByIdentifierId(id: String): QueryErrorOr[Option[Deposit]]
 
   //
 
-  def getCurrentDoiRegistered(id: DepositId): Option[DoiRegisteredEvent]
+  def getCurrentDoiRegistered(id: DepositId): QueryErrorOr[Option[DoiRegisteredEvent]]
 
-  def getCurrentDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiRegisteredEvent])]
+  def getCurrentDoisRegistered(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[DoiRegisteredEvent])]]
 
-  def getAllDoiRegistered(id: DepositId): Option[Seq[DoiRegisteredEvent]]
+  def getAllDoiRegistered(id: DepositId): QueryErrorOr[Option[Seq[DoiRegisteredEvent]]]
 
-  def getAllDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[DoiRegisteredEvent]])]
+  def getAllDoisRegistered(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[DoiRegisteredEvent]])]]
 
   def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Either[MutationError, DoiRegisteredEvent]
 
   //
 
-  def getCurrentDoiAction(id: DepositId): Option[DoiActionEvent]
+  def getCurrentDoiAction(id: DepositId): QueryErrorOr[Option[DoiActionEvent]]
 
-  def getCurrentDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Option[DoiActionEvent])]
+  def getCurrentDoisAction(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[DoiActionEvent])]]
 
-  def getAllDoiAction(id: DepositId): Option[Seq[DoiActionEvent]]
+  def getAllDoiAction(id: DepositId): QueryErrorOr[Option[Seq[DoiActionEvent]]]
 
-  def getAllDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[DoiActionEvent]])]
+  def getAllDoisAction(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[DoiActionEvent]])]]
 
   def setDoiAction(id: DepositId, action: DoiActionEvent): Either[MutationError, DoiActionEvent]
 
   //
 
-  def getCuratorById(id: String): Option[Curator]
+  def getCuratorById(id: String): QueryErrorOr[Option[Curator]]
 
-  def getCurrentCurator(id: DepositId): Option[Curator]
+  def getCurrentCurator(id: DepositId): QueryErrorOr[Option[Curator]]
 
-  def getAllCurators(id: DepositId): Option[Seq[Curator]]
+  def getAllCurators(id: DepositId): QueryErrorOr[Option[Seq[Curator]]]
 
-  def getCurrentCurators(ids: Seq[DepositId]): Seq[(DepositId, Option[Curator])]
+  def getCurrentCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curator])]]
 
-  def getAllCurators(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Curator]])]
+  def getAllCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Curator]])]]
 
   def setCurator(id: DepositId, curator: InputCurator): Either[MutationError, Curator]
 
-  def getDepositByCuratorId(id: String): Option[Deposit]
+  def getDepositByCuratorId(id: String): QueryErrorOr[Option[Deposit]]
 
   //
 
-  def getCurrentIsNewVersionAction(id: DepositId): Option[IsNewVersionEvent]
+  def getCurrentIsNewVersionAction(id: DepositId): QueryErrorOr[Option[IsNewVersionEvent]]
 
-  def getCurrentIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Option[IsNewVersionEvent])]
+  def getCurrentIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IsNewVersionEvent])]]
 
-  def getAllIsNewVersionAction(id: DepositId): Option[Seq[IsNewVersionEvent]]
+  def getAllIsNewVersionAction(id: DepositId): QueryErrorOr[Option[Seq[IsNewVersionEvent]]]
 
-  def getAllIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[IsNewVersionEvent]])]
+  def getAllIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[IsNewVersionEvent]])]]
 
   def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Either[MutationError, IsNewVersionEvent]
 
   //
 
-  def getCurrentCurationRequiredAction(id: DepositId): Option[CurationRequiredEvent]
+  def getCurrentCurationRequiredAction(id: DepositId): QueryErrorOr[Option[CurationRequiredEvent]]
 
-  def getCurrentCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationRequiredEvent])]
+  def getCurrentCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[CurationRequiredEvent])]]
 
-  def getAllCurationRequiredAction(id: DepositId): Option[Seq[CurationRequiredEvent]]
+  def getAllCurationRequiredAction(id: DepositId): QueryErrorOr[Option[Seq[CurationRequiredEvent]]]
 
-  def getAllCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[CurationRequiredEvent]])]
+  def getAllCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[CurationRequiredEvent]])]]
 
   def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Either[MutationError, CurationRequiredEvent]
 
   //
 
-  def getCurrentCurationPerformedAction(id: DepositId): Option[CurationPerformedEvent]
+  def getCurrentCurationPerformedAction(id: DepositId): QueryErrorOr[Option[CurationPerformedEvent]]
 
-  def getCurrentCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Option[CurationPerformedEvent])]
+  def getCurrentCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[CurationPerformedEvent])]]
 
-  def getAllCurationPerformedAction(id: DepositId): Option[Seq[CurationPerformedEvent]]
+  def getAllCurationPerformedAction(id: DepositId): QueryErrorOr[Option[Seq[CurationPerformedEvent]]]
 
-  def getAllCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[CurationPerformedEvent]])]
+  def getAllCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[CurationPerformedEvent]])]]
 
   def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Either[MutationError, CurationPerformedEvent]
 
   //
 
-  def getSpringfieldById(id: String): Option[Springfield]
+  def getSpringfieldById(id: String): QueryErrorOr[Option[Springfield]]
 
-  def getCurrentSpringfield(id: DepositId): Option[Springfield]
+  def getCurrentSpringfield(id: DepositId): QueryErrorOr[Option[Springfield]]
 
-  def getCurrentSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Option[Springfield])]
+  def getCurrentSpringfields(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Springfield])]]
 
-  def getAllSpringfields(id: DepositId): Option[Seq[Springfield]]
+  def getAllSpringfields(id: DepositId): QueryErrorOr[Option[Seq[Springfield]]]
 
-  def getAllSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Springfield]])]
+  def getAllSpringfields(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Springfield]])]]
 
   def setSpringfield(id: DepositId, springfield: InputSpringfield): Either[MutationError, Springfield]
 
-  def getDepositBySpringfieldId(id: String): Option[Deposit]
+  def getDepositBySpringfieldId(id: String): QueryErrorOr[Option[Deposit]]
 
   //
 
-  def getContentTypeById(id: String): Option[ContentType]
+  def getContentTypeById(id: String): QueryErrorOr[Option[ContentType]]
 
-  def getCurrentContentType(id: DepositId): Option[ContentType]
+  def getCurrentContentType(id: DepositId): QueryErrorOr[Option[ContentType]]
 
-  def getCurrentContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Option[ContentType])]
+  def getCurrentContentTypes(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[ContentType])]]
 
-  def getAllContentTypes(id: DepositId): Option[Seq[ContentType]]
+  def getAllContentTypes(id: DepositId): QueryErrorOr[Option[Seq[ContentType]]]
 
-  def getAllContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[ContentType]])]
+  def getAllContentTypes(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[ContentType]])]]
 
   def setContentType(id: DepositId, contentType: InputContentType): Either[MutationError, ContentType]
 
-  def getDepositByContentTypeId(id: String): Option[Deposit]
+  def getDepositByContentTypeId(id: String): QueryErrorOr[Option[Deposit]]
 }

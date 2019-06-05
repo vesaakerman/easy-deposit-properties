@@ -29,6 +29,7 @@ import sangria.relay._
 import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType, StringType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 
 trait ContentTypeGraphQLType {
   this: DepositType
@@ -93,12 +94,12 @@ trait ContentTypeGraphQLType {
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDepositByContentType(context: Context[DataContext, ContentType]): Option[Deposit] = {
+  private def getDepositByContentType(context: Context[DataContext, ContentType]): Try[Option[Deposit]] = {
     val repository = context.ctx.deposits
 
     val contentTypeId = context.value.id
 
-    repository.getDepositByContentTypeId(contentTypeId)
+    repository.getDepositByContentTypeId(contentTypeId).toTry
   }
 
   private def getDeposits(context: Context[DataContext, ContentType]): DeferredValue[DataContext, Seq[Deposit]] = {

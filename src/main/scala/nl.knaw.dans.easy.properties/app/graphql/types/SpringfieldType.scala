@@ -24,6 +24,8 @@ import sangria.marshalling.FromInput._
 import sangria.relay._
 import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
+import scala.util.Try
+
 trait SpringfieldType {
   this: DepositType
     with NodeType
@@ -46,12 +48,12 @@ trait SpringfieldType {
     resolve = getDepositBySpringfield,
   )
 
-  private def getDepositBySpringfield(context: Context[DataContext, Springfield]): Option[Deposit] = {
+  private def getDepositBySpringfield(context: Context[DataContext, Springfield]): Try[Option[Deposit]] = {
     val repository = context.ctx.deposits
 
     val springfieldId = context.value.id
 
-    repository.getDepositBySpringfieldId(springfieldId)
+    repository.getDepositBySpringfieldId(springfieldId).toTry
   }
 
   implicit val SpringfieldType: ObjectType[DataContext, Springfield] = deriveObjectType(

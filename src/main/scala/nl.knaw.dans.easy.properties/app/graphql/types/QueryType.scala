@@ -25,6 +25,7 @@ import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Argument, Context, DeferredValue, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 
 trait QueryType {
   this: DepositType
@@ -122,12 +123,12 @@ trait QueryType {
     resolve = getIdentifier,
   )
 
-  private def getDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
+  private def getDeposit(context: Context[DataContext, Unit]): Try[Option[Deposit]] = {
     val repository = context.ctx.deposits
 
     val depositId = context.arg(depositIdArgument)
 
-    repository.getDeposit(depositId)
+    repository.getDeposit(depositId).toTry
   }
 
   private def getDeposits(context: Context[DataContext, Unit]): DeferredValue[DataContext, Seq[Deposit]] = {
@@ -159,13 +160,13 @@ trait QueryType {
     context.arg(depositorIdArgument)
   }
 
-  private def getIdentifier(context: Context[DataContext, Unit]): Option[Identifier] = {
+  private def getIdentifier(context: Context[DataContext, Unit]): Try[Option[Identifier]] = {
     val repository = context.ctx.deposits
 
     val identifierType = context.arg(identifierTypeArgument)
     val identifierValue = context.arg(identifierValueArgument)
 
-    repository.getIdentifier(identifierType, identifierValue)
+    repository.getIdentifier(identifierType, identifierValue).toTry
   }
 
   implicit val QueryType: ObjectType[DataContext, Unit] = ObjectType(

@@ -15,16 +15,17 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
+import cats.syntax.either._
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
+import nl.knaw.dans.easy.properties.app.repository.QueryError
 import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
 import sangria.relay.Node
 import sangria.schema.{ Context, EnumType, Field, ObjectType, OptionType }
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.util.Try
 
 trait IdentifierGraphQLType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
@@ -38,11 +39,11 @@ trait IdentifierGraphQLType {
   )
 
   val fetchIdentifiersByDepositId: AllFetcher[Identifier] = fetchAll(_.deposits.getIdentifiers, _.deposits.getIdentifiers)
-  val fetchIdentifiersByType = Fetcher((ctx: DataContext, ids: Seq[(DepositId, IdentifierType.Value)]) => Future {
+  val fetchIdentifiersByType = Fetcher((ctx: DataContext, ids: Seq[(DepositId, IdentifierType.Value)]) => {
     ids match {
-      case Seq() => Seq.empty
-      case Seq((depositId, identifierType)) => Seq((depositId, identifierType) -> ctx.deposits.getIdentifier(depositId, identifierType))
-      case _ => ctx.deposits.getIdentifiersForTypes(ids)
+      case Seq() => Seq.empty.asRight[QueryError].toFuture
+      case Seq((depositId, identifierType)) => ctx.deposits.getIdentifier(depositId, identifierType).map(optIdentifier => Seq((depositId, identifierType) -> optIdentifier)).toFuture
+      case _ => ctx.deposits.getIdentifiersForTypes(ids).toFuture
     }
   })
 
@@ -53,12 +54,12 @@ trait IdentifierGraphQLType {
     resolve = getDepositByIdentifier,
   )
 
-  private def getDepositByIdentifier(context: Context[DataContext, Identifier]): Option[Deposit] = {
+  private def getDepositByIdentifier(context: Context[DataContext, Identifier]): Try[Option[Deposit]] = {
     val repository = context.ctx.deposits
 
     val identifierId = context.value.id
 
-    repository.getDepositByIdentifierId(identifierId)
+    repository.getDepositByIdentifierId(identifierId).toTry
   }
 
   implicit val IdentifierObjectType: ObjectType[DataContext, Identifier] = deriveObjectType(

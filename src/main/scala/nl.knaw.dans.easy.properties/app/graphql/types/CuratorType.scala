@@ -28,6 +28,7 @@ import sangria.relay._
 import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 
 trait CuratorType {
   this: DepositType
@@ -100,12 +101,12 @@ trait CuratorType {
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDepositByCurator(context: Context[DataContext, Curator]): Option[Deposit] = {
+  private def getDepositByCurator(context: Context[DataContext, Curator]): Try[Option[Deposit]] = {
     val repository = context.ctx.deposits
 
     val curatorId = context.value.id
 
-    repository.getDepositByCuratorId(curatorId)
+    repository.getDepositByCuratorId(curatorId).toTry
   }
 
   private def getDeposits(context: Context[DataContext, Curator]): DeferredValue[DataContext, Seq[Deposit]] = {

@@ -303,22 +303,22 @@ trait MutationType {
   private val depositField: Field[DataContext, AddDepositPayload] = Field(
     name = "deposit",
     fieldType = OptionType(DepositType),
-    resolve = ctx => ctx.ctx.deposits.getDeposit(ctx.value.depositId),
+    resolve = ctx => ctx.ctx.deposits.getDeposit(ctx.value.depositId).toTry,
   )
   private val stateField: Field[DataContext, UpdateStatePayload] = Field(
     name = "state",
     fieldType = OptionType(StateType),
-    resolve = ctx => ctx.ctx.deposits.getStateById(ctx.value.objectId),
+    resolve = ctx => ctx.ctx.deposits.getStateById(ctx.value.objectId).toTry,
   )
   private val ingestStepField: Field[DataContext, UpdateIngestStepPayload] = Field(
     name = "ingestStep",
     fieldType = OptionType(IngestStepType),
-    resolve = ctx => ctx.ctx.deposits.getIngestStepById(ctx.value.objectId),
+    resolve = ctx => ctx.ctx.deposits.getIngestStepById(ctx.value.objectId).toTry,
   )
   private val identifierField: Field[DataContext, AddIdentifierPayload] = Field(
     name = "identifier",
     fieldType = OptionType(IdentifierObjectType),
-    resolve = ctx => ctx.ctx.deposits.getIdentifierById(ctx.value.objectId),
+    resolve = ctx => ctx.ctx.deposits.getIdentifierById(ctx.value.objectId).toTry,
   )
   private val doiRegisteredField: Field[DataContext, SetDoiRegisteredPayload] = Field(
     name = "doiRegistered",
@@ -333,7 +333,7 @@ trait MutationType {
   private val curatorField: Field[DataContext, SetCuratorPayload] = Field(
     name = "curator",
     fieldType = OptionType(CuratorType),
-    resolve = ctx => ctx.ctx.deposits.getCuratorById(ctx.value.objectId),
+    resolve = ctx => ctx.ctx.deposits.getCuratorById(ctx.value.objectId).toTry,
   )
   private val isNewVersionField: Field[DataContext, SetIsNewVersionPayload] = Field(
     name = "isNewVersion",
@@ -353,12 +353,12 @@ trait MutationType {
   private val springfieldField: Field[DataContext, SetSpringfieldPayload] = Field(
     name = "springfield",
     fieldType = OptionType(SpringfieldType),
-    resolve = ctx => ctx.ctx.deposits.getSpringfieldById(ctx.value.objectId),
+    resolve = ctx => ctx.ctx.deposits.getSpringfieldById(ctx.value.objectId).toTry,
   )
   private val contentTypeField: Field[DataContext, SetContentTypePayload] = Field(
     name = "contentType",
     fieldType = OptionType(ContentTypeType),
-    resolve = ctx => ctx.ctx.deposits.getContentTypeById(ctx.value.objectId),
+    resolve = ctx => ctx.ctx.deposits.getContentTypeById(ctx.value.objectId).toTry,
   )
 
   private val addDepositField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, AddDepositPayload, InputObjectType.DefaultInput](

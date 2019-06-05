@@ -19,7 +19,13 @@ import nl.knaw.dans.easy.properties.app.model.DepositId
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import sangria.execution.UserFacingError
 
+import scala.concurrent.Future
+
 package object repository {
+
+  type QueryErrorOr[T] = Either[QueryError, T]
+
+  abstract class QueryError(val msg: String) extends Exception(msg) with UserFacingError
 
   abstract class MutationError(val msg: String) extends Exception(msg) with UserFacingError
   case class NoSuchDepositError(depositId: DepositId) extends MutationError(s"Deposit $depositId does not exist.")
@@ -30,6 +36,15 @@ package object repository {
     def maxByOption[B](f: A => B)(implicit cmp: Ordering[B]): Option[A] = {
       if (t.isEmpty) Option.empty
       else Option(t.maxBy(f))
+    }
+  }
+
+  implicit class EitherToFuture[A <: Throwable, B](val either: Either[A, B]) extends AnyVal {
+    def toFuture: Future[B] = {
+      either match {
+        case Left(error) => Future.failed(error)
+        case Right(value) => Future.successful(value)
+      }
     }
   }
 }
