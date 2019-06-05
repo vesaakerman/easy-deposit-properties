@@ -32,7 +32,7 @@ trait NodeType {
     with ContentTypeGraphQLType =>
 
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[DataContext, Unit]) => {
-    if (id.typeName == "Deposit") ctx.ctx.deposits.getDeposit(UUID.fromString(id.id)).toTry
+    if (id.typeName == "Deposit") ctx.ctx.deposits.getDeposit(UUID.fromString(id.id)).map(Option(_)).toTry
     else if (id.typeName == "State") ctx.ctx.deposits.getStateById(id.id).toTry
     else if (id.typeName == "IngestStep") ctx.ctx.deposits.getIngestStepById(id.id).toTry
     else if (id.typeName == "Identifier") ctx.ctx.deposits.getIdentifierById(id.id).toTry

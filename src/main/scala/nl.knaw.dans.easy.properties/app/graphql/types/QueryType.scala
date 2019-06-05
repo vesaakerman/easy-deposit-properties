@@ -123,7 +123,7 @@ trait QueryType {
     resolve = getIdentifier,
   )
 
-  private def getDeposit(context: Context[DataContext, Unit]): Try[Option[Deposit]] = {
+  private def getDeposit(context: Context[DataContext, Unit]): Try[Deposit] = {
     val repository = context.ctx.deposits
 
     val depositId = context.arg(depositIdArgument)

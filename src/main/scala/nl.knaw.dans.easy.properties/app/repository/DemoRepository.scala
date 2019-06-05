@@ -102,9 +102,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     })
   }
 
-  override def getDeposit(id: DepositId): QueryErrorOr[Option[Deposit]] = {
+  override def getDeposit(id: DepositId): QueryErrorOr[Deposit] = {
     trace(id)
-    depositRepo.get(id).asRight
+    depositRepo.get(id)
+      .map(_.asRight)
+      .getOrElse(DepositDoesNotExistError(id).asLeft)
   }
 
   override def addDeposit(deposit: Deposit): MutationErrorOr[Deposit] = {

@@ -27,6 +27,7 @@ package object repository {
   type MutationErrorOr[T] = Either[MutationError, T]
 
   abstract class QueryError(val msg: String) extends Exception(msg) with UserFacingError
+  case class DepositDoesNotExistError(depositId: DepositId) extends QueryError(s"Deposit $depositId does not exist.")
 
   abstract class MutationError(val msg: String) extends Exception(msg) with UserFacingError
   case class NoSuchDepositError(depositId: DepositId) extends MutationError(s"Deposit $depositId does not exist.")

@@ -32,7 +32,7 @@ trait DepositRepository {
 
   def getDepositsAggregated(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]]
 
-  def getDeposit(id: DepositId): QueryErrorOr[Option[Deposit]]
+  def getDeposit(id: DepositId): QueryErrorOr[Deposit]
 
   def addDeposit(deposit: Deposit): MutationErrorOr[Deposit]
 
