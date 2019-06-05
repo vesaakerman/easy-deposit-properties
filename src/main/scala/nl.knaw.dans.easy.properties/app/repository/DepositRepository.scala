@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
+import nl.knaw.dans.easy.properties.app.graphql.error.MutationError
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
@@ -34,7 +35,7 @@ trait DepositRepository {
 
   def getDeposit(id: DepositId): Option[Deposit]
 
-  def addDeposit(deposit: Deposit): Option[Deposit]
+  def addDeposit(deposit: Deposit): Either[MutationError, Deposit]
 
   //
 
@@ -48,7 +49,7 @@ trait DepositRepository {
 
   def getAllStates(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[State]])]
 
-  def setState(id: DepositId, state: InputState): Option[State]
+  def setState(id: DepositId, state: InputState): Either[MutationError, State]
 
   def getDepositByStateId(id: String): Option[Deposit]
 
@@ -64,7 +65,7 @@ trait DepositRepository {
 
   def getAllIngestSteps(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[IngestStep]])]
 
-  def setIngestStep(id: DepositId, step: InputIngestStep): Option[IngestStep]
+  def setIngestStep(id: DepositId, step: InputIngestStep): Either[MutationError, IngestStep]
 
   def getDepositByIngestStepId(id: String): Option[Deposit]
 
@@ -82,7 +83,7 @@ trait DepositRepository {
 
   def getIdentifiers(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Identifier]])]
 
-  def addIdentifier(id: DepositId, identifier: InputIdentifier): Option[Identifier]
+  def addIdentifier(id: DepositId, identifier: InputIdentifier): Either[MutationError, Identifier]
 
   def getDepositByIdentifierId(id: String): Option[Deposit]
 
@@ -96,7 +97,7 @@ trait DepositRepository {
 
   def getAllDoisRegistered(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[DoiRegisteredEvent]])]
 
-  def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Option[DoiRegisteredEvent]
+  def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Either[MutationError, DoiRegisteredEvent]
 
   //
 
@@ -108,7 +109,7 @@ trait DepositRepository {
 
   def getAllDoisAction(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[DoiActionEvent]])]
 
-  def setDoiAction(id: DepositId, action: DoiActionEvent): Option[DoiActionEvent]
+  def setDoiAction(id: DepositId, action: DoiActionEvent): Either[MutationError, DoiActionEvent]
 
   //
 
@@ -122,7 +123,7 @@ trait DepositRepository {
 
   def getAllCurators(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Curator]])]
 
-  def setCurator(id: DepositId, curator: InputCurator): Option[Curator]
+  def setCurator(id: DepositId, curator: InputCurator): Either[MutationError, Curator]
 
   def getDepositByCuratorId(id: String): Option[Deposit]
 
@@ -136,7 +137,7 @@ trait DepositRepository {
 
   def getAllIsNewVersionActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[IsNewVersionEvent]])]
 
-  def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Option[IsNewVersionEvent]
+  def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Either[MutationError, IsNewVersionEvent]
 
   //
 
@@ -148,7 +149,7 @@ trait DepositRepository {
 
   def getAllCurationRequiredActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[CurationRequiredEvent]])]
 
-  def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Option[CurationRequiredEvent]
+  def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Either[MutationError, CurationRequiredEvent]
 
   //
 
@@ -160,7 +161,7 @@ trait DepositRepository {
 
   def getAllCurationPerformedActions(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[CurationPerformedEvent]])]
 
-  def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Option[CurationPerformedEvent]
+  def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Either[MutationError, CurationPerformedEvent]
 
   //
 
@@ -174,7 +175,7 @@ trait DepositRepository {
 
   def getAllSpringfields(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[Springfield]])]
 
-  def setSpringfield(id: DepositId, springfield: InputSpringfield): Option[Springfield]
+  def setSpringfield(id: DepositId, springfield: InputSpringfield): Either[MutationError, Springfield]
 
   def getDepositBySpringfieldId(id: String): Option[Deposit]
 
@@ -190,7 +191,7 @@ trait DepositRepository {
 
   def getAllContentTypes(ids: Seq[DepositId]): Seq[(DepositId, Option[Seq[ContentType]])]
 
-  def setContentType(id: DepositId, contentType: InputContentType): Option[ContentType]
+  def setContentType(id: DepositId, contentType: InputContentType): Either[MutationError, ContentType]
 
   def getDepositByContentTypeId(id: String): Option[Deposit]
 }

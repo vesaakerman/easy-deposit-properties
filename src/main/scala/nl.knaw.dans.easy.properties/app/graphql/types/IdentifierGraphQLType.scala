@@ -16,13 +16,12 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType, InputIdentifier }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
-import sangria.marshalling.FromInput
 import sangria.relay.Node
-import sangria.schema.{ Context, EnumType, Field, InputObjectType, ObjectType, OptionType }
+import sangria.schema.{ Context, EnumType, Field, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -75,19 +74,4 @@ trait IdentifierGraphQLType {
     ),
     ReplaceField("id", Node.globalIdField[DataContext, Identifier]),
   )
-
-  implicit val InputIdentifierType: InputObjectType[InputIdentifier] = deriveInputObjectType(
-    InputObjectTypeName("InputIdentifier"),
-    InputObjectTypeDescription("An identifier related to a deposit."),
-    DocumentInputField("idType", "The type of identifier."),
-    DocumentInputField("idValue", "The value of the identifier."),
-    DocumentInputField("timestamp", "The timestamp at which the identifier got added to this deposit."),
-    RenameInputField("idType", "type"),
-    RenameInputField("idValue", "value"),
-  )
-  implicit val InputIdentifierFromInput: FromInput[InputIdentifier] = fromInput(ad => InputIdentifier(
-    idType = ad("type").asInstanceOf[IdentifierType.Value],
-    idValue = ad("value").asInstanceOf[String],
-    timestamp = ad("timestamp").asInstanceOf[Timestamp],
-  ))
 }

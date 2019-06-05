@@ -1,5 +1,19 @@
 {
   "data": {
     "addIdentifier": null
-  }
+  },
+  "errors":[
+    {
+      "message":"Deposit 00000000-0000-0000-0000-000000000006 does not exist.",
+      "path":[
+        "addIdentifier"
+      ],
+      "locations":[
+        {
+          "line":2,
+          "column":5
+        }
+      ]
+    }
+  ]
 }

@@ -1,7 +1,10 @@
 mutation {
-    setContentType(depositId: "00000000-0000-0000-0000-000000000002", contentType: {value: OCTET, timestamp: "2019-06-02T20:57:00+02:00"}) {
-        id
-        value
-        timestamp
+    setContentType(input: {clientMutationId: "my-mutation-id", depositId: "00000000-0000-0000-0000-000000000002", value: OCTET, timestamp: "2019-06-02T20:57:00+02:00"}) {
+        clientMutationId
+        contentType {
+            id
+            value
+            timestamp
+        }
     }
 }

@@ -7,11 +7,11 @@
             "depositId": "00000000-0000-0000-0000-000000000005",
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               },
               {
-                "curationPerformed": true,
+                "value": true,
                 "timestamp": "2019-05-05T04:04:00.000+02:00"
               }
             ]
@@ -22,11 +22,11 @@
             "depositId": "00000000-0000-0000-0000-000000000004",
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-04-04T00:00:00.000+02:00"
               },
               {
-                "curationPerformed": true,
+                "value": true,
                 "timestamp": "2019-04-04T04:04:00.000+02:00"
               }
             ]
@@ -37,11 +37,11 @@
             "depositId": "00000000-0000-0000-0000-000000000001",
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-01-01T00:00:00.000+01:00"
               },
               {
-                "curationPerformed": true,
+                "value": true,
                 "timestamp": "2019-01-01T04:04:00.000+01:00"
               }
             ]
@@ -52,11 +52,11 @@
             "depositId": "00000000-0000-0000-0000-000000000003",
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-03-03T00:00:00.000+01:00"
               },
               {
-                "curationPerformed": true,
+                "value": true,
                 "timestamp": "2019-03-03T04:04:00.000+01:00"
               }
             ]

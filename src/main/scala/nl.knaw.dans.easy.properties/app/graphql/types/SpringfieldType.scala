@@ -16,8 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.springfield.SpringfieldPlayMode.SpringfieldPlayMode
-import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield, SpringfieldPlayMode }
+import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
@@ -58,32 +57,16 @@ trait SpringfieldType {
   implicit val SpringfieldType: ObjectType[DataContext, Springfield] = deriveObjectType(
     ObjectTypeDescription("Springfield configuration associated with this deposit."),
     Interfaces[DataContext, Springfield](nodeInterface),
-    DocumentField("domain", "The domain of Springfield"),
-    DocumentField("user", "The user of Springfield"),
-    DocumentField("collection", "The collection of Springfield"),
-    DocumentField("playmode", "The playmode used in Springfield"),
+    DocumentField("domain", "The domain of Springfield."),
+    DocumentField("user", "The user of Springfield."),
+    DocumentField("collection", "The collection of Springfield."),
+    DocumentField("playmode", "The playmode used in Springfield."),
     DocumentField("timestamp", "The timestamp at which this springfield configuration was associated with the deposit."),
     AddFields(
       depositField,
     ),
     ReplaceField("id", Node.globalIdField[DataContext, Springfield]),
   )
-
-  implicit val InputSpringfieldType: InputObjectType[InputSpringfield] = deriveInputObjectType(
-    InputObjectTypeDescription("Springfield configuration associated with this deposit."),
-    DocumentInputField("domain", "The domain of Springfield"),
-    DocumentInputField("user", "The user of Springfield"),
-    DocumentInputField("collection", "The collection of Springfield"),
-    DocumentInputField("playmode", "The playmode used in Springfield"),
-    DocumentInputField("timestamp", "The timestamp at which this springfield configuration was associated with the deposit."),
-  )
-  implicit val inputSpringfieldFromInput: FromInput[InputSpringfield] = fromInput(ad => InputSpringfield(
-    domain = ad("domain").asInstanceOf[String],
-    user = ad("user").asInstanceOf[String],
-    collection = ad("collection").asInstanceOf[String],
-    playmode = ad("playmode").asInstanceOf[SpringfieldPlayMode],
-    timestamp = ad("timestamp").asInstanceOf[Timestamp],
-  ))
 
   @GraphQLDescription("Properties by which springfields can be ordered")
   object SpringfieldOrderField extends Enumeration {

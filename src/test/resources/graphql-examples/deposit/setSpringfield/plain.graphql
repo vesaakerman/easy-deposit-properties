@@ -1,10 +1,13 @@
 mutation {
-    setSpringfield(depositId: "00000000-0000-0000-0000-000000000001", springfield: {domain: "domain2", collection: "collection2", user: "user2", playmode: MENU, timestamp: "2019-06-02T15:33:00+02:00"}) {
-        id
-        domain
-        collection
-        user
-        playmode
-        timestamp
+    setSpringfield(input: {clientMutationId: "my-mutation-id", depositId: "00000000-0000-0000-0000-000000000001", domain: "domain2", collection: "collection2", user: "user2", playmode: MENU, timestamp: "2019-06-02T15:33:00+02:00"}) {
+        clientMutationId
+        springfield {
+            id
+            domain
+            collection
+            user
+            playmode
+            timestamp
+        }
     }
 }

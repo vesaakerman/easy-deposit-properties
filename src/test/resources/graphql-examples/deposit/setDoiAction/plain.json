@@ -1,8 +1,11 @@
 {
   "data": {
-    "setDoiRegistered": {
-      "value": true,
-      "timestamp": "2019-05-27T21:41:00.000Z"
+    "setDoiAction": {
+      "clientMutationId": "my-mutation-id",
+      "doiAction": {
+        "value": "UPDATE",
+        "timestamp": "2019-05-27T21:42:00.000Z"
+      }
     }
   }
 }

@@ -1,6 +1,9 @@
 mutation {
-    setCurationPerformed(depositId: "00000000-0000-0000-0000-000000000001", curationPerformed: {value: true, timestamp: "2019-05-31T19:30:00+02:00"}) {
-        curationPerformed
-        timestamp
+    setCurationPerformed(input: {clientMutationId: "my-mutation-id", depositId: "00000000-0000-0000-0000-000000000001", value: true, timestamp: "2019-05-31T19:30:00+02:00"}) {
+        clientMutationId
+        curationPerformed {
+            value
+            timestamp
+        }
     }
 }

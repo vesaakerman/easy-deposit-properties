@@ -132,17 +132,6 @@ trait IngestStepType {
     nodeType = IngestStepType,
   )
 
-  implicit val IngestStepInputType: InputObjectType[InputIngestStep] = deriveInputObjectType(
-    InputObjectTypeName("InputIngestStep"),
-    InputObjectTypeDescription("The ingest step of a deposit"),
-    DocumentInputField("step", "The label of the ingest step."),
-    DocumentInputField("timestamp", "The timestamp at which the deposit got into this ingest step."),
-  )
-  implicit val InputIngestStepFromInput: FromInput[InputIngestStep] = fromInput(ad => InputIngestStep(
-    step = ad("step").asInstanceOf[IngestStepLabel],
-    timestamp = ad("timestamp").asInstanceOf[Timestamp],
-  ))
-
   @GraphQLDescription("Properties by which ingest steps can be ordered")
   object IngestStepOrderField extends Enumeration {
     type IngestStepOrderField = Value

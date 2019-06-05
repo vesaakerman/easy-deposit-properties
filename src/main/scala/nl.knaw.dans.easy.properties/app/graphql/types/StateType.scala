@@ -134,19 +134,6 @@ trait StateType {
     nodeType = StateType,
   )
 
-  implicit val InputStateType: InputObjectType[InputState] = deriveInputObjectType(
-    InputObjectTypeName("InputState"),
-    InputObjectTypeDescription("The state of a deposit"),
-    DocumentInputField("label", "The state label of the deposit."),
-    DocumentInputField("description", "Additional information about the state."),
-    DocumentInputField("timestamp", "The timestamp at which the deposit got into this state."),
-  )
-  implicit val InputStateFromInput: FromInput[InputState] = fromInput(ad => InputState(
-    label = ad("label").asInstanceOf[StateLabel],
-    description = ad("description").asInstanceOf[String],
-    timestamp = ad("timestamp").asInstanceOf[Timestamp],
-  ))
-
   @GraphQLDescription("Properties by which states can be ordered")
   object StateOrderField extends Enumeration {
     type StateOrderField = Value

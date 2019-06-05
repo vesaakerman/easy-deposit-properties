@@ -1,5 +1,19 @@
 {
   "data": {
     "addDeposit": null
-  }
+  },
+  "errors":[
+    {
+      "message":"Deposit 00000000-0000-0000-0000-000000000004 already exist.",
+      "path":[
+        "addDeposit"
+      ],
+      "locations":[
+        {
+          "line":2,
+          "column":5
+        }
+      ]
+    }
+  ]
 }

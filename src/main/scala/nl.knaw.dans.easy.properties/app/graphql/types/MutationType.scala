@@ -16,15 +16,15 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
-import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
-import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
-import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
-import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
-import sangria.marshalling.FromInput.coercedScalaInput
-import sangria.schema.{ Argument, Context, Field, ObjectType, OptionType, StringType, fields }
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentTypeValue, InputContentType }
+import nl.knaw.dans.easy.properties.app.model.curator.InputCurator
+import nl.knaw.dans.easy.properties.app.model.identifier.{ IdentifierType, InputIdentifier }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStepLabel, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, SpringfieldPlayMode }
+import nl.knaw.dans.easy.properties.app.model.state.{ InputState, StateLabel }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DepositorId, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
+import sangria.relay.Mutation
+import sangria.schema.{ Action, BooleanType, Context, Field, InputField, InputObjectType, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
   this: DepositType
@@ -38,362 +38,664 @@ trait MutationType {
     with ContentTypeGraphQLType
     with Scalars =>
 
-  private val depositIdArgument: Argument[DepositId] = Argument(
+  case class AddDepositPayload(clientMutationId: Option[String], depositId: DepositId) extends Mutation
+  case class UpdateStatePayload(clientMutationId: Option[String], objectId: String) extends Mutation
+  case class UpdateIngestStepPayload(clientMutationId: Option[String], objectId: String) extends Mutation
+  case class AddIdentifierPayload(clientMutationId: Option[String], objectId: String) extends Mutation
+  case class SetDoiRegisteredPayload(clientMutationId: Option[String], obj: DoiRegisteredEvent) extends Mutation
+  case class SetDoiActionPayload(clientMutationId: Option[String], obj: DoiActionEvent) extends Mutation
+  case class SetCuratorPayload(clientMutationId: Option[String], objectId: String) extends Mutation
+  case class SetIsNewVersionPayload(clientMutationId: Option[String], obj: IsNewVersionEvent) extends Mutation
+  case class SetCurationRequiredPayload(clientMutationId: Option[String], obj: CurationRequiredEvent) extends Mutation
+  case class SetCurationPerformedPayload(clientMutationId: Option[String], obj: CurationPerformedEvent) extends Mutation
+  case class SetSpringfieldPayload(clientMutationId: Option[String], objectId: String) extends Mutation
+  case class SetContentTypePayload(clientMutationId: Option[String], objectId: String) extends Mutation
+
+  private val depositIdInputField: InputField[DepositId] = InputField(
     name = "depositId",
     description = Some("The deposit's identifier."),
     defaultValue = None,
-    argumentType = UUIDType,
-    fromInput = coercedScalaInput,
+    fieldType = UUIDType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val creationTimestampArgument: Argument[Timestamp] = Argument(
+  private val creationTimestampInputField: InputField[Timestamp] = InputField(
     name = "creationTimestamp",
     description = Some("The timestamp at which this deposit was created."),
     defaultValue = None,
-    argumentType = DateTimeType,
-    fromInput = coercedScalaInput,
+    fieldType = DateTimeType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val depositorIdArgument: Argument[DepositorId] = Argument(
+  private val depositorIdInputField: InputField[DepositorId] = InputField(
     name = "depositorId",
     description = Some("The depositor that submits this deposit."),
     defaultValue = None,
-    argumentType = StringType,
-    fromInput = coercedScalaInput,
+    fieldType = StringType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val stateArgument: Argument[InputState] = Argument(
-    name = "state",
-    description = Some("The deposit's state to be updated."),
+  private val stateLabelInputField: InputField[StateLabel.Value] = InputField(
+    name = "label",
+    description = Some("The state label of the deposit."),
     defaultValue = None,
-    argumentType = InputStateType,
-    fromInput = InputStateFromInput,
+    fieldType = StateLabelType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val ingestStepArgument: Argument[InputIngestStep] = Argument(
-    name = "ingestStep",
-    description = Some("The ingest step to be updated."),
+  private val stateDescriptionInputField: InputField[String] = InputField(
+    name = "description",
+    description = Some("Additional information about the state."),
     defaultValue = None,
-    argumentType = IngestStepInputType,
-    fromInput = InputIngestStepFromInput,
+    fieldType = StringType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val identifierArgument: Argument[InputIdentifier] = Argument(
-    name = "identifier",
-    description = Some("The identifier to be added."),
+  private val stateTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which the deposit got into this state."),
     defaultValue = None,
-    argumentType = InputIdentifierType,
-    fromInput = InputIdentifierFromInput,
+    fieldType = DateTimeType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val doiRegisteredArgument: Argument[DoiRegisteredEvent] = Argument(
-    name = "doiRegistered",
-    description = Some("The DOI registration event to be set."),
+  private val ingestStepLabelInputField: InputField[IngestStepLabel.Value] = InputField(
+    name = "step",
+    description = Some("The label of the ingest step."),
     defaultValue = None,
-    argumentType = InputDoiRegisteredEventType,
-    fromInput = inputDoiRegisteredEventFromInput,
+    fieldType = StepLabelType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val doiActionArgument: Argument[DoiActionEvent] = Argument(
-    name = "doiAction",
-    description = Some("The DOI action event to be set."),
+  private val ingestStepTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which the deposit got into this ingest step."),
     defaultValue = None,
-    argumentType = InputDoiActionEventType,
-    fromInput = inputDoiActionEventFromInput,
+    fieldType = DateTimeType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val curatorArgument: Argument[InputCurator] = Argument(
-    name = "curator",
-    description = Some("The data manager to be assigned to this deposit."),
+  private val identifierTypeInputField: InputField[IdentifierType.Value] = InputField(
+    name = "type",
+    description = Some("The type of identifier."),
     defaultValue = None,
-    argumentType = InputCuratorType,
-    fromInput = InputCuratorFromInput,
+    fieldType = IdentifierTypeType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val isNewVersionArgument: Argument[IsNewVersionEvent] = Argument(
-    name = "isNewVersion",
-    description = Some("Whether this deposit is a new version."),
+  private val identifierValueInputField: InputField[String] = InputField(
+    name = "value",
+    description = Some("The value of the identifier."),
     defaultValue = None,
-    argumentType = InputIsNewVersionEventType,
-    fromInput = inputIsNewVersionEventFromInput,
+    fieldType = StringType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val curationRequiredArgument: Argument[CurationRequiredEvent] = Argument(
-    name = "curationRequired",
-    description = Some("Whether this deposit requires curation."),
+  private val identifierTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which the identifier got added to this deposit."),
     defaultValue = None,
-    argumentType = InputCurationRequiredEventType,
-    fromInput = inputCurationRequiredEventFromInput,
+    fieldType = DateTimeType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val curationPerformedArgument: Argument[CurationPerformedEvent] = Argument(
-    name = "curationPerformed",
-    description = Some("Whether curation is performed on this deposit."),
+  private val doiRegisteredValueInputField: InputField[Boolean] = InputField(
+    name = "value",
+    description = Some("Whether the DOI is registered in DataCite."),
     defaultValue = None,
-    argumentType = InputCurationPerformedEventType,
-    fromInput = inputCurationPerformedEventFromInput,
+    fieldType = BooleanType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val springfieldArgument: Argument[InputSpringfield] = Argument(
-    name = "springfield",
-    description = Some("The springfield configuration to be associated with this deposit."),
+  private val doiRegisteredTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which the DOI was registered in DataCite."),
     defaultValue = None,
-    argumentType = InputSpringfieldType,
-    fromInput = inputSpringfieldFromInput,
+    fieldType = DateTimeType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val contentTypeArgument: Argument[InputContentType] = Argument(
-    name = "contentType",
-    description = Some("The content type to be associated with this deposit."),
+  private val doiActionValueInputField: InputField[DoiAction.Value] = InputField(
+    name = "value",
+    description = Some("Whether the DOI must be 'created' or 'updated' when registering in DataCite."),
     defaultValue = None,
-    argumentType = InputContentTypeType,
-    fromInput = InputContentTypeFromInput,
+    fieldType = DoiActionType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val doiActionTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which this value was added."),
+    defaultValue = None,
+    fieldType = DateTimeType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curatorUserIdInputField: InputField[String] = InputField(
+    name = "userId",
+    description = Some("The data manager's username in EASY."),
+    defaultValue = None,
+    fieldType = StringType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curatorEmailInputField: InputField[String] = InputField(
+    name = "email",
+    description = Some("The data manager's email address."),
+    defaultValue = None,
+    fieldType = StringType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curatorTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which the data manager was assigned to this deposit."),
+    defaultValue = None,
+    fieldType = DateTimeType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val isNewVersionValueInputField: InputField[Boolean] = InputField(
+    name = "value",
+    description = Some("True if the deposit is a new version."),
+    defaultValue = None,
+    fieldType = BooleanType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val isNewVersionTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which was decided that this is a new version."),
+    defaultValue = None,
+    fieldType = DateTimeType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curationRequiredValueInputField: InputField[Boolean] = InputField(
+    name = "value",
+    description = Some("True if curation by a data manager is required."),
+    defaultValue = None,
+    fieldType = BooleanType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curationRequiredTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which was decided that this deposit requires curation."),
+    defaultValue = None,
+    fieldType = DateTimeType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curationPerformedValueInputField: InputField[Boolean] = InputField(
+    name = "value",
+    description = Some("True if curation by the data manager has been performed."),
+    defaultValue = None,
+    fieldType = BooleanType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val curationPerformedTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which the curation was completed."),
+    defaultValue = None,
+    fieldType = DateTimeType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val springfieldDomainInputField: InputField[String] = InputField(
+    name = "domain",
+    description = Some("The domain of Springfield."),
+    defaultValue = None,
+    fieldType = StringType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val springfieldUserInputField: InputField[String] = InputField(
+    name = "user",
+    description = Some("The user of Springfield."),
+    defaultValue = None,
+    fieldType = StringType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val springfieldCollectionInputField: InputField[String] = InputField(
+    name = "collection",
+    description = Some("The collection of Springfield."),
+    defaultValue = None,
+    fieldType = StringType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val springfieldPlayModeInputField: InputField[SpringfieldPlayMode.Value] = InputField(
+    name = "playmode",
+    description = Some("The playmode used in Springfield."),
+    defaultValue = None,
+    fieldType = SpringfieldPlayModeType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val springfieldTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which this springfield configuration was associated with the deposit."),
+    defaultValue = None,
+    fieldType = DateTimeType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val contentTypeValueInputField: InputField[ContentTypeValue.Value] = InputField(
+    name = "value",
+    description = Some("The content type associated with this deposit."),
+    defaultValue = None,
+    fieldType = ContentTypeValueType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val contentTypeTimestampInputField: InputField[Timestamp] = InputField(
+    name = "timestamp",
+    description = Some("The timestamp at which this springfield configuration was associated with the deposit."),
+    defaultValue = None,
+    fieldType = DateTimeType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
 
-  private val addDepositField: Field[DataContext, Unit] = Field(
-    name = "addDeposit",
-    description = Some("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."),
-    arguments = List(
-      depositIdArgument,
-      creationTimestampArgument,
-      depositorIdArgument,
-    ),
+  private val depositField: Field[DataContext, AddDepositPayload] = Field(
+    name = "deposit",
     fieldType = OptionType(DepositType),
-    resolve = addDeposit,
+    resolve = ctx => ctx.ctx.deposits.getDeposit(ctx.value.depositId),
   )
-  private val updateStateField: Field[DataContext, Unit] = Field(
-    name = "updateState",
-    description = Some("Update the state of the deposit identified by 'id'."),
-    arguments = List(
-      depositIdArgument,
-      stateArgument,
-    ),
+  private val stateField: Field[DataContext, UpdateStatePayload] = Field(
+    name = "state",
     fieldType = OptionType(StateType),
-    resolve = updateState,
+    resolve = ctx => ctx.ctx.deposits.getStateById(ctx.value.objectId),
   )
-  private val updateIngestStepField: Field[DataContext, Unit] = Field(
-    name = "updateIngestStep",
-    description = Some("Update the ingest step of the deposit identified by 'id'."),
-    arguments = List(
-      depositIdArgument,
-      ingestStepArgument,
-    ),
+  private val ingestStepField: Field[DataContext, UpdateIngestStepPayload] = Field(
+    name = "ingestStep",
     fieldType = OptionType(IngestStepType),
-    resolve = updateIngestStep,
+    resolve = ctx => ctx.ctx.deposits.getIngestStepById(ctx.value.objectId),
   )
-  private val addIdentifierField: Field[DataContext, Unit] = Field(
-    name = "addIdentifier",
-    description = Some("Add an identifier to the deposit identified by 'id'."),
-    arguments = List(
-      depositIdArgument,
-      identifierArgument,
-    ),
+  private val identifierField: Field[DataContext, AddIdentifierPayload] = Field(
+    name = "identifier",
     fieldType = OptionType(IdentifierObjectType),
-    resolve = addIdentifier,
+    resolve = ctx => ctx.ctx.deposits.getIdentifierById(ctx.value.objectId),
   )
-  private val setDoiRegisteredField: Field[DataContext, Unit] = Field(
-    name = "setDoiRegistered",
-    description = Some("Set whether the DOI has been registered in DataCite."),
-    arguments = List(
-      depositIdArgument,
-      doiRegisteredArgument,
-    ),
+  private val doiRegisteredField: Field[DataContext, SetDoiRegisteredPayload] = Field(
+    name = "doiRegistered",
     fieldType = OptionType(DoiRegisteredEventType),
-    resolve = setDoiRegistered,
+    resolve = ctx => ctx.value.obj,
   )
-  private val setDoiActionField: Field[DataContext, Unit] = Field(
-    name = "setDoiAction",
-    description = Some("Set whether the DOI should be 'created' or 'updated' on registration in DataCite."),
-    arguments = List(
-      depositIdArgument,
-      doiActionArgument,
-    ),
+  private val doiActionField: Field[DataContext, SetDoiActionPayload] = Field(
+    name = "doiAction",
     fieldType = OptionType(DoiActionEventType),
-    resolve = setDoiAction,
+    resolve = ctx => ctx.value.obj,
   )
-  private val setCuratorField: Field[DataContext, Unit] = Field(
-    name = "setCurator",
-    description = Some("Assign a data manager to the deposit identified by 'id'."),
-    arguments = List(
-      depositIdArgument,
-      curatorArgument,
-    ),
+  private val curatorField: Field[DataContext, SetCuratorPayload] = Field(
+    name = "curator",
     fieldType = OptionType(CuratorType),
-    resolve = setCurator,
+    resolve = ctx => ctx.ctx.deposits.getCuratorById(ctx.value.objectId),
   )
-  private val setIsNewVersionField: Field[DataContext, Unit] = Field(
-    name = "setIsNewVersion",
-    description = Some("Set whether this deposit is a new version."),
-    arguments = List(
-      depositIdArgument,
-      isNewVersionArgument,
-    ),
+  private val isNewVersionField: Field[DataContext, SetIsNewVersionPayload] = Field(
+    name = "isNewVersion",
     fieldType = OptionType(IsNewVersionEventType),
-    resolve = setIsNewVersion,
+    resolve = ctx => ctx.value.obj,
   )
-  private val setCurationRequiredField: Field[DataContext, Unit] = Field(
-    name = "setCurationRequired",
-    description = Some("Set whether this deposit requires curation."),
-    arguments = List(
-      depositIdArgument,
-      curationRequiredArgument,
-    ),
+  private val curationRequiredField: Field[DataContext, SetCurationRequiredPayload] = Field(
+    name = "curationRequired",
     fieldType = OptionType(CurationRequiredEventType),
-    resolve = setCurationRequired,
+    resolve = ctx => ctx.value.obj,
   )
-  private val setCurationPerformedField: Field[DataContext, Unit] = Field(
-    name = "setCurationPerformed",
-    description = Some("Set whether curation is performed on this deposit."),
-    arguments = List(
-      depositIdArgument,
-      curationPerformedArgument,
-    ),
+  private val curationPerformedField: Field[DataContext, SetCurationPerformedPayload] = Field(
+    name = "curationPerformed",
     fieldType = OptionType(CurationPerformedEventType),
-    resolve = setCurationPerformed,
+    resolve = ctx => ctx.value.obj,
   )
-  private val setSpringfieldField: Field[DataContext, Unit] = Field(
-    name = "setSpringfield",
-    description = Some("Set the springfield configuration for this deposit."),
-    arguments = List(
-      depositIdArgument,
-      springfieldArgument,
-    ),
+  private val springfieldField: Field[DataContext, SetSpringfieldPayload] = Field(
+    name = "springfield",
     fieldType = OptionType(SpringfieldType),
-    resolve = setSpringfield,
+    resolve = ctx => ctx.ctx.deposits.getSpringfieldById(ctx.value.objectId),
   )
-  private val setContentTypeField: Field[DataContext, Unit] = Field(
-    name = "setContentType",
-    description = Some("Set the content type for this deposit."),
-    arguments = List(
-      depositIdArgument,
-      contentTypeArgument,
-    ),
+  private val contentTypeField: Field[DataContext, SetContentTypePayload] = Field(
+    name = "contentType",
     fieldType = OptionType(ContentTypeType),
-    resolve = setContentType,
+    resolve = ctx => ctx.ctx.deposits.getContentTypeById(ctx.value.objectId),
   )
 
-  private def addDeposit(context: Context[DataContext, Unit]): Option[Deposit] = {
+  private val addDepositField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, AddDepositPayload, InputObjectType.DefaultInput](
+    fieldName = "addDeposit",
+    typeName = "AddDeposit",
+    fieldDescription = Some("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."),
+    inputFields = List(
+      depositIdInputField,
+      creationTimestampInputField,
+      depositorIdInputField,
+    ),
+    outputFields = fields(
+      depositField,
+    ),
+    mutateAndGetPayload = addDeposit,
+  )
+  private val updateStateField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, UpdateStatePayload, InputObjectType.DefaultInput](
+    fieldName = "updateState",
+    typeName = "UpdateState",
+    fieldDescription = Some("Update the state of the deposit identified by 'id'."),
+    inputFields = List(
+      depositIdInputField,
+      stateLabelInputField,
+      stateDescriptionInputField,
+      stateTimestampInputField,
+    ),
+    outputFields = fields(
+      stateField
+    ),
+    mutateAndGetPayload = updateState,
+  )
+  private val updateIngestStepField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, UpdateIngestStepPayload, InputObjectType.DefaultInput](
+    fieldName = "updateIngestStep",
+    typeName = "UpdateIngestStep",
+    fieldDescription = Some("Update the ingest step of the deposit identified by 'id'."),
+    inputFields = List(
+      depositIdInputField,
+      ingestStepLabelInputField,
+      ingestStepTimestampInputField,
+    ),
+    outputFields = fields(
+      ingestStepField
+    ),
+    mutateAndGetPayload = updateIngestStep,
+  )
+  private val addIdentifierField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, AddIdentifierPayload, InputObjectType.DefaultInput](
+    fieldName = "addIdentifier",
+    typeName = "AddIdentifier",
+    fieldDescription = Some("Add an identifier to the deposit identified by 'id'."),
+    inputFields = List(
+      depositIdInputField,
+      identifierTypeInputField,
+      identifierValueInputField,
+      identifierTimestampInputField,
+    ),
+    outputFields = fields(
+      identifierField
+    ),
+    mutateAndGetPayload = addIdentifier,
+  )
+  private val setDoiRegisteredField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetDoiRegisteredPayload, InputObjectType.DefaultInput](
+    fieldName = "setDoiRegistered",
+    typeName = "SetDoiRegistered",
+    fieldDescription = Some("Set whether the DOI has been registered in DataCite."),
+    inputFields = List(
+      depositIdInputField,
+      doiRegisteredValueInputField,
+      doiRegisteredTimestampInputField,
+    ),
+    outputFields = fields(
+      doiRegisteredField
+    ),
+    mutateAndGetPayload = setDoiRegistered,
+  )
+  private val setDoiActionField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetDoiActionPayload, InputObjectType.DefaultInput](
+    fieldName = "setDoiAction",
+    typeName = "SetDoiAction",
+    fieldDescription = Some("Set whether the DOI should be 'created' or 'updated' on registration in DataCite."),
+    inputFields = List(
+      depositIdInputField,
+      doiActionValueInputField,
+      doiActionTimestampInputField,
+    ),
+    outputFields = fields(
+      doiActionField
+    ),
+    mutateAndGetPayload = setDoiAction,
+  )
+  private val setCuratorField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetCuratorPayload, InputObjectType.DefaultInput](
+    fieldName = "setCurator",
+    typeName = "SetCurator",
+    fieldDescription = Some("Assign a data manager to the deposit identified by 'id'."),
+    inputFields = List(
+      depositIdInputField,
+      curatorUserIdInputField,
+      curatorEmailInputField,
+      curatorTimestampInputField,
+    ),
+    outputFields = fields(
+      curatorField
+    ),
+    mutateAndGetPayload = setCurator,
+  )
+  private val setIsNewVersionField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetIsNewVersionPayload, InputObjectType.DefaultInput](
+    fieldName = "setIsNewVersion",
+    typeName = "SetIsNewVersion",
+    fieldDescription = Some("Set whether this deposit is a new version."),
+    inputFields = List(
+      depositIdInputField,
+      isNewVersionValueInputField,
+      isNewVersionTimestampInputField,
+    ),
+    outputFields = fields(
+      isNewVersionField
+    ),
+    mutateAndGetPayload = setIsNewVersion,
+  )
+  private val setCurationRequiredField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetCurationRequiredPayload, InputObjectType.DefaultInput](
+    fieldName = "setCurationRequired",
+    typeName = "SetCurationRequired",
+    fieldDescription = Some("Set whether this deposit requires curation."),
+    inputFields = List(
+      depositIdInputField,
+      curationRequiredValueInputField,
+      curationRequiredTimestampInputField,
+    ),
+    outputFields = fields(
+      curationRequiredField
+    ),
+    mutateAndGetPayload = setCurationRequired,
+  )
+  private val setCurationPerformedField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetCurationPerformedPayload, InputObjectType.DefaultInput](
+    fieldName = "setCurationPerformed",
+    typeName = "SetCurationPerformed",
+    fieldDescription = Some("Set whether curation is performed on this deposit."),
+    inputFields = List(
+      depositIdInputField,
+      curationPerformedValueInputField,
+      curationPerformedTimestampInputField,
+    ),
+    outputFields = fields(
+      curationPerformedField
+    ),
+    mutateAndGetPayload = setCurationPerformed,
+  )
+  private val setSpringfieldField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetSpringfieldPayload, InputObjectType.DefaultInput](
+    fieldName = "setSpringfield",
+    typeName = "SetSpringfield",
+    fieldDescription = Some("Set the springfield configuration for this deposit."),
+    inputFields = List(
+      depositIdInputField,
+      springfieldDomainInputField,
+      springfieldUserInputField,
+      springfieldCollectionInputField,
+      springfieldPlayModeInputField,
+      springfieldTimestampInputField,
+    ),
+    outputFields = fields(
+      springfieldField
+    ),
+    mutateAndGetPayload = setSpringfield,
+  )
+  private val setContentTypeField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetContentTypePayload, InputObjectType.DefaultInput](
+    fieldName = "setContentType",
+    typeName = "SetContentType",
+    fieldDescription = Some("Set the content type for this deposit."),
+    inputFields = List(
+      depositIdInputField,
+      contentTypeValueInputField,
+      contentTypeTimestampInputField,
+    ),
+    outputFields = fields(
+      contentTypeField
+    ),
+    mutateAndGetPayload = setContentType,
+  )
+
+  private def addDeposit(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, AddDepositPayload] = {
     val repository = context.ctx.deposits
 
-    val id = context.arg(depositIdArgument)
-    val creationTimestamp = context.arg(creationTimestampArgument)
-    val depositorId = context.arg(depositorIdArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val creationTimestamp = input(creationTimestampInputField.name).asInstanceOf[Timestamp]
+    val depositorId = input(depositorIdInputField.name).asInstanceOf[String]
 
-    repository.addDeposit(Deposit(id, creationTimestamp, depositorId))
+    repository.addDeposit(Deposit(depositId, creationTimestamp, depositorId))
+      .map(deposit => AddDepositPayload(mutationId, deposit.id))
+      .toTry
   }
 
-  private def updateState(context: Context[DataContext, Unit]): Option[State] = {
+  private def updateState(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, UpdateStatePayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val state = context.arg(stateArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val label = input(stateLabelInputField.name).asInstanceOf[StateLabel.Value]
+    val description = input(stateDescriptionInputField.name).asInstanceOf[String]
+    val timestamp = input(stateTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setState(depositId, state)
+    repository.setState(depositId, InputState(label, description, timestamp))
+      .map(state => UpdateStatePayload(mutationId, state.id))
+      .toTry
   }
 
-  private def updateIngestStep(context: Context[DataContext, Unit]): Option[IngestStep] = {
+  private def updateIngestStep(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, UpdateIngestStepPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val ingestStep = context.arg(ingestStepArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val step = input(ingestStepLabelInputField.name).asInstanceOf[IngestStepLabel.Value]
+    val timestamp = input(ingestStepTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setIngestStep(depositId, ingestStep)
+    repository.setIngestStep(depositId, InputIngestStep(step, timestamp))
+      .map(ingestStep => UpdateIngestStepPayload(mutationId, ingestStep.id))
+      .toTry
   }
 
-  private def addIdentifier(context: Context[DataContext, Unit]): Option[Identifier] = {
+  private def addIdentifier(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, AddIdentifierPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val identifier = context.arg(identifierArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val idType = input(identifierTypeInputField.name).asInstanceOf[IdentifierType.Value]
+    val idValue = input(identifierValueInputField.name).asInstanceOf[String]
+    val timestamp = input(identifierTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.addIdentifier(depositId, identifier)
+    repository.addIdentifier(depositId, InputIdentifier(idType, idValue, timestamp))
+      .map(identifier => AddIdentifierPayload(mutationId, identifier.id))
+      .toTry
   }
 
-  private def setDoiRegistered(context: Context[DataContext, Unit]): Option[DoiRegisteredEvent] = {
+  private def setDoiRegistered(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetDoiRegisteredPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val doiRegistered = context.arg(doiRegisteredArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val doiRegistered = input(doiRegisteredValueInputField.name).asInstanceOf[Boolean]
+    val timestamp = input(doiRegisteredTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setDoiRegistered(depositId, doiRegistered)
+    repository.setDoiRegistered(depositId, DoiRegisteredEvent(doiRegistered, timestamp))
+      .map(doiRegisteredEvent => SetDoiRegisteredPayload(mutationId, doiRegisteredEvent))
+      .toTry
   }
 
-  private def setDoiAction(context: Context[DataContext, Unit]): Option[DoiActionEvent] = {
+  private def setDoiAction(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetDoiActionPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val doiAction = context.arg(doiActionArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val doiAction = input(doiActionValueInputField.name).asInstanceOf[DoiAction.Value]
+    val timestamp = input(doiActionTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setDoiAction(depositId, doiAction)
+    repository.setDoiAction(depositId, DoiActionEvent(doiAction, timestamp))
+      .map(doiActionEvent => SetDoiActionPayload(mutationId, doiActionEvent))
+      .toTry
   }
 
-  private def setCurator(context: Context[DataContext, Unit]): Option[Curator] = {
+  private def setCurator(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCuratorPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val curator = context.arg(curatorArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val userId = input(curatorUserIdInputField.name).asInstanceOf[String]
+    val email = input(curatorEmailInputField.name).asInstanceOf[String]
+    val timestamp = input(curatorTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setCurator(depositId, curator)
+    repository.setCurator(depositId, InputCurator(userId, email, timestamp))
+      .map(curator => SetCuratorPayload(mutationId, curator.id))
+      .toTry
   }
 
-  private def setIsNewVersion(context: Context[DataContext, Unit]): Option[IsNewVersionEvent] = {
+  private def setIsNewVersion(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetIsNewVersionPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val isNewVersion = context.arg(isNewVersionArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val isNewVersion = input(isNewVersionValueInputField.name).asInstanceOf[Boolean]
+    val timestamp = input(isNewVersionTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setIsNewVersionAction(depositId, isNewVersion)
+    repository.setIsNewVersionAction(depositId, IsNewVersionEvent(isNewVersion, timestamp))
+      .map(isNewVersionEvent => SetIsNewVersionPayload(mutationId, isNewVersionEvent))
+      .toTry
   }
 
-  private def setCurationRequired(context: Context[DataContext, Unit]): Option[CurationRequiredEvent] = {
+  private def setCurationRequired(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCurationRequiredPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val curationRequired = context.arg(curationRequiredArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val curationRequired = input(curationRequiredValueInputField.name).asInstanceOf[Boolean]
+    val timestamp = input(curationRequiredTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setCurationRequiredAction(depositId, curationRequired)
+    repository.setCurationRequiredAction(depositId, CurationRequiredEvent(curationRequired, timestamp))
+      .map(curationRequiredEvent => SetCurationRequiredPayload(mutationId, curationRequiredEvent))
+      .toTry
   }
 
-  private def setCurationPerformed(context: Context[DataContext, Unit]): Option[CurationPerformedEvent] = {
+  private def setCurationPerformed(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCurationPerformedPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val curationPerformed = context.arg(curationPerformedArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val curationPerformed = input(curationPerformedValueInputField.name).asInstanceOf[Boolean]
+    val timestamp = input(curationPerformedTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setCurationPerformedAction(depositId, curationPerformed)
+    repository.setCurationPerformedAction(depositId, CurationPerformedEvent(curationPerformed, timestamp))
+      .map(curationPerformedEvent => SetCurationPerformedPayload(mutationId, curationPerformedEvent))
+      .toTry
   }
 
-  private def setSpringfield(context: Context[DataContext, Unit]): Option[Springfield] = {
+  private def setSpringfield(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetSpringfieldPayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val springfield = context.arg(springfieldArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val domain = input(springfieldDomainInputField.name).asInstanceOf[String]
+    val user = input(springfieldUserInputField.name).asInstanceOf[String]
+    val collection = input(springfieldCollectionInputField.name).asInstanceOf[String]
+    val playMode = input(springfieldPlayModeInputField.name).asInstanceOf[SpringfieldPlayMode.Value]
+    val timestamp = input(springfieldTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setSpringfield(depositId, springfield)
+    repository.setSpringfield(depositId, InputSpringfield(domain, user, collection, playMode, timestamp))
+      .map(springfield => SetSpringfieldPayload(mutationId, springfield.id))
+      .toTry
   }
 
-  private def setContentType(context: Context[DataContext, Unit]): Option[ContentType] = {
+  private def setContentType(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetContentTypePayload] = {
     val repository = context.ctx.deposits
 
-    val depositId = context.arg(depositIdArgument)
-    val contentType = context.arg(contentTypeArgument)
+    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
+    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val contentType = input(contentTypeValueInputField.name).asInstanceOf[ContentTypeValue.Value]
+    val timestamp = input(contentTypeTimestampInputField.name).asInstanceOf[Timestamp]
 
-    repository.setContentType(depositId, contentType)
+    repository.setContentType(depositId, InputContentType(contentType, timestamp))
+      .map(contentType => SetContentTypePayload(mutationId, contentType.id))
+      .toTry
   }
 
   implicit val MutationType: ObjectType[DataContext, Unit] = ObjectType(

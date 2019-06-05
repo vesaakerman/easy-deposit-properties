@@ -1,5 +1,19 @@
 {
   "data": {
     "addIdentifier": null
-  }
+  },
+  "errors": [
+    {
+      "message": "Identifier bag-store already exists for 00000000-0000-0000-0000-000000000001.",
+      "path": [
+        "addIdentifier"
+      ],
+      "locations": [
+        {
+          "line": 2,
+          "column": 5
+        }
+      ]
+    }
+  ]
 }

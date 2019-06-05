@@ -19,7 +19,7 @@ import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.contentType.ContentTypeValue.ContentTypeValue
-import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter, InputContentType }
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
@@ -132,16 +132,6 @@ trait ContentTypeGraphQLType {
     name = "ContentType",
     nodeType = ContentTypeType,
   )
-
-  implicit val InputContentTypeType: InputObjectType[InputContentType] = deriveInputObjectType(
-    InputObjectTypeDescription("A SWORD2 internal property to record the type of messages sent by a client to create the deposit."),
-    DocumentInputField("value", "The content type associated with this deposit."),
-    DocumentInputField("timestamp", "The timestamp at which this springfield configuration was associated with the deposit."),
-  )
-  implicit val InputContentTypeFromInput: FromInput[InputContentType] = fromInput(ad => InputContentType(
-    value = ad("value").asInstanceOf[ContentTypeValue],
-    timestamp = ad("timestamp").asInstanceOf[Timestamp],
-  ))
 
   @GraphQLDescription("Properties by which content types can be ordered")
   object ContentTypeOrderField extends Enumeration {

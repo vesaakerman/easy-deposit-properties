@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.DoiAction.DoiAction
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
-import nl.knaw.dans.easy.properties.app.model.{ DepositDoiActionFilter, DepositDoiRegisteredFilter, DoiAction, DoiActionEvent, DoiRegisteredEvent, SeriesFilter, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ DepositDoiActionFilter, DepositDoiRegisteredFilter, DoiAction, DoiActionEvent, DoiRegisteredEvent, SeriesFilter }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
@@ -82,17 +82,6 @@ trait DoiEventTypes {
     DocumentField("timestamp", "The timestamp at which the DOI was registered in DataCite."),
   )
 
-  implicit val InputDoiRegisteredEventType: InputObjectType[DoiRegisteredEvent] = deriveInputObjectType(
-    InputObjectTypeName("DoiRegisteredEventInput"),
-    InputObjectTypeDescription("A DOI registration event related to a deposit"),
-    DocumentInputField("value", "Whether the DOI is registered in DataCite."),
-    DocumentInputField("timestamp", "The timestamp at which the DOI was registered in DataCite."),
-  )
-  implicit val inputDoiRegisteredEventFromInput: FromInput[DoiRegisteredEvent] = fromInput(ad => DoiRegisteredEvent(
-    value = ad("value").asInstanceOf[Boolean],
-    timestamp = ad("timestamp").asInstanceOf[Timestamp],
-  ))
-
   implicit val DoiActionType: EnumType[DoiAction.Value] = deriveEnumType(
     EnumTypeDescription("Whether the DANS-DOI must be created or updated in the DataCite resolver."),
     DocumentValue("CREATE", "The DANS-DOI must be created in the DataCite resolver."),
@@ -105,15 +94,4 @@ trait DoiEventTypes {
     DocumentField("value", "Whether the DOI must be 'created' or 'updated' when registering in DataCite."),
     DocumentField("timestamp", "The timestamp at which this value was added."),
   )
-
-  implicit val InputDoiActionEventType: InputObjectType[DoiActionEvent] = deriveInputObjectType(
-    InputObjectTypeName("DoiActionEventInput"),
-    InputObjectTypeDescription("A DOI action event related to a deposit"),
-    DocumentInputField("value", "Whether the DOI must be 'created' or 'updated' when registering in DataCite."),
-    DocumentInputField("timestamp", "The timestamp at which this value was added."),
-  )
-  implicit val inputDoiActionEventFromInput: FromInput[DoiActionEvent] = fromInput(ad => DoiActionEvent(
-    value = ad("value").asInstanceOf[DoiAction],
-    timestamp = ad("timestamp").asInstanceOf[Timestamp],
-  ))
 }

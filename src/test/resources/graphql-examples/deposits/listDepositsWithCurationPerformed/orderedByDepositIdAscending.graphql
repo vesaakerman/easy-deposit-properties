@@ -4,7 +4,7 @@ query {
             node {
                 depositId
                 curationPerformedEvents {
-                    curationPerformed
+                    value
                     timestamp
                 }
             }

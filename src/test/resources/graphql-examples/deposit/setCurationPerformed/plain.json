@@ -1,8 +1,11 @@
 {
   "data": {
     "setCurationPerformed": {
-      "curationPerformed": true,
-      "timestamp": "2019-05-31T17:30:00.000Z"
+      "clientMutationId": "my-mutation-id",
+      "curationPerformed": {
+        "value": true,
+        "timestamp": "2019-05-31T17:30:00.000Z"
+      }
     }
   }
 }

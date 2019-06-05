@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
-import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter, InputCurator }
+import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
@@ -151,19 +151,6 @@ trait CuratorType {
     name = "Curator",
     nodeType = CuratorType,
   )
-
-  implicit val InputCuratorType: InputObjectType[InputCurator] = deriveInputObjectType(
-    InputObjectTypeName("InputCurator"),
-    InputObjectTypeDescription("Data manager responsible for curating this deposit."),
-    DocumentInputField("userId", "The data manager's username in EASY."),
-    DocumentInputField("email", "The data manager's email address."),
-    DocumentInputField("timestamp", "The timestamp at which the data manager was assigned to this deposit."),
-  )
-  implicit val InputCuratorFromInput: FromInput[InputCurator] = fromInput(ad => InputCurator(
-    userId = ad("userId").asInstanceOf[String],
-    email = ad("email").asInstanceOf[String],
-    timestamp = ad("timestamp").asInstanceOf[Timestamp],
-  ))
 
   @GraphQLDescription("Properties by which curators can be ordered")
   object CuratorOrderField extends Enumeration {

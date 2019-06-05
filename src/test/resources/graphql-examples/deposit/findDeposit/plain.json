@@ -72,25 +72,25 @@
       "isNewVersion": false,
       "isNewVersionEvents": [
         {
-          "isNewVersion": false,
+          "value": false,
           "timestamp": "2019-01-01T00:00:00.000+01:00"
         }
       ],
       "curationRequired": true,
       "curationRequiredEvents": [
         {
-          "curationRequired": true,
+          "value": true,
           "timestamp": "2019-01-01T00:00:00.000+01:00"
         }
       ],
       "curationPerformed": true,
       "curationPerformedEvents": [
         {
-          "curationPerformed": false,
+          "value": false,
           "timestamp": "2019-01-01T00:00:00.000+01:00"
         },
         {
-          "curationPerformed": true,
+          "value": true,
           "timestamp": "2019-01-01T04:04:00.000+01:00"
         }
       ],

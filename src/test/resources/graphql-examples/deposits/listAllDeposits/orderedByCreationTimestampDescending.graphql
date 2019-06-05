@@ -47,17 +47,17 @@ query ListAllDepositsOrderedByDepositIdDescending {
                 }
                 isNewVersion
                 isNewVersionEvents {
-                    isNewVersion
+                    value
                     timestamp
                 }
                 curationRequired
                 curationRequiredEvents {
-                    curationRequired
+                    value
                     timestamp
                 }
                 curationPerformed
                 curationPerformedEvents {
-                    curationPerformed
+                    value
                     timestamp
                 }
                 springfield {

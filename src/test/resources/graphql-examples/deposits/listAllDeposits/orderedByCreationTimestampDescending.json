@@ -58,25 +58,25 @@
             "isNewVersion": false,
             "isNewVersionEvents": [
               {
-                "isNewVersion": false,
+                "value": false,
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               }
             ],
             "curationRequired": true,
             "curationRequiredEvents": [
               {
-                "curationRequired": true,
+                "value": true,
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               }
             ],
             "curationPerformed": true,
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-05-05T00:00:00.000+02:00"
               },
               {
-                "curationPerformed": true,
+                "value": true,
                 "timestamp": "2019-05-05T04:04:00.000+02:00"
               }
             ],
@@ -160,25 +160,25 @@
             "isNewVersion": true,
             "isNewVersionEvents": [
               {
-                "isNewVersion": true,
+                "value": true,
                 "timestamp": "2019-04-04T00:00:00.000+02:00"
               }
             ],
             "curationRequired": true,
             "curationRequiredEvents": [
               {
-                "curationRequired": true,
+                "value": true,
                 "timestamp": "2019-04-04T00:00:00.000+02:00"
               }
             ],
             "curationPerformed": true,
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-04-04T00:00:00.000+02:00"
               },
               {
-                "curationPerformed": true,
+                "value": true,
                 "timestamp": "2019-04-04T04:04:00.000+02:00"
               }
             ],
@@ -251,25 +251,25 @@
             "isNewVersion": true,
             "isNewVersionEvents": [
               {
-                "isNewVersion": true,
+                "value": true,
                 "timestamp": "2019-03-03T00:00:00.000+01:00"
               }
             ],
             "curationRequired": true,
             "curationRequiredEvents": [
               {
-                "curationRequired": true,
+                "value": true,
                 "timestamp": "2019-03-03T00:00:00.000+01:00"
               }
             ],
             "curationPerformed": true,
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-03-03T00:00:00.000+01:00"
               },
               {
-                "curationPerformed": true,
+                "value": true,
                 "timestamp": "2019-03-03T04:04:00.000+01:00"
               }
             ],
@@ -354,21 +354,21 @@
             "isNewVersion": false,
             "isNewVersionEvents": [
               {
-                "isNewVersion": false,
+                "value": false,
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
             ],
             "curationRequired": false,
             "curationRequiredEvents": [
               {
-                "curationRequired": false,
+                "value": false,
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
             ],
             "curationPerformed": false,
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-02-02T00:00:00.000+01:00"
               }
             ],
@@ -496,25 +496,25 @@
             "isNewVersion": false,
             "isNewVersionEvents": [
               {
-                "isNewVersion": false,
+                "value": false,
                 "timestamp": "2019-01-01T00:00:00.000+01:00"
               }
             ],
             "curationRequired": true,
             "curationRequiredEvents": [
               {
-                "curationRequired": true,
+                "value": true,
                 "timestamp": "2019-01-01T00:00:00.000+01:00"
               }
             ],
             "curationPerformed": true,
             "curationPerformedEvents": [
               {
-                "curationPerformed": false,
+                "value": false,
                 "timestamp": "2019-01-01T00:00:00.000+01:00"
               },
               {
-                "curationPerformed": true,
+                "value": true,
                 "timestamp": "2019-01-01T04:04:00.000+01:00"
               }
             ],

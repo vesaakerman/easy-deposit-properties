@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
+import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.graphql.error.{ DepositAlreadyExistsError, IdentifierAlreadyExistsError, MutationError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
@@ -99,13 +101,13 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.get(id)
   }
 
-  override def addDeposit(deposit: Deposit): Option[Deposit] = {
+  override def addDeposit(deposit: Deposit): Either[MutationError, Deposit] = {
     trace(deposit)
     if (depositRepo contains deposit.id)
-      Option.empty
+      DepositAlreadyExistsError(deposit.id).asLeft
     else {
       depositRepo += (deposit.id -> deposit)
-      Option(deposit)
+      deposit.asRight
     }
   }
 
@@ -129,7 +131,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     ids.map(id => id -> getAllObjects(id)(repo))
   }
 
-  private def setter[I, O <: Node](id: DepositId, input: I)(repo: mutable.Map[DepositId, Seq[O]])(conversion: (String, I) => O): Option[O] = {
+  private def setter[I, O <: Node](id: DepositId, input: I)(repo: mutable.Map[DepositId, Seq[O]])(conversion: (String, I) => O): Either[MutationError, O] = {
     if (depositRepo contains id) {
       val newId = id.toString.last + repo
         .collectFirst { case (`id`, os) => os }
@@ -142,21 +144,21 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       else
         repo += (id -> Seq(newObject))
 
-      Option(newObject)
+      newObject.asRight
     }
-    else Option.empty
+    else NoSuchDepositError(id).asLeft
   }
 
-  private def setter[T](id: DepositId, t: T, repo: mutable.Map[DepositId, Seq[T]]): Option[T] = {
+  private def setter[T](id: DepositId, t: T, repo: mutable.Map[DepositId, Seq[T]]): Either[MutationError, T] = {
     if (depositRepo contains id) {
       if (repo contains id)
         repo.update(id, repo(id) :+ t)
       else
         repo += (id -> Seq(t))
 
-      Some(t)
+      t.asRight
     }
-    else Option.empty
+    else NoSuchDepositError(id).asLeft
   }
 
   private def getDepositByObjectId[T <: Node](id: String)(repo: mutable.Map[DepositId, Seq[T]]): Option[Deposit] = {
@@ -192,7 +194,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(stateRepo)
   }
 
-  override def setState(id: DepositId, state: InputState): Option[State] = {
+  override def setState(id: DepositId, state: InputState): Either[MutationError, State] = {
     trace(id, state)
     setter(id, state)(stateRepo) {
       case (stateId, InputState(label, description, timestamp)) => State(stateId, label, description, timestamp)
@@ -231,7 +233,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(stepRepo)
   }
 
-  override def setIngestStep(id: DepositId, inputStep: InputIngestStep): Option[IngestStep] = {
+  override def setIngestStep(id: DepositId, inputStep: InputIngestStep): Either[MutationError, IngestStep] = {
     trace(id, inputStep)
     setter(id, inputStep)(stepRepo) {
       case (stepId, InputIngestStep(step, timestamp)) => IngestStep(stepId, step, timestamp)
@@ -280,7 +282,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
         .map(_ => identifierRepo.collect { case ((`depositId`, _), identifiers) => identifiers }.toSeq))
   }
 
-  override def addIdentifier(id: DepositId, identifier: InputIdentifier): Option[Identifier] = {
+  override def addIdentifier(id: DepositId, identifier: InputIdentifier): Either[MutationError, Identifier] = {
     trace(id, identifier)
     if (depositRepo contains id) {
       val InputIdentifier(idType, idValue, timestamp) = identifier
@@ -292,13 +294,13 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       val newIdentifier = Identifier(identifierId, idType, idValue, timestamp)
 
       if (identifierRepo contains(id, idType))
-        Option.empty
+        IdentifierAlreadyExistsError(id, idType).asLeft
       else {
         identifierRepo += ((id, idType) -> newIdentifier)
-        Some(newIdentifier)
+        newIdentifier.asRight
       }
     }
-    else Option.empty
+    else NoSuchDepositError(id).asLeft
   }
 
   override def getDepositByIdentifierId(id: String): Option[Deposit] = {
@@ -330,7 +332,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(doiRegisteredRepo)
   }
 
-  override def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Option[DoiRegisteredEvent] = {
+  override def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Either[MutationError, DoiRegisteredEvent] = {
     trace(id, registered)
     setter(id, registered, doiRegisteredRepo)
   }
@@ -357,7 +359,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(doiActionRepo)
   }
 
-  override def setDoiAction(id: DepositId, action: DoiActionEvent): Option[DoiActionEvent] = {
+  override def setDoiAction(id: DepositId, action: DoiActionEvent): Either[MutationError, DoiActionEvent] = {
     trace(id, action)
     setter(id, action, doiActionRepo)
   }
@@ -389,7 +391,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(curatorRepo)
   }
 
-  override def setCurator(id: DepositId, curator: InputCurator): Option[Curator] = {
+  override def setCurator(id: DepositId, curator: InputCurator): Either[MutationError, Curator] = {
     trace(id, curator)
     setter(id, curator)(curatorRepo) {
       case (curatorId, InputCurator(userId, email, timestamp)) => Curator(curatorId, userId, email, timestamp)
@@ -419,7 +421,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(isNewVersionRepo)
   }
 
-  override def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Option[IsNewVersionEvent] = {
+  override def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Either[MutationError, IsNewVersionEvent] = {
     trace(id, action)
     setter(id, action, isNewVersionRepo)
   }
@@ -442,7 +444,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(curationRequiredRepo)
   }
 
-  override def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Option[CurationRequiredEvent] = {
+  override def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Either[MutationError, CurationRequiredEvent] = {
     trace(id, action)
     setter(id, action, curationRequiredRepo)
   }
@@ -465,7 +467,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(curationPerformedRepo)
   }
 
-  override def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Option[CurationPerformedEvent] = {
+  override def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Either[MutationError, CurationPerformedEvent] = {
     trace(id, action)
     setter(id, action, curationPerformedRepo)
   }
@@ -497,7 +499,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(springfieldRepo)
   }
 
-  def setSpringfield(id: DepositId, springfield: InputSpringfield): Option[Springfield] = {
+  def setSpringfield(id: DepositId, springfield: InputSpringfield): Either[MutationError, Springfield] = {
     trace(id, springfield)
     setter(id, springfield)(springfieldRepo) {
       case (springfieldId, InputSpringfield(domain, user, collection, playmode, timestamp)) => Springfield(springfieldId, domain, user, collection, playmode, timestamp)
@@ -536,7 +538,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(contentTypeRepo)
   }
 
-  def setContentType(id: DepositId, contentType: InputContentType): Option[ContentType] = {
+  def setContentType(id: DepositId, contentType: InputContentType): Either[MutationError, ContentType] = {
     trace(id, contentType)
     setter(id, contentType)(contentTypeRepo) {
       case (contentTypeId, InputContentType(value, timestamp)) => ContentType(contentTypeId, value, timestamp)
