@@ -34,7 +34,7 @@ trait DepositRepository {
 
   def getDeposit(id: DepositId): QueryErrorOr[Option[Deposit]]
 
-  def addDeposit(deposit: Deposit): Either[MutationError, Deposit]
+  def addDeposit(deposit: Deposit): MutationErrorOr[Deposit]
 
   //
 
@@ -48,7 +48,7 @@ trait DepositRepository {
 
   def getAllStates(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[State]])]]
 
-  def setState(id: DepositId, state: InputState): Either[MutationError, State]
+  def setState(id: DepositId, state: InputState): MutationErrorOr[State]
 
   def getDepositByStateId(id: String): QueryErrorOr[Option[Deposit]]
 
@@ -64,7 +64,7 @@ trait DepositRepository {
 
   def getAllIngestSteps(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[IngestStep]])]]
 
-  def setIngestStep(id: DepositId, step: InputIngestStep): Either[MutationError, IngestStep]
+  def setIngestStep(id: DepositId, step: InputIngestStep): MutationErrorOr[IngestStep]
 
   def getDepositByIngestStepId(id: String): QueryErrorOr[Option[Deposit]]
 
@@ -82,7 +82,7 @@ trait DepositRepository {
 
   def getIdentifiers(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Identifier]])]]
 
-  def addIdentifier(id: DepositId, identifier: InputIdentifier): Either[MutationError, Identifier]
+  def addIdentifier(id: DepositId, identifier: InputIdentifier): MutationErrorOr[Identifier]
 
   def getDepositByIdentifierId(id: String): QueryErrorOr[Option[Deposit]]
 
@@ -96,7 +96,7 @@ trait DepositRepository {
 
   def getAllDoisRegistered(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[DoiRegisteredEvent]])]]
 
-  def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Either[MutationError, DoiRegisteredEvent]
+  def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): MutationErrorOr[DoiRegisteredEvent]
 
   //
 
@@ -108,7 +108,7 @@ trait DepositRepository {
 
   def getAllDoisAction(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[DoiActionEvent]])]]
 
-  def setDoiAction(id: DepositId, action: DoiActionEvent): Either[MutationError, DoiActionEvent]
+  def setDoiAction(id: DepositId, action: DoiActionEvent): MutationErrorOr[DoiActionEvent]
 
   //
 
@@ -122,7 +122,7 @@ trait DepositRepository {
 
   def getAllCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Curator]])]]
 
-  def setCurator(id: DepositId, curator: InputCurator): Either[MutationError, Curator]
+  def setCurator(id: DepositId, curator: InputCurator): MutationErrorOr[Curator]
 
   def getDepositByCuratorId(id: String): QueryErrorOr[Option[Deposit]]
 
@@ -136,7 +136,7 @@ trait DepositRepository {
 
   def getAllIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[IsNewVersionEvent]])]]
 
-  def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Either[MutationError, IsNewVersionEvent]
+  def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): MutationErrorOr[IsNewVersionEvent]
 
   //
 
@@ -148,7 +148,7 @@ trait DepositRepository {
 
   def getAllCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[CurationRequiredEvent]])]]
 
-  def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Either[MutationError, CurationRequiredEvent]
+  def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): MutationErrorOr[CurationRequiredEvent]
 
   //
 
@@ -160,7 +160,7 @@ trait DepositRepository {
 
   def getAllCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[CurationPerformedEvent]])]]
 
-  def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Either[MutationError, CurationPerformedEvent]
+  def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): MutationErrorOr[CurationPerformedEvent]
 
   //
 
@@ -174,7 +174,7 @@ trait DepositRepository {
 
   def getAllSpringfields(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Springfield]])]]
 
-  def setSpringfield(id: DepositId, springfield: InputSpringfield): Either[MutationError, Springfield]
+  def setSpringfield(id: DepositId, springfield: InputSpringfield): MutationErrorOr[Springfield]
 
   def getDepositBySpringfieldId(id: String): QueryErrorOr[Option[Deposit]]
 
@@ -190,7 +190,7 @@ trait DepositRepository {
 
   def getAllContentTypes(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[ContentType]])]]
 
-  def setContentType(id: DepositId, contentType: InputContentType): Either[MutationError, ContentType]
+  def setContentType(id: DepositId, contentType: InputContentType): MutationErrorOr[ContentType]
 
   def getDepositByContentTypeId(id: String): QueryErrorOr[Option[Deposit]]
 }

@@ -24,6 +24,7 @@ import scala.concurrent.Future
 package object repository {
 
   type QueryErrorOr[T] = Either[QueryError, T]
+  type MutationErrorOr[T] = Either[MutationError, T]
 
   abstract class QueryError(val msg: String) extends Exception(msg) with UserFacingError
 

@@ -107,7 +107,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     depositRepo.get(id).asRight
   }
 
-  override def addDeposit(deposit: Deposit): Either[MutationError, Deposit] = {
+  override def addDeposit(deposit: Deposit): MutationErrorOr[Deposit] = {
     trace(deposit)
     if (depositRepo contains deposit.id)
       DepositAlreadyExistsError(deposit.id).asLeft
@@ -137,7 +137,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     ids.toList.traverse[QueryErrorOr, (DepositId, Option[Seq[T]])](id => getAllObjects(id)(repo).map(id -> _))
   }
 
-  private def setter[I, O <: Node](id: DepositId, input: I)(repo: mutable.Map[DepositId, Seq[O]])(conversion: (String, I) => O): Either[MutationError, O] = {
+  private def setter[I, O <: Node](id: DepositId, input: I)(repo: mutable.Map[DepositId, Seq[O]])(conversion: (String, I) => O): MutationErrorOr[O] = {
     if (depositRepo contains id) {
       val newId = id.toString.last + repo
         .collectFirst { case (`id`, os) => os }
@@ -155,7 +155,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     else NoSuchDepositError(id).asLeft
   }
 
-  private def setter[T](id: DepositId, t: T, repo: mutable.Map[DepositId, Seq[T]]): Either[MutationError, T] = {
+  private def setter[T](id: DepositId, t: T, repo: mutable.Map[DepositId, Seq[T]]): MutationErrorOr[T] = {
     if (depositRepo contains id) {
       if (repo contains id)
         repo.update(id, repo(id) :+ t)
@@ -201,7 +201,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(stateRepo)
   }
 
-  override def setState(id: DepositId, state: InputState): Either[MutationError, State] = {
+  override def setState(id: DepositId, state: InputState): MutationErrorOr[State] = {
     trace(id, state)
     setter(id, state)(stateRepo) {
       case (stateId, InputState(label, description, timestamp)) => State(stateId, label, description, timestamp)
@@ -240,7 +240,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(stepRepo)
   }
 
-  override def setIngestStep(id: DepositId, inputStep: InputIngestStep): Either[MutationError, IngestStep] = {
+  override def setIngestStep(id: DepositId, inputStep: InputIngestStep): MutationErrorOr[IngestStep] = {
     trace(id, inputStep)
     setter(id, inputStep)(stepRepo) {
       case (stepId, InputIngestStep(step, timestamp)) => IngestStep(stepId, step, timestamp)
@@ -291,7 +291,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       .asRight
   }
 
-  override def addIdentifier(id: DepositId, identifier: InputIdentifier): Either[MutationError, Identifier] = {
+  override def addIdentifier(id: DepositId, identifier: InputIdentifier): MutationErrorOr[Identifier] = {
     trace(id, identifier)
     if (depositRepo contains id) {
       val InputIdentifier(idType, idValue, timestamp) = identifier
@@ -342,7 +342,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(doiRegisteredRepo)
   }
 
-  override def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): Either[MutationError, DoiRegisteredEvent] = {
+  override def setDoiRegistered(id: DepositId, registered: DoiRegisteredEvent): MutationErrorOr[DoiRegisteredEvent] = {
     trace(id, registered)
     setter(id, registered, doiRegisteredRepo)
   }
@@ -369,7 +369,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(doiActionRepo)
   }
 
-  override def setDoiAction(id: DepositId, action: DoiActionEvent): Either[MutationError, DoiActionEvent] = {
+  override def setDoiAction(id: DepositId, action: DoiActionEvent): MutationErrorOr[DoiActionEvent] = {
     trace(id, action)
     setter(id, action, doiActionRepo)
   }
@@ -401,7 +401,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(curatorRepo)
   }
 
-  override def setCurator(id: DepositId, curator: InputCurator): Either[MutationError, Curator] = {
+  override def setCurator(id: DepositId, curator: InputCurator): MutationErrorOr[Curator] = {
     trace(id, curator)
     setter(id, curator)(curatorRepo) {
       case (curatorId, InputCurator(userId, email, timestamp)) => Curator(curatorId, userId, email, timestamp)
@@ -431,7 +431,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(isNewVersionRepo)
   }
 
-  override def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): Either[MutationError, IsNewVersionEvent] = {
+  override def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): MutationErrorOr[IsNewVersionEvent] = {
     trace(id, action)
     setter(id, action, isNewVersionRepo)
   }
@@ -454,7 +454,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(curationRequiredRepo)
   }
 
-  override def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): Either[MutationError, CurationRequiredEvent] = {
+  override def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): MutationErrorOr[CurationRequiredEvent] = {
     trace(id, action)
     setter(id, action, curationRequiredRepo)
   }
@@ -477,7 +477,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(curationPerformedRepo)
   }
 
-  override def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): Either[MutationError, CurationPerformedEvent] = {
+  override def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): MutationErrorOr[CurationPerformedEvent] = {
     trace(id, action)
     setter(id, action, curationPerformedRepo)
   }
@@ -509,7 +509,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(springfieldRepo)
   }
 
-  def setSpringfield(id: DepositId, springfield: InputSpringfield): Either[MutationError, Springfield] = {
+  def setSpringfield(id: DepositId, springfield: InputSpringfield): MutationErrorOr[Springfield] = {
     trace(id, springfield)
     setter(id, springfield)(springfieldRepo) {
       case (springfieldId, InputSpringfield(domain, user, collection, playmode, timestamp)) => Springfield(springfieldId, domain, user, collection, playmode, timestamp)
@@ -548,7 +548,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getAllObjects(ids)(contentTypeRepo)
   }
 
-  def setContentType(id: DepositId, contentType: InputContentType): Either[MutationError, ContentType] = {
+  def setContentType(id: DepositId, contentType: InputContentType): MutationErrorOr[ContentType] = {
     trace(id, contentType)
     setter(id, contentType)(contentTypeRepo) {
       case (contentTypeId, InputContentType(value, timestamp)) => ContentType(contentTypeId, value, timestamp)
