@@ -15,7 +15,15 @@
  */
 package nl.knaw.dans.easy.properties
 
+import sangria.execution.{ ExceptionHandler, HandledException }
+
 package object server {
 
   case class GraphQLInput(query: String, variables: Option[String], operationName: Option[String])
+
+  val defaultExceptionHandler = ExceptionHandler(
+    onException = { case (_, e) => HandledException(e.getMessage) },
+    onViolation = { case (_, e) => HandledException(e.errorMessage) },
+    onUserFacingError = { case (_, e) => HandledException(e.getMessage) },
+  )
 }

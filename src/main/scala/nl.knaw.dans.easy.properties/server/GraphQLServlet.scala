@@ -34,7 +34,8 @@ import scala.language.postfixOps
 
 class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
                           ctxProvider: () => Ctx,
-                          deferredResolver: DeferredResolver[Ctx] = DeferredResolver.empty)
+                          deferredResolver: DeferredResolver[Ctx] = DeferredResolver.empty,
+                          exceptionHandler: ExceptionHandler = defaultExceptionHandler)
   extends ScalatraServlet
     with FutureSupport
     with ServletLogger
@@ -61,7 +62,8 @@ class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
     Executor.execute(schema, queryAst, ctxProvider(),
       operationName = operation,
       variables = parseVariables(variables),
-      deferredResolver = deferredResolver
+      deferredResolver = deferredResolver,
+      exceptionHandler = exceptionHandler,
     )
       .map(Serialization.writePretty(_))
       .map(Ok(_))
