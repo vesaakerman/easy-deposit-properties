@@ -79,7 +79,7 @@ trait DepositType {
     description = Option("List all states of the deposit."),
     arguments = optStateOrderArgument :: Connection.Args.All,
     fieldType = OptionType(stateConnectionType),
-    resolve = ctx => getAllStates(ctx).map(values => ExtendedConnection.connectionFromSeq(values.getOrElse(Seq.empty), ConnectionArgs(ctx))),
+    resolve = ctx => getAllStates(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
   private val ingestStepField: Field[DataContext, Deposit] = Field(
     name = "ingestStep",
@@ -92,7 +92,7 @@ trait DepositType {
     description = Option("List all ingest steps of the deposit."),
     arguments = optIngestStepOrderArgument :: Connection.Args.All,
     fieldType = OptionType(ingestStepConnectionType),
-    resolve = ctx => getAllIngestSteps(ctx).map(values => ExtendedConnection.connectionFromSeq(values.getOrElse(Seq.empty), ConnectionArgs(ctx))),
+    resolve = ctx => getAllIngestSteps(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
   private val depositorField: Field[DataContext, Deposit] = Field(
     name = "depositor",
@@ -110,7 +110,7 @@ trait DepositType {
   private val identifiersField: Field[DataContext, Deposit] = Field(
     name = "identifiers",
     description = Some("List the identifiers related to this deposit"),
-    fieldType = OptionType(ListType(IdentifierObjectType)),
+    fieldType = ListType(IdentifierObjectType),
     resolve = getIdentifiers,
   )
   private val doiRegisteredField: Field[DataContext, Deposit] = Field(
@@ -122,7 +122,7 @@ trait DepositType {
   private val doiRegisteredEventsField: Field[DataContext, Deposit] = Field(
     name = "doiRegisteredEvents",
     description = Some("Lists all state changes related to the registration of the DOI in DataCite"),
-    fieldType = OptionType(ListType(DoiRegisteredEventType)),
+    fieldType = ListType(DoiRegisteredEventType),
     resolve = getDoiRegisteredEvents,
   )
   private val doiActionField: Field[DataContext, Deposit] = Field(
@@ -134,7 +134,7 @@ trait DepositType {
   private val doiActionEventsField: Field[DataContext, Deposit] = Field(
     name = "doiActionEvents",
     description = Some("Lists all state changes related to whether the DOI should be 'created' or 'updated' on registration in DataCite"),
-    fieldType = OptionType(ListType(DoiActionEventType)),
+    fieldType = ListType(DoiActionEventType),
     resolve = getDoiActionEvents,
   )
   private val curatorField: Field[DataContext, Deposit] = Field(
@@ -148,7 +148,7 @@ trait DepositType {
     description = Some("List all data manager that were ever assigned to this deposit."),
     arguments = optCuratorOrderArgument :: Connection.Args.All,
     fieldType = OptionType(curatorConnectionType),
-    resolve = ctx => getAllCurators(ctx).map(values => ExtendedConnection.connectionFromSeq(values.getOrElse(Seq.empty), ConnectionArgs(ctx))),
+    resolve = ctx => getAllCurators(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
   private val isNewVersionField: Field[DataContext, Deposit] = Field(
     name = "isNewVersion",
@@ -159,7 +159,7 @@ trait DepositType {
   private val isNewVersionEventsField: Field[DataContext, Deposit] = Field(
     name = "isNewVersionEvents",
     description = Some("List the present and past values for 'is-new-version'."),
-    fieldType = OptionType(ListType(IsNewVersionEventType)),
+    fieldType = ListType(IsNewVersionEventType),
     resolve = getIsNewVersionEvents,
   )
   private val curationRequiredField: Field[DataContext, Deposit] = Field(
@@ -171,7 +171,7 @@ trait DepositType {
   private val curationRequiredEventsField: Field[DataContext, Deposit] = Field(
     name = "curationRequiredEvents",
     description = Some("List the present and past values for 'curation-required'."),
-    fieldType = OptionType(ListType(CurationRequiredEventType)),
+    fieldType = ListType(CurationRequiredEventType),
     resolve = getCurationRequiredEvents,
   )
   private val curationPerformedField: Field[DataContext, Deposit] = Field(
@@ -183,7 +183,7 @@ trait DepositType {
   private val curationPerformedEventsField: Field[DataContext, Deposit] = Field(
     name = "curationPerformedEvents",
     description = Some("List the present and past values for 'curation-performed'."),
-    fieldType = OptionType(ListType(CurationPerformedEventType)),
+    fieldType = ListType(CurationPerformedEventType),
     resolve = getCurationPerformedEvents,
   )
   private val springfieldField: Field[DataContext, Deposit] = Field(
@@ -196,7 +196,7 @@ trait DepositType {
     name = "springfields",
     description = Some("List the present and past values for springfield configuration."),
     arguments = List(optSpringfieldOrderArgument),
-    fieldType = OptionType(ListType(SpringfieldType)),
+    fieldType = ListType(SpringfieldType),
     resolve = getSpringfields,
   )
   private val contentTypeField: Field[DataContext, Deposit] = Field(
@@ -209,7 +209,7 @@ trait DepositType {
     name = "contentTypes",
     description = Some("List the present and past values of content types."),
     arguments = List(optContentTypeOrderArgument),
-    fieldType = OptionType(ListType(ContentTypeType)),
+    fieldType = ListType(ContentTypeType),
     resolve = getContentTypes,
   )
 
@@ -219,12 +219,12 @@ trait DepositType {
     DeferredValue(fetchCurrentStates.defer(id)).map { case (_, optState) => optState }
   }
 
-  private def getAllStates(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[State]]] = {
+  private def getAllStates(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[State]] = {
     val id = context.value.id
     val orderBy = context.arg(optStateOrderArgument)
 
     DeferredValue(fetchAllStates.defer(id))
-      .map { case (_, states) => orderBy.fold(states)(order => states.map(_.sorted(order.ordering))) }
+      .map { case (_, states) => orderBy.fold(states)(order => states.sorted(order.ordering)) }
   }
 
   private def getCurrentIngestStep(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[IngestStep]] = {
@@ -233,12 +233,12 @@ trait DepositType {
     DeferredValue(fetchCurrentIngestSteps.defer(id)).map { case (_, optIngestStep) => optIngestStep }
   }
 
-  private def getAllIngestSteps(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[IngestStep]]] = {
+  private def getAllIngestSteps(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[IngestStep]] = {
     val id = context.value.id
     val orderBy = context.arg(optIngestStepOrderArgument)
 
     DeferredValue(fetchAllIngestSteps.defer(id))
-      .map { case (_, ingestSteps) => orderBy.fold(ingestSteps)(order => ingestSteps.map(_.sorted(order.ordering))) }
+      .map { case (_, ingestSteps) => orderBy.fold(ingestSteps)(order => ingestSteps.sorted(order.ordering)) }
   }
 
   private def getDepositor(context: Context[DataContext, Deposit]): DepositorId = {
@@ -253,7 +253,7 @@ trait DepositType {
       .map { case (_, identifier) => identifier }
   }
 
-  private def getIdentifiers(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[Identifier]]] = {
+  private def getIdentifiers(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[Identifier]] = {
     val depositId = context.value.id
 
     DeferredValue(fetchIdentifiersByDepositId.defer(depositId))
@@ -267,11 +267,11 @@ trait DepositType {
       .map { case (_, doiRegistered) => doiRegistered.map(_.value) }
   }
 
-  private def getDoiRegisteredEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[DoiRegisteredEvent]]] = {
+  private def getDoiRegisteredEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[DoiRegisteredEvent]] = {
     val depositId = context.value.id
 
     DeferredValue(fetchAllDoisRegistered.defer(depositId))
-      .map { case (_, events) => events.map(_.sortBy(_.timestamp)) }
+      .map { case (_, events) => events.sortBy(_.timestamp) }
   }
 
   private def getDoiAction(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[DoiAction]] = {
@@ -281,11 +281,11 @@ trait DepositType {
       .map { case (_, doiAction) => doiAction.map(_.value) }
   }
 
-  private def getDoiActionEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[DoiActionEvent]]] = {
+  private def getDoiActionEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[DoiActionEvent]] = {
     val depositId = context.value.id
 
     DeferredValue(fetchAllDoisAction.defer(depositId))
-      .map { case (_, events) => events.map(_.sortBy(_.timestamp)) }
+      .map { case (_, events) => events.sortBy(_.timestamp) }
   }
 
   private def getCurrentCurator(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Curator]] = {
@@ -295,12 +295,12 @@ trait DepositType {
       .map { case (_, curator) => curator }
   }
 
-  private def getAllCurators(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[Curator]]] = {
+  private def getAllCurators(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[Curator]] = {
     val depositId = context.value.id
     val orderBy = context.arg(optCuratorOrderArgument)
 
     DeferredValue(fetchAllCurators.defer(depositId))
-      .map { case (_, curators) => orderBy.fold(curators)(order => curators.map(_.sorted(order.ordering))) }
+      .map { case (_, curators) => orderBy.fold(curators)(order => curators.sorted(order.ordering)) }
   }
 
   private def getIsNewVersion(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
@@ -310,11 +310,11 @@ trait DepositType {
       .map { case (_, isNewVersion) => isNewVersion.map(_.isNewVersion) }
   }
 
-  private def getIsNewVersionEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[IsNewVersionEvent]]] = {
+  private def getIsNewVersionEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[IsNewVersionEvent]] = {
     val depositId = context.value.id
 
     DeferredValue(fetchAllIsNewVersion.defer(depositId))
-      .map { case (_, events) => events.map(_.sortBy(_.timestamp)) }
+      .map { case (_, events) => events.sortBy(_.timestamp) }
   }
 
   private def getCurationRequired(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
@@ -324,11 +324,11 @@ trait DepositType {
       .map { case (_, curationRequired) => curationRequired.map(_.curationRequired) }
   }
 
-  private def getCurationRequiredEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[CurationRequiredEvent]]] = {
+  private def getCurationRequiredEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[CurationRequiredEvent]] = {
     val depositId = context.value.id
 
     DeferredValue(fetchAllCurationRequired.defer(depositId))
-      .map { case (_, events) => events.map(_.sortBy(_.timestamp)) }
+      .map { case (_, events) => events.sortBy(_.timestamp) }
   }
 
   private def getCurationPerformed(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
@@ -338,11 +338,11 @@ trait DepositType {
       .map { case (_, curationPerformed) => curationPerformed.map(_.curationPerformed) }
   }
 
-  private def getCurationPerformedEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[CurationPerformedEvent]]] = {
+  private def getCurationPerformedEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[CurationPerformedEvent]] = {
     val depositId = context.value.id
 
     DeferredValue(fetchAllCurationPerformed.defer(depositId))
-      .map { case (_, events) => events.map(_.sortBy(_.timestamp)) }
+      .map { case (_, events) => events.sortBy(_.timestamp) }
   }
 
   private def getSpringfield(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Springfield]] = {
@@ -352,12 +352,12 @@ trait DepositType {
       .map { case (_, springfield) => springfield }
   }
 
-  private def getSpringfields(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[Springfield]]] = {
+  private def getSpringfields(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[Springfield]] = {
     val depositId = context.value.id
     val orderBy = context.arg(optSpringfieldOrderArgument)
 
     DeferredValue(fetchAllSpringfields.defer(depositId))
-      .map { case (_, springfield) => orderBy.fold(springfield)(order => springfield.map(_.sorted(order.ordering))) }
+      .map { case (_, springfield) => orderBy.fold(springfield)(order => springfield.sorted(order.ordering)) }
   }
 
   private def getContentType(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[ContentType]] = {
@@ -367,12 +367,12 @@ trait DepositType {
       .map { case (_, contentType) => contentType }
   }
 
-  private def getContentTypes(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Seq[ContentType]]] = {
+  private def getContentTypes(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[ContentType]] = {
     val depositId = context.value.id
     val orderBy = context.arg(optContentTypeOrderArgument)
 
     DeferredValue(fetchAllContentTypes.defer(depositId))
-      .map { case (_, contentTypes) => orderBy.fold(contentTypes)(order => contentTypes.map(_.sorted(order.ordering))) }
+      .map { case (_, contentTypes) => orderBy.fold(contentTypes)(order => contentTypes.sorted(order.ordering)) }
   }
 
   implicit val depositIdentifiable: Identifiable[Deposit] = _.id.toString

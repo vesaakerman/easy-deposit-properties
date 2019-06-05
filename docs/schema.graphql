@@ -278,7 +278,7 @@ type Deposit implements Node {
   ): Identifier
 
   """List the identifiers related to this deposit"""
-  identifiers: [Identifier!]
+  identifiers: [Identifier!]!
 
   """Returns whether the DOI is registered in DataCite."""
   doiRegistered: Boolean
@@ -286,7 +286,7 @@ type Deposit implements Node {
   """
   Lists all state changes related to the registration of the DOI in DataCite
   """
-  doiRegisteredEvents: [DoiRegisteredEvent!]
+  doiRegisteredEvents: [DoiRegisteredEvent!]!
 
   """
   Returns whether the DOI should be 'created' or 'updated' on registration in DataCite
@@ -296,7 +296,7 @@ type Deposit implements Node {
   """
   Lists all state changes related to whether the DOI should be 'created' or 'updated' on registration in DataCite
   """
-  doiActionEvents: [DoiActionEvent!]
+  doiActionEvents: [DoiActionEvent!]!
 
   """The data manager currently assigned to this deposit"""
   curator: Curator
@@ -315,19 +315,19 @@ type Deposit implements Node {
   isNewVersion: Boolean
 
   """List the present and past values for 'is-new-version'."""
-  isNewVersionEvents: [IsNewVersionEvent!]
+  isNewVersionEvents: [IsNewVersionEvent!]!
 
   """Whether this deposit requires curation."""
   curationRequired: Boolean
 
   """List the present and past values for 'curation-required'."""
-  curationRequiredEvents: [CurationRequiredEvent!]
+  curationRequiredEvents: [CurationRequiredEvent!]!
 
   """Whether curation on this deposit has been performed."""
   curationPerformed: Boolean
 
   """List the present and past values for 'curation-performed'."""
-  curationPerformedEvents: [CurationPerformedEvent!]
+  curationPerformedEvents: [CurationPerformedEvent!]!
 
   """The springfield configuration currently associated with this deposit."""
   springfield: Springfield
@@ -336,7 +336,7 @@ type Deposit implements Node {
   springfields(
     """Ordering options for the returned springfields."""
     orderBy: SpringfieldOrder
-  ): [Springfield!]
+  ): [Springfield!]!
 
   """The content type currently associated with this deposit."""
   contentType: ContentType
@@ -345,7 +345,7 @@ type Deposit implements Node {
   contentTypes(
     """Ordering options for the returned content types."""
     orderBy: ContentTypeOrder
-  ): [ContentType!]
+  ): [ContentType!]!
 
   """Information about the depositor that submitted this deposit."""
   depositor: Depositor!

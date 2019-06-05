@@ -52,14 +52,14 @@ trait MetaTypes {
     })
   }
 
-  type AllFetcher[T] = Fetcher[DataContext, (DepositId, Option[Seq[T]]), (DepositId, Option[Seq[T]]), DepositId]
+  type AllFetcher[T] = Fetcher[DataContext, (DepositId, Seq[T]), (DepositId, Seq[T]), DepositId]
 
-  def fetchAll[T](currentOne: DataContext => DepositId => QueryErrorOr[Option[Seq[T]]],
-                  currentMany: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Option[Seq[T]])]]): AllFetcher[T] = {
+  def fetchAll[T](currentOne: DataContext => DepositId => QueryErrorOr[Seq[T]],
+                  currentMany: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Seq[T])]]): AllFetcher[T] = {
     Fetcher((ctx: DataContext, ids: Seq[DepositId]) => {
       ids match {
         case Seq() => Seq.empty.asRight[QueryError].toFuture
-        case Seq(id) => currentOne(ctx)(id).map(optSeqT => Seq(id -> optSeqT)).toFuture
+        case Seq(id) => currentOne(ctx)(id).map(seqT => Seq(id -> seqT)).toFuture
         case _ => currentMany(ctx)(ids).toFuture
       }
     })

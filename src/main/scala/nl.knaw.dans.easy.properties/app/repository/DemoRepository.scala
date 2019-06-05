@@ -131,12 +131,12 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     ids.toList.traverse[QueryErrorOr, (DepositId, Option[T])](id => getCurrentObject(id)(repo).map(id -> _))
   }
 
-  private def getAllObjects[T](id: DepositId)(repo: mutable.Map[DepositId, Seq[T]]): QueryErrorOr[Option[Seq[T]]] = {
-    repo.get(id).asRight
+  private def getAllObjects[T](id: DepositId)(repo: mutable.Map[DepositId, Seq[T]]): QueryErrorOr[Seq[T]] = {
+    repo.getOrElse(id, Seq.empty).asRight
   }
 
-  private def getAllObjects[T](ids: Seq[DepositId])(repo: mutable.Map[DepositId, Seq[T]]): QueryErrorOr[Seq[(DepositId, Option[Seq[T]])]] = {
-    ids.toList.traverse[QueryErrorOr, (DepositId, Option[Seq[T]])](id => getAllObjects(id)(repo).map(id -> _))
+  private def getAllObjects[T](ids: Seq[DepositId])(repo: mutable.Map[DepositId, Seq[T]]): QueryErrorOr[Seq[(DepositId, Seq[T])]] = {
+    ids.toList.traverse[QueryErrorOr, (DepositId, Seq[T])](id => getAllObjects(id)(repo).map(id -> _))
   }
 
   private def setter[I, O <: Node](id: DepositId, input: I)(repo: mutable.Map[DepositId, Seq[O]])(conversion: (String, I) => O): MutationErrorOr[O] = {
@@ -188,7 +188,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObject(id)(stateRepo)
   }
 
-  override def getAllStates(id: DepositId): QueryErrorOr[Option[Seq[State]]] = {
+  override def getAllStates(id: DepositId): QueryErrorOr[Seq[State]] = {
     trace(id)
     getAllObjects(id)(stateRepo)
   }
@@ -198,7 +198,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(stateRepo)
   }
 
-  override def getAllStates(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[State]])]] = {
+  override def getAllStates(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[State])]] = {
     trace(ids)
     getAllObjects(ids)(stateRepo)
   }
@@ -227,7 +227,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObject(id)(stepRepo)
   }
 
-  override def getAllIngestSteps(id: DepositId): QueryErrorOr[Option[Seq[IngestStep]]] = {
+  override def getAllIngestSteps(id: DepositId): QueryErrorOr[Seq[IngestStep]] = {
     trace(id)
     getAllObjects(id)(stepRepo)
   }
@@ -237,7 +237,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(stepRepo)
   }
 
-  override def getAllIngestSteps(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[IngestStep]])]] = {
+  override def getAllIngestSteps(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[IngestStep])]] = {
     trace(ids)
     getAllObjects(ids)(stepRepo)
   }
@@ -271,10 +271,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     identifierRepo.values.toStream.find(identifier => identifier.idType == idType && identifier.idValue == idValue).asRight
   }
 
-  override def getIdentifiers(id: DepositId): QueryErrorOr[Option[Seq[Identifier]]] = {
+  override def getIdentifiers(id: DepositId): QueryErrorOr[Seq[Identifier]] = {
     trace(id)
     identifierRepo.find { case ((depId, _), _) => depId == id }
       .map(_ => identifierRepo.collect { case ((`id`, _), identifiers) => identifiers }.toSeq)
+      .getOrElse(Seq.empty)
       .asRight
   }
 
@@ -285,11 +286,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     }.asRight
   }
 
-  override def getIdentifiers(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Identifier]])]] = {
+  override def getIdentifiers(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Identifier])]] = {
     trace(ids)
     ids.map(depositId => depositId ->
       identifierRepo.find { case ((depId, _), _) => depId == depositId }
-        .map(_ => identifierRepo.collect { case ((`depositId`, _), identifiers) => identifiers }.toSeq))
+        .map(_ => identifierRepo.collect { case ((`depositId`, _), identifiers) => identifiers }.toSeq).getOrElse(Seq.empty))
       .asRight
   }
 
@@ -334,12 +335,12 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(doiRegisteredRepo)
   }
 
-  override def getAllDoiRegistered(id: DepositId): QueryErrorOr[Option[Seq[DoiRegisteredEvent]]] = {
+  override def getAllDoiRegistered(id: DepositId): QueryErrorOr[Seq[DoiRegisteredEvent]] = {
     trace(id)
     getAllObjects(id)(doiRegisteredRepo)
   }
 
-  override def getAllDoisRegistered(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[DoiRegisteredEvent]])]] = {
+  override def getAllDoisRegistered(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[DoiRegisteredEvent])]] = {
     trace(ids)
     getAllObjects(ids)(doiRegisteredRepo)
   }
@@ -361,12 +362,12 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(doiActionRepo)
   }
 
-  override def getAllDoiAction(id: DepositId): QueryErrorOr[Option[Seq[DoiActionEvent]]] = {
+  override def getAllDoiAction(id: DepositId): QueryErrorOr[Seq[DoiActionEvent]] = {
     trace(id)
     getAllObjects(id)(doiActionRepo)
   }
 
-  override def getAllDoisAction(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[DoiActionEvent]])]] = {
+  override def getAllDoisAction(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[DoiActionEvent])]] = {
     trace(ids)
     getAllObjects(ids)(doiActionRepo)
   }
@@ -388,7 +389,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObject(id)(curatorRepo)
   }
 
-  override def getAllCurators(id: DepositId): QueryErrorOr[Option[Seq[Curator]]] = {
+  override def getAllCurators(id: DepositId): QueryErrorOr[Seq[Curator]] = {
     trace(id)
     getAllObjects(id)(curatorRepo)
   }
@@ -398,7 +399,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(curatorRepo)
   }
 
-  override def getAllCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Curator]])]] = {
+  override def getAllCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Curator])]] = {
     trace(ids)
     getAllObjects(ids)(curatorRepo)
   }
@@ -425,11 +426,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(isNewVersionRepo)
   }
 
-  override def getAllIsNewVersionAction(id: DepositId): QueryErrorOr[Option[Seq[IsNewVersionEvent]]] = {
+  override def getAllIsNewVersionAction(id: DepositId): QueryErrorOr[Seq[IsNewVersionEvent]] = {
     getAllObjects(id)(isNewVersionRepo)
   }
 
-  override def getAllIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[IsNewVersionEvent]])]] = {
+  override def getAllIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[IsNewVersionEvent])]] = {
     getAllObjects(ids)(isNewVersionRepo)
   }
 
@@ -448,11 +449,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(curationRequiredRepo)
   }
 
-  override def getAllCurationRequiredAction(id: DepositId): QueryErrorOr[Option[Seq[CurationRequiredEvent]]] = {
+  override def getAllCurationRequiredAction(id: DepositId): QueryErrorOr[Seq[CurationRequiredEvent]] = {
     getAllObjects(id)(curationRequiredRepo)
   }
 
-  override def getAllCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[CurationRequiredEvent]])]] = {
+  override def getAllCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[CurationRequiredEvent])]] = {
     getAllObjects(ids)(curationRequiredRepo)
   }
 
@@ -471,11 +472,11 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(curationPerformedRepo)
   }
 
-  override def getAllCurationPerformedAction(id: DepositId): QueryErrorOr[Option[Seq[CurationPerformedEvent]]] = {
+  override def getAllCurationPerformedAction(id: DepositId): QueryErrorOr[Seq[CurationPerformedEvent]] = {
     getAllObjects(id)(curationPerformedRepo)
   }
 
-  override def getAllCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[CurationPerformedEvent]])]] = {
+  override def getAllCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[CurationPerformedEvent])]] = {
     getAllObjects(ids)(curationPerformedRepo)
   }
 
@@ -501,12 +502,12 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(springfieldRepo)
   }
 
-  def getAllSpringfields(id: DepositId): QueryErrorOr[Option[Seq[Springfield]]] = {
+  def getAllSpringfields(id: DepositId): QueryErrorOr[Seq[Springfield]] = {
     trace(id)
     getAllObjects(id)(springfieldRepo)
   }
 
-  def getAllSpringfields(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[Springfield]])]] = {
+  def getAllSpringfields(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Springfield])]] = {
     trace(ids)
     getAllObjects(ids)(springfieldRepo)
   }
@@ -540,12 +541,12 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
     getCurrentObjects(ids)(contentTypeRepo)
   }
 
-  def getAllContentTypes(id: DepositId): QueryErrorOr[Option[Seq[ContentType]]] = {
+  def getAllContentTypes(id: DepositId): QueryErrorOr[Seq[ContentType]] = {
     trace(id)
     getAllObjects(id)(contentTypeRepo)
   }
 
-  def getAllContentTypes(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Seq[ContentType]])]] = {
+  def getAllContentTypes(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[ContentType])]] = {
     trace(ids)
     getAllObjects(ids)(contentTypeRepo)
   }
