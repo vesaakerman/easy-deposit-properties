@@ -15,7 +15,6 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
-import nl.knaw.dans.easy.properties.app.graphql.error.MutationError
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType

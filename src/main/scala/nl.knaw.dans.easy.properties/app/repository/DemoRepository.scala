@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.properties.app.repository
 
 import cats.syntax.either._
-import nl.knaw.dans.easy.properties.app.graphql.error.{ DepositAlreadyExistsError, IdentifierAlreadyExistsError, MutationError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType

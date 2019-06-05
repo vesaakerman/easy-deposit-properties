@@ -15,7 +15,16 @@
  */
 package nl.knaw.dans.easy.properties.app
 
+import nl.knaw.dans.easy.properties.app.model.DepositId
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
+import sangria.execution.UserFacingError
+
 package object repository {
+
+  abstract class MutationError(val msg: String) extends Exception(msg) with UserFacingError
+  case class NoSuchDepositError(depositId: DepositId) extends MutationError(s"Deposit $depositId does not exist.")
+  case class DepositAlreadyExistsError(depositId: DepositId) extends MutationError(s"Deposit $depositId already exist.")
+  case class IdentifierAlreadyExistsError(depositId: DepositId, identifierType: IdentifierType) extends MutationError(s"Identifier $identifierType already exists for $depositId.")
 
   implicit class MaxByOption[A](val t: TraversableOnce[A]) extends AnyVal {
     def maxByOption[B](f: A => B)(implicit cmp: Ordering[B]): Option[A] = {
