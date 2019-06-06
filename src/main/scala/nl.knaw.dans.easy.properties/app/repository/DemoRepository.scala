@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties.app.repository
 import cats.instances.either._
 import cats.instances.list._
 import cats.syntax.either._
+import cats.syntax.functor._
 import cats.syntax.traverse._
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
@@ -96,10 +97,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   override def getDepositsAggregated(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]] = {
     trace(filters)
-
-    filters.toList.traverse[QueryErrorOr, (DepositFilters, Seq[Deposit])](filter => {
-      getDeposits(filter).map(filter -> _)
-    })
+    filters.toList.traverse(filter => getDeposits(filter).tupleLeft(filter))
   }
 
   override def getDeposit(id: DepositId): QueryErrorOr[Deposit] = {
@@ -128,7 +126,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   }
 
   private def getCurrentObjects[T <: Timestamped](ids: Seq[DepositId])(repo: mutable.Map[DepositId, Seq[T]]): QueryErrorOr[Seq[(DepositId, Option[T])]] = {
-    ids.toList.traverse[QueryErrorOr, (DepositId, Option[T])](id => getCurrentObject(id)(repo).map(id -> _))
+    ids.toList.traverse(id => getCurrentObject(id)(repo).tupleLeft(id))
   }
 
   private def getAllObjects[T](id: DepositId)(repo: mutable.Map[DepositId, Seq[T]]): QueryErrorOr[Seq[T]] = {
@@ -136,7 +134,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   }
 
   private def getAllObjects[T](ids: Seq[DepositId])(repo: mutable.Map[DepositId, Seq[T]]): QueryErrorOr[Seq[(DepositId, Seq[T])]] = {
-    ids.toList.traverse[QueryErrorOr, (DepositId, Seq[T])](id => getAllObjects(id)(repo).map(id -> _))
+    ids.toList.traverse(id => getAllObjects(id)(repo).tupleLeft(id))
   }
 
   private def setter[I, O <: Node](id: DepositId, input: I)(repo: mutable.Map[DepositId, Seq[O]])(conversion: (String, I) => O): MutationErrorOr[O] = {
