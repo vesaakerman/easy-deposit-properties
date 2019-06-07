@@ -25,7 +25,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, Identifie
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.springfield.Springfield
 import nl.knaw.dans.easy.properties.app.model.state.State
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp, timestampOrdering }
 import nl.knaw.dans.easy.properties.app.repository.{ DepositFilters, QueryError }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
@@ -46,6 +46,7 @@ trait DepositType {
     with SpringfieldType
     with ContentTypeGraphQLType
     with NodeType
+    with MetaTypes
     with Scalars =>
 
   implicit val depositsHasId: HasId[(DepositFilters, Seq[Deposit]), DepositFilters] = HasId { case (filters, _) => filters }
@@ -57,6 +58,7 @@ trait DepositType {
       case _ => ctx.deposits.getDepositsAggregated(filters).toFuture
     }
   })
+  val fetchLastModified: CurrentFetcher[Timestamp] = fetchCurrent(_.deposits.getLastModified, _.deposits.getLastModifieds)
 
   private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
     name = "type",
@@ -68,6 +70,12 @@ trait DepositType {
     astNodes = Vector.empty,
   )
 
+  private val lastModifiedField: Field[DataContext, Deposit] = Field(
+    name = "lastModified",
+    fieldType = OptionType(DateTimeType),
+    description = Option("Get the timestamp at which this deposit was last modified. If the dataset was only created, the creation timestamp is returned."),
+    resolve = getLastModified,
+  )
   private val stateField: Field[DataContext, Deposit] = Field(
     name = "state",
     fieldType = OptionType(StateType),
@@ -212,6 +220,12 @@ trait DepositType {
     fieldType = ListType(ContentTypeType),
     resolve = getContentTypes,
   )
+
+  private def getLastModified(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Timestamp]] = {
+    val id = context.value.id
+
+    DeferredValue(fetchLastModified.defer(id)).map { case (_, modified) => modified }
+  }
 
   private def getCurrentState(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[State]] = {
     val id = context.value.id
@@ -388,6 +402,7 @@ trait DepositType {
       Node.globalIdField[DataContext, Deposit],
       stateField,
       statesField,
+      lastModifiedField,
       ingestStepField,
       ingestStepsField,
       identifierField,

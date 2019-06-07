@@ -22,7 +22,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIden
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
 
 trait DepositRepository {
 
@@ -35,6 +35,12 @@ trait DepositRepository {
   def getDeposit(id: DepositId): QueryErrorOr[Deposit]
 
   def addDeposit(deposit: Deposit): MutationErrorOr[Deposit]
+
+  //
+
+  def getLastModified(id: DepositId): QueryErrorOr[Option[Timestamp]]
+
+  def getLastModifieds(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]]
 
   //
 

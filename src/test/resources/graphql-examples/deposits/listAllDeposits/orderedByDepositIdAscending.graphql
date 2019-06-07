@@ -6,6 +6,8 @@ query ListAllDepositsOrderedByDepositIdAscending {
                 depositor {
                     depositorId
                 }
+                creationTimestamp
+                lastModified
                 state {
                     label
                     description

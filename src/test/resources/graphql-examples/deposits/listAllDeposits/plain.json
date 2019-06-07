@@ -8,6 +8,8 @@
             "depositor": {
               "depositorId": "user001"
             },
+            "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
+            "lastModified": "2019-02-02T03:03:00.000+01:00",
             "state": {
               "label": "ARCHIVED",
               "description": "deposit is archived",
@@ -128,6 +130,8 @@
             "depositor": {
               "depositorId": "user002"
             },
+            "creationTimestamp": "2019-05-05T00:00:00.000+02:00",
+            "lastModified": "2019-05-05T04:05:00.000+02:00",
             "state": {
               "label": "REJECTED",
               "description": "deposit is rejected",
@@ -221,6 +225,8 @@
             "depositor": {
               "depositorId": "user001"
             },
+            "creationTimestamp": "2019-04-04T00:00:00.000+02:00",
+            "lastModified": "2019-04-04T04:04:00.000+02:00",
             "state": {
               "label": "ARCHIVED",
               "description": "deposit is archived",
@@ -325,6 +331,8 @@
             "depositor": {
               "depositorId": "user001"
             },
+            "creationTimestamp": "2019-01-01T00:00:00.000+01:00",
+            "lastModified": "2019-01-01T05:05:00.000+01:00",
             "state": {
               "label": "ARCHIVED",
               "description": "deposit is archived",
@@ -468,6 +476,8 @@
             "depositor": {
               "depositorId": "user002"
             },
+            "creationTimestamp": "2019-03-03T00:00:00.000+01:00",
+            "lastModified": "2019-03-03T04:06:00.000+01:00",
             "state": {
               "label": "INVALID",
               "description": "deposit is invalid",

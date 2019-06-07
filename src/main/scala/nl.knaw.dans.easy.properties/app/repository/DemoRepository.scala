@@ -27,7 +27,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIden
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter, Timestamped, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter, Timestamp, Timestamped, timestampOrdering }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import sangria.relay.Node
 
@@ -116,6 +116,44 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       deposit.asRight
     }
   }
+
+  //
+
+  private def getTimestamps(id: DepositId): QueryErrorOr[Seq[Timestamp]] = {
+    if (depositRepo.contains(id)) {
+      (depositRepo.get(id).map(_.creationTimestamp).toList :::
+        stateRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        stepRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        identifierRepo.collect { case ((`id`, _), identifier) => identifier.timestamp }.toList :::
+        doiRegisteredRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        doiActionRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        curatorRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        isNewVersionRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        curationRequiredRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        curationPerformedRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        springfieldRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        contentTypeRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        Nil).asRight
+    }
+    else
+      DepositDoesNotExistError(id).asLeft
+  }
+
+  private def getLatestTimestamp(id: DepositId): QueryErrorOr[Option[Timestamp]] = {
+    getTimestamps(id).map(_.maxByOption(identity))
+  }
+
+  override def getLastModified(id: DepositId): QueryErrorOr[Option[Timestamp]] = {
+    trace(id)
+    getLatestTimestamp(id)
+  }
+
+  override def getLastModifieds(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]] = {
+    trace(ids)
+    ids.toList.traverse(id => getLatestTimestamp(id).tupleLeft(id))
+  }
+
+  //
 
   private def getObjectById[T <: Node](id: String)(repo: mutable.Map[_, Seq[T]]): QueryErrorOr[Option[T]] = {
     repo.values.toStream.flatten.find(_.id == id).asRight

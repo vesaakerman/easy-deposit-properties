@@ -258,6 +258,12 @@ type Deposit implements Node {
     last: Int
   ): StateConnection
 
+  """
+  Get the timestamp at which this deposit was last modified. If the dataset was
+  only created, the creation timestamp is returned.
+  """
+  lastModified: DateTime
+
   """The current ingest step of the deposit."""
   ingestStep: IngestStep
 

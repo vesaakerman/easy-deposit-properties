@@ -218,6 +218,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposit _ expects depositId1 once() returning deposit1.asRight
       inAnyOrder {
+        repository.getLastModified _ expects depositId1 once() returning Some(DateTime.now()).asRight
         repository.getCurrentState _ expects depositId1 once() returning Some(state1).asRight
         repository.getCurrentIngestStep _ expects depositId1 once() returning Some(step1).asRight
         (repository.getIdentifiers(_: DepositId)) expects depositId1 once() returning Seq(identifier1, identifier2).asRight
@@ -665,6 +666,11 @@ class GraphQLResolveSpec extends TestSupportFixture
     inSequence {
       repository.getDeposits _ expects DepositFilters() once() returning Seq(deposit1, deposit2, deposit3).asRight
       inAnyOrder {
+        repository.getLastModifieds _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+          depositId1 -> Some(DateTime.now()),
+          depositId2 -> Some(DateTime.now()),
+          depositId3 -> Some(DateTime.now()),
+        ).asRight
         repository.getCurrentStates _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
           depositId1 -> Some(state1),
           depositId2 -> Some(state2),
