@@ -59,6 +59,14 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  private val bagNameInputField: InputField[String] = InputField(
+    name = "bagName",
+    description = Some("The name of the deposited bag."),
+    defaultValue = None,
+    fieldType = StringType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
   private val creationTimestampInputField: InputField[Timestamp] = InputField(
     name = "creationTimestamp",
     description = Some("The timestamp at which this deposit was created."),
@@ -367,6 +375,7 @@ trait MutationType {
     fieldDescription = Some("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."),
     inputFields = List(
       depositIdInputField,
+      bagNameInputField,
       creationTimestampInputField,
       depositorIdInputField,
     ),
@@ -541,10 +550,11 @@ trait MutationType {
 
     val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
     val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
+    val bagName = input(bagNameInputField.name).asInstanceOf[String]
     val creationTimestamp = input(creationTimestampInputField.name).asInstanceOf[Timestamp]
     val depositorId = input(depositorIdInputField.name).asInstanceOf[String]
 
-    repository.addDeposit(Deposit(depositId, creationTimestamp, depositorId))
+    repository.addDeposit(Deposit(depositId, Option(bagName), creationTimestamp, depositorId))
       .map(deposit => AddDepositPayload(mutationId, deposit.id))
       .toTry
   }

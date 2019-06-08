@@ -303,129 +303,6 @@
         },
         {
           "node": {
-            "depositId": "00000000-0000-0000-0000-000000000002",
-            "depositor": {
-              "depositorId": "user001"
-            },
-            "bagName": null,
-            "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
-            "lastModified": "2019-02-02T03:03:00.000+01:00",
-            "state": {
-              "label": "ARCHIVED",
-              "description": "deposit is archived",
-              "timestamp": "2019-02-02T03:03:00.000+01:00"
-            },
-            "ingestStep": {
-              "step": "COMPLETED",
-              "timestamp": "2019-02-02T02:11:00.000+01:00"
-            },
-            "identifiers": [
-              {
-                "id": "SWRlbnRpZmllcjoyMw==",
-                "type": "URN",
-                "value": "urn:nbn:789012",
-                "timestamp": "2019-02-02T00:02:00.000+01:00"
-              },
-              {
-                "id": "SWRlbnRpZmllcjoyMQ==",
-                "type": "BAG_STORE",
-                "value": "00000000-0000-0000-0000-000000000002",
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              },
-              {
-                "id": "SWRlbnRpZmllcjoyMg==",
-                "type": "DOI",
-                "value": "10.5072/dans-f3g-hij4",
-                "timestamp": "2019-02-02T00:01:00.000+01:00"
-              },
-              {
-                "id": "SWRlbnRpZmllcjoyNA==",
-                "type": "FEDORA",
-                "value": "easy-dataset:2",
-                "timestamp": "2019-02-02T00:03:00.000+01:00"
-              }
-            ],
-            "doiRegistered": true,
-            "doiRegisteredEvents": [
-              {
-                "value": false,
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              },
-              {
-                "value": true,
-                "timestamp": "2019-02-02T02:07:00.000+01:00"
-              }
-            ],
-            "doiAction": "CREATE",
-            "doiActionEvents": [
-              {
-                "value": "CREATE",
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              }
-            ],
-            "curator": null,
-            "curators": {
-              "edges": [
-              ]
-            },
-            "isNewVersion": false,
-            "isNewVersionEvents": [
-              {
-                "value": false,
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              }
-            ],
-            "curationRequired": false,
-            "curationRequiredEvents": [
-              {
-                "value": false,
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              }
-            ],
-            "curationPerformed": false,
-            "curationPerformedEvents": [
-              {
-                "value": false,
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              }
-            ],
-            "springfield": {
-              "domain": "domain2",
-              "user": "user2",
-              "collection": "collection2",
-              "playmode": "CONTINUOUS",
-              "timestamp": "2019-02-02T02:02:00.000+01:00"
-            },
-            "springfields": [
-              {
-                "domain": "domain1",
-                "user": "user1",
-                "collection": "collection1",
-                "playmode": "CONTINUOUS",
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              },
-              {
-                "domain": "domain2",
-                "user": "user2",
-                "collection": "collection2",
-                "playmode": "CONTINUOUS",
-                "timestamp": "2019-02-02T02:02:00.000+01:00"
-              }
-            ],
-            "contentType": {
-              "value": "application/zip",
-              "timestamp": "2019-02-02T00:05:00.000+01:00"
-            },
-            "contentTypes": [
-              {
-                "value": "application/zip",
-                "timestamp": "2019-02-02T00:05:00.000+01:00"
-              }
-            ]
-          }
-        },
-        {
-          "node": {
             "depositId": "00000000-0000-0000-0000-000000000001",
             "depositor": {
               "depositorId": "user001"
@@ -566,6 +443,129 @@
               {
                 "value": "application/octet-stream",
                 "timestamp": "2019-01-01T00:10:00.000+01:00"
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "depositor": {
+              "depositorId": "user001"
+            },
+            "bagName": null,
+            "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
+            "lastModified": "2019-02-02T03:03:00.000+01:00",
+            "state": {
+              "label": "ARCHIVED",
+              "description": "deposit is archived",
+              "timestamp": "2019-02-02T03:03:00.000+01:00"
+            },
+            "ingestStep": {
+              "step": "COMPLETED",
+              "timestamp": "2019-02-02T02:11:00.000+01:00"
+            },
+            "identifiers": [
+              {
+                "id": "SWRlbnRpZmllcjoyMw==",
+                "type": "URN",
+                "value": "urn:nbn:789012",
+                "timestamp": "2019-02-02T00:02:00.000+01:00"
+              },
+              {
+                "id": "SWRlbnRpZmllcjoyMQ==",
+                "type": "BAG_STORE",
+                "value": "00000000-0000-0000-0000-000000000002",
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              },
+              {
+                "id": "SWRlbnRpZmllcjoyMg==",
+                "type": "DOI",
+                "value": "10.5072/dans-f3g-hij4",
+                "timestamp": "2019-02-02T00:01:00.000+01:00"
+              },
+              {
+                "id": "SWRlbnRpZmllcjoyNA==",
+                "type": "FEDORA",
+                "value": "easy-dataset:2",
+                "timestamp": "2019-02-02T00:03:00.000+01:00"
+              }
+            ],
+            "doiRegistered": true,
+            "doiRegisteredEvents": [
+              {
+                "value": false,
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              },
+              {
+                "value": true,
+                "timestamp": "2019-02-02T02:07:00.000+01:00"
+              }
+            ],
+            "doiAction": "CREATE",
+            "doiActionEvents": [
+              {
+                "value": "CREATE",
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              }
+            ],
+            "curator": null,
+            "curators": {
+              "edges": [
+              ]
+            },
+            "isNewVersion": false,
+            "isNewVersionEvents": [
+              {
+                "value": false,
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              }
+            ],
+            "curationRequired": false,
+            "curationRequiredEvents": [
+              {
+                "value": false,
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              }
+            ],
+            "curationPerformed": false,
+            "curationPerformedEvents": [
+              {
+                "value": false,
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              }
+            ],
+            "springfield": {
+              "domain": "domain2",
+              "user": "user2",
+              "collection": "collection2",
+              "playmode": "CONTINUOUS",
+              "timestamp": "2019-02-02T02:02:00.000+01:00"
+            },
+            "springfields": [
+              {
+                "domain": "domain1",
+                "user": "user1",
+                "collection": "collection1",
+                "playmode": "CONTINUOUS",
+                "timestamp": "2019-02-02T00:00:00.000+01:00"
+              },
+              {
+                "domain": "domain2",
+                "user": "user2",
+                "collection": "collection2",
+                "playmode": "CONTINUOUS",
+                "timestamp": "2019-02-02T02:02:00.000+01:00"
+              }
+            ],
+            "contentType": {
+              "value": "application/zip",
+              "timestamp": "2019-02-02T00:05:00.000+01:00"
+            },
+            "contentTypes": [
+              {
+                "value": "application/zip",
+                "timestamp": "2019-02-02T00:05:00.000+01:00"
               }
             ]
           }

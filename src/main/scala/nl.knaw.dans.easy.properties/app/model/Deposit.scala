@@ -15,4 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.model
 
-case class Deposit(id: DepositId, creationTimestamp: Timestamp, depositorId: DepositorId)
+case class Deposit(id: DepositId,
+                   bagName: Option[String],
+                   creationTimestamp: Timestamp,
+                   depositorId: DepositorId,
+                  )

@@ -4,6 +4,7 @@
 
 CREATE TABLE Deposit (
     depositId CHAR(36) NOT NULL PRIMARY KEY,
+    bagName CLOB NOT NULL,
     creationTimestamp TIME WITH TIME ZONE NOT NULL,
     depositorId VARCHAR(64) NOT NULL,
 );

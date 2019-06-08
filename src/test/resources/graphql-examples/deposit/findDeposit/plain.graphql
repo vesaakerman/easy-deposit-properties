@@ -3,6 +3,7 @@ query Deposit {
         depositor {
             depositorId
         }
+        bagName
         creationTimestamp
         lastModified
         state {

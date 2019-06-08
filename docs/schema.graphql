@@ -2,6 +2,9 @@ input AddDepositInput {
   """The deposit's identifier."""
   depositId: UUID!
 
+  """The name of the deposited bag."""
+  bagName: String!
+
   """The timestamp at which this deposit was created."""
   creationTimestamp: DateTime!
 
@@ -353,6 +356,9 @@ type Deposit implements Node {
     orderBy: ContentTypeOrder
   ): [ContentType!]!
 
+  """The name of the deposited bag."""
+  bagName: String
+
   """Information about the depositor that submitted this deposit."""
   depositor: Depositor!
 }
@@ -554,6 +560,9 @@ input DepositOrder {
 enum DepositOrderField {
   """Order deposits by creation timestamp"""
   CREATION_TIMESTAMP
+
+  """Order deposits by bag name"""
+  BAG_NAME
 
   """Order deposits by depositId"""
   DEPOSIT_ID

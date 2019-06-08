@@ -102,6 +102,8 @@ trait MetaTypes {
     // @formatter:off
     @GraphQLDescription("Order deposits by depositId")
     val DEPOSIT_ID        : DepositOrderField = Value("DEPOSIT_ID")
+    @GraphQLDescription("Order deposits by bag name")
+    val BAG_NAME          : DepositOrderField = Value("BAG_NAME")
     @GraphQLDescription("Order deposits by creation timestamp")
     val CREATION_TIMESTAMP: DepositOrderField = Value("CREATION_TIMESTAMP")
     // @formatter:on
@@ -115,6 +117,8 @@ trait MetaTypes {
       val orderByField: Ordering[Deposit] = field match {
         case DepositOrderField.DEPOSIT_ID =>
           Ordering[DepositId].on(_.id)
+        case DepositOrderField.BAG_NAME =>
+          Ordering[Option[String]].on(_.bagName)
         case DepositOrderField.CREATION_TIMESTAMP =>
           Ordering[Timestamp].on(_.creationTimestamp)
       }

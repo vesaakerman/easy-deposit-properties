@@ -47,16 +47,19 @@ trait GraphQLResolveSpecTestObjects {
   val depositId3: DepositId = UUID.fromString("00000000-0000-0000-0000-000000000003")
   val deposit1 = Deposit(
     id = depositId1,
+    bagName = Some("bag1"),
     creationTimestamp = DateTime.now(),
     depositorId = "user001",
   )
   val deposit2 = Deposit(
     id = depositId2,
+    bagName = Some("bag2"),
     creationTimestamp = DateTime.now(),
     depositorId = "user002",
   )
   val deposit3 = Deposit(
     id = depositId3,
+    bagName = Some("bag3"),
     creationTimestamp = DateTime.now(),
     depositorId = "user002",
   )

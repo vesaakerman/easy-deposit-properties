@@ -31,7 +31,7 @@ import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay._
-import sangria.schema.{ Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionType }
+import sangria.schema.{ StringType, Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -70,6 +70,12 @@ trait DepositType {
     astNodes = Vector.empty,
   )
 
+  private val bagNameField: Field[DataContext, Deposit] = Field(
+    name = "bagName",
+    fieldType = OptionType(StringType),
+    description = Option("The name of the deposited bag."),
+    resolve = ctx => ctx.value.bagName,
+  )
   private val lastModifiedField: Field[DataContext, Deposit] = Field(
     name = "lastModified",
     fieldType = OptionType(DateTimeType),
@@ -397,6 +403,7 @@ trait DepositType {
     Interfaces[DataContext, Deposit](nodeInterface),
     RenameField("id", "depositId"),
     DocumentField("id", "The identifier of the deposit."),
+    DocumentField("bagName", "The name of the deposited bag."),
     DocumentField("creationTimestamp", "The moment this deposit was created."),
     AddFields(
       Node.globalIdField[DataContext, Deposit],
@@ -424,6 +431,7 @@ trait DepositType {
       contentTypeField,
       contentTypesField,
     ),
+    ReplaceField("bagName", bagNameField),
     ReplaceField("depositorId", depositorField),
   )
 

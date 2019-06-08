@@ -42,11 +42,11 @@ class DemoRepositoryImpl extends DemoRepository {
   private val user1 = "user001"
   private val user2 = "user002"
 
-  private val deposit1 = Deposit(depositId1, new DateTime(2019, 1, 1, 0, 0, timeZone), user1)
-  private val deposit2 = Deposit(depositId2, new DateTime(2019, 2, 2, 0, 0, timeZone), user1)
-  private val deposit3 = Deposit(depositId3, new DateTime(2019, 3, 3, 0, 0, timeZone), user2)
-  private val deposit4 = Deposit(depositId4, new DateTime(2019, 4, 4, 0, 0, timeZone), user1)
-  private val deposit5 = Deposit(depositId5, new DateTime(2019, 5, 5, 0, 0, timeZone), user2)
+  private val deposit1 = Deposit(depositId1, Some("bag1"), new DateTime(2019, 1, 1, 0, 0, timeZone), user1)
+  private val deposit2 = Deposit(depositId2, None, new DateTime(2019, 2, 2, 0, 0, timeZone), user1)
+  private val deposit3 = Deposit(depositId3, Some("bag3"), new DateTime(2019, 3, 3, 0, 0, timeZone), user2)
+  private val deposit4 = Deposit(depositId4, Some("bag4"), new DateTime(2019, 4, 4, 0, 0, timeZone), user1)
+  private val deposit5 = Deposit(depositId5, Some("bag5"), new DateTime(2019, 5, 5, 0, 0, timeZone), user2)
 
   private val state10 = State("10", StateLabel.DRAFT, "draft with continued deposit", new DateTime(2019, 1, 1, 0, 0, timeZone))
   private val state11 = State("11", StateLabel.DRAFT, "draft with continued deposit", new DateTime(2019, 1, 1, 1, 1, timeZone))
