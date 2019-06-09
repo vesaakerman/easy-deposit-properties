@@ -30,8 +30,8 @@ object DoiAction extends Enumeration {
   type DoiAction = Value
 
   // @formatter:off
-  val CREATE: DoiAction = Value("CREATE")
-  val UPDATE: DoiAction = Value("UPDATE")
-  val NONE:   DoiAction = Value("NONE")
+  val CREATE: DoiAction = Value("create")
+  val UPDATE: DoiAction = Value("update")
+  val NONE:   DoiAction = Value("none")
   // @formatter:on
 }

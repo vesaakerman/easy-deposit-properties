@@ -17,4 +17,9 @@ package nl.knaw.dans.easy
 
 package object properties {
 
+  type ApplicationErrorOr[T] = Either[ApplicationError, T]
+
+  trait ApplicationError {
+    val msg: String
+  }
 }

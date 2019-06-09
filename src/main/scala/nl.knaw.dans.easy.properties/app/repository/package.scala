@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.app
 
+import nl.knaw.dans.easy.properties.ApplicationError
 import nl.knaw.dans.easy.properties.app.model.DepositId
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import sangria.execution.UserFacingError
@@ -26,10 +27,10 @@ package object repository {
   type QueryErrorOr[T] = Either[QueryError, T]
   type MutationErrorOr[T] = Either[MutationError, T]
 
-  abstract class QueryError(val msg: String) extends Exception(msg) with UserFacingError
+  abstract class QueryError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
   case class DepositDoesNotExistError(depositId: DepositId) extends QueryError(s"Deposit $depositId does not exist.")
 
-  abstract class MutationError(val msg: String) extends Exception(msg) with UserFacingError
+  abstract class MutationError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
   case class NoSuchDepositError(depositId: DepositId) extends MutationError(s"Deposit $depositId does not exist.")
   case class DepositAlreadyExistsError(depositId: DepositId) extends MutationError(s"Deposit $depositId already exist.")
   case class IdentifierAlreadyExistsError(depositId: DepositId, identifierType: IdentifierType) extends MutationError(s"Identifier $identifierType already exists for $depositId.")

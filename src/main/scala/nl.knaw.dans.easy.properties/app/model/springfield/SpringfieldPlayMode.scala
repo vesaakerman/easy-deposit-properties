@@ -19,7 +19,7 @@ object SpringfieldPlayMode extends Enumeration {
   type SpringfieldPlayMode = Value
 
   // @formatter:off
-  val CONTINUOUS: SpringfieldPlayMode = Value("CONTINUOUS")
-  val MENU:       SpringfieldPlayMode = Value("MENU")
+  val CONTINUOUS: SpringfieldPlayMode = Value("continuous")
+  val MENU:       SpringfieldPlayMode = Value("menu")
   // @formatter:on
 }

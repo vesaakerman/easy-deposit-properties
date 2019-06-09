@@ -8,6 +8,7 @@ easy-deposit-properties
 SYNOPSIS
 --------
 
+    easy-deposit-properties load-props <properties-file>
     easy-deposit-properties run-service
 
 
@@ -25,6 +26,13 @@ ARGUMENTS
        -h, --help      Show help message
        -v, --version   Show version of this program
 
+    Subcommand: load-props - Load a deposit.properties file and import it in the backend repository.
+      -h, --help   Show help message
+    
+     trailing arguments:
+      <properties-file> (required)   The deposit.properties file to be read.
+    ---
+    
     Subcommand: run-service - Starts EASY Deposit Properties as a daemon that services HTTP requests
        -h, --help   Show help message
     ---
@@ -32,6 +40,7 @@ ARGUMENTS
 EXAMPLES
 --------
 
+    easy-deposit-properties load-props <properties-file>
     easy-deposit-properties run-service
 
 

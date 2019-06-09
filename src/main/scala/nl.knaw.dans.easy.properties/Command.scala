@@ -16,7 +16,9 @@
 package nl.knaw.dans.easy.properties
 
 import better.files.File
+import nl.knaw.dans.easy.DataciteService
 import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
+import nl.knaw.dans.easy.properties.app.legacyImport.{ ImportProps, Interactor }
 import nl.knaw.dans.easy.properties.app.repository.DemoRepositoryImpl
 import nl.knaw.dans.easy.properties.server.{ DepositPropertiesGraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
@@ -43,8 +45,18 @@ object Command extends App with DebugEnhancedLogging {
   private def runSubcommand(): Try[FeedBackMessage] = {
     commandLine.subcommand
       .collect {
-//      case subcommand1 @ subcommand.subcommand1 => // handle subcommand1
-//      case None => // handle command line without subcommands
+        case loadProps @ commandLine.loadProps =>
+          val propsFile = loadProps.properties()
+          val importer = new ImportProps(
+            repository = new DemoRepositoryImpl,
+            interactor = new Interactor,
+            datacite = new DataciteService(configuration.dataciteConfig),
+          )
+
+          Try {
+            importer.loadDepositProperties(propsFile)
+              .fold(_.msg, identity)
+          }
         case commandLine.runService => runAsService()
       }
       .getOrElse(Failure(new IllegalArgumentException(s"Unknown command: ${ commandLine.subcommand }")))

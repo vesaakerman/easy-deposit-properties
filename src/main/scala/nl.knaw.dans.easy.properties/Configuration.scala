@@ -15,14 +15,18 @@
  */
 package nl.knaw.dans.easy.properties
 
+import java.net.URL
+
 import better.files.File
 import better.files.File.root
+import nl.knaw.dans.easy.DataciteServiceConfiguration
 import nl.knaw.dans.easy.properties.app.database.DatabaseConfiguration
 import org.apache.commons.configuration.PropertiesConfiguration
 
 case class Configuration(version: String,
                          serverPort: Int,
                          databaseConfig: DatabaseConfiguration,
+                         dataciteConfig: DataciteServiceConfiguration,
                         )
 
 object Configuration {
@@ -47,6 +51,14 @@ object Configuration {
         properties.getString("database.username"),
         properties.getString("database.password"),
       ),
+      dataciteConfig = new DataciteServiceConfiguration {
+        setConnectionTimeout(properties.getString("datacite.connection-timeout").toInt)
+        setReadTimeout(properties.getString("datacite.read-timeout").toInt)
+        setUsername(properties.getString("datacite.username"))
+        setPassword(properties.getString("datacite.password"))
+        setDoiRegistrationUri(properties.getString("datacite.registration.doi.uri"))
+        setDatasetResolver(new URL(properties.getString("datacite.resolver")))
+      }
     )
   }
 }

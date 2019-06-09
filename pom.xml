@@ -37,6 +37,7 @@
 
     <properties>
         <main-class>nl.knaw.dans.easy.properties.Command</main-class>
+        <easy.datacite.version>3.9.0</easy.datacite.version>
     </properties>
 
     <scm>
@@ -45,6 +46,13 @@
     </scm>
 
     <dependencies>
+        <!-- EASY modules -->
+        <dependency>
+            <groupId>nl.knaw.dans.easy</groupId>
+            <artifactId>easy-datacite</artifactId>
+            <version>${easy.datacite.version}</version>
+        </dependency>
+
         <!-- testing -->
         <dependency>
             <groupId>org.scalatest</groupId>
@@ -58,11 +66,16 @@
             <groupId>org.scalatra</groupId>
             <artifactId>scalatra-scalatest_2.12</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ironcorelabs</groupId>
+            <artifactId>cats-scalatest_2.12</artifactId>
+        </dependency>
 
         <!-- Scala utils -->
         <dependency>
             <groupId>org.rogach</groupId>
             <artifactId>scallop_2.12</artifactId>
+            <version>3.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.jsuereth</groupId>

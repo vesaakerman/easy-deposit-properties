@@ -13,24 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.fixture
+package nl.knaw.dans.easy.properties.app.legacyImport
 
-import better.files.File
-import better.files.File.currentWorkingDirectory
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.enablers.Existence
+import cats.syntax.either._
 
-trait FileSystemSupport extends BeforeAndAfterEach {
-  this: TestSupportFixture =>
+import scala.io.StdIn
+import scala.util.Try
 
-  implicit def existenceOfFile[FILE <: better.files.File]: Existence[FILE] = _.exists
+class Interactor {
 
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-
-    if (testDir.exists) testDir.delete()
-    testDir.createDirectories()
+  def ask(msg: String): String = {
+    StdIn.readLine(msg)
   }
 
-  lazy val testDir: File = currentWorkingDirectory / "target" / "test" / getClass.getSimpleName
+  def ask(enum: Enumeration)(msg: String): LoadPropsErrorOr[enum.Value] = {
+    val input = ask(msg)
+
+    Either.catchOnly[NoSuchElementException] { enum.withName(input) }
+      .leftFlatMap(_ => ask(enum)(msg))
+  }
+
+  def ask[T](f: String => T)(msg: String): T = {
+    val input = ask(msg)
+
+    Try { f(input) }.getOrElse(ask(f)(msg))
+  }
 }
