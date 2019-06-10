@@ -26,11 +26,11 @@ class Interactor {
     StdIn.readLine(msg)
   }
 
-  def ask(enum: Enumeration)(msg: String): LoadPropsErrorOr[enum.Value] = {
+  def ask(enum: Enumeration)(msg: String): enum.Value = {
     val input = ask(msg)
 
     Either.catchOnly[NoSuchElementException] { enum.withName(input) }
-      .leftFlatMap(_ => ask(enum)(msg))
+      .getOrElse { ask(enum)(msg) }
   }
 
   def ask[T](f: String => T)(msg: String): T = {
