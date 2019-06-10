@@ -58,14 +58,6 @@ class ImportPropsSpec extends TestSupportFixture
   private val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
   private val importProps = new ImportProps(repo, interactor, datacite)
 
-  private def fileProps(file: File): (DepositId, Timestamp, Timestamp) = {
-    (
-      UUID.fromString(file.parent.name),
-      new DateTime(file.attributes.creationTime().toMillis),
-      new DateTime(file.attributes.lastModifiedTime().toMillis),
-    )
-  }
-
   "loadDepositProperties" should "read the given deposit.properties file and call the repository on it" in {
     val file = testDir / "readProps" / "bf729483-5d9b-4509-a8f2-91db639fb52f" / "deposit.properties"
     val (depositId, _, lastModified) = fileProps(file)
@@ -96,17 +88,17 @@ class ImportPropsSpec extends TestSupportFixture
     val (depositId, creationTime, lastModified) = fileProps(file)
 
     inSequence {
-      (interactor.ask(_: String)) expects * returning "user001"
+      expectInteractString("user001")
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, none, creationTime, "user001"))) returning Deposit(depositId, none, creationTime, "user001").asRight
-      (interactor.ask(_: Enumeration)(_: String)) expects(StateLabel, *) returning StateLabel.SUBMITTED
-      (interactor.ask(_: String)) expects * returning "my description"
+      expectInteractEnum(StateLabel)(_.SUBMITTED)
+      expectInteractString("my description")
       repo.setState _ expects(depositId, InputState(StateLabel.SUBMITTED, "my description", lastModified)) returning State("my-id", StateLabel.SUBMITTED, "my-description", lastModified).asRight
       // no repo.setIngestStep
-      (interactor.ask(_: String)) expects * returning "my-doi-value"
+      expectInteractString("my-doi-value")
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.DOI, "my-doi-value", lastModified)) returning Identifier("my-id", IdentifierType.DOI, "my-doi-value", lastModified).asRight
-      (interactor.ask(_: String)) expects * returning "my-urn-value"
+      expectInteractString("my-urn-value")
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.URN, "my-urn-value", lastModified)) returning Identifier("my-id", IdentifierType.URN, "my-urn-value", lastModified).asRight
-      (interactor.ask(_: String)) expects * returning "my-fedora-value"
+      expectInteractString("my-fedora-value")
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.FEDORA, "my-fedora-value", lastModified)) returning Identifier("my-id", IdentifierType.FEDORA, "my-fedora-value", lastModified).asRight
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, depositId.toString, lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, depositId.toString, lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
@@ -129,7 +121,7 @@ class ImportPropsSpec extends TestSupportFixture
 
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
-      (interactor.ask(_: Enumeration)(_: String)) expects(StateLabel, *) returning StateLabel.SUBMITTED
+      expectInteractEnum(StateLabel)(_.SUBMITTED)
       repo.setState _ expects(depositId, InputState(StateLabel.SUBMITTED, "my description", lastModified)) returning State("my-id", StateLabel.SUBMITTED, "my description", lastModified).asRight
       repo.setIngestStep _ expects(depositId, InputIngestStep(IngestStepLabel.BAGSTORE, lastModified)) returning IngestStep("my-id", IngestStepLabel.BAGSTORE, lastModified).asRight
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.DOI, "my-doi-value", lastModified)) returning Identifier("my-id", IdentifierType.DOI, "my-doi-value", lastModified).asRight
@@ -182,7 +174,7 @@ class ImportPropsSpec extends TestSupportFixture
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
       repo.setState _ expects(depositId, InputState(StateLabel.SUBMITTED, "my description", lastModified)) returning State("my-id", StateLabel.SUBMITTED, "my description", lastModified).asRight
-      (interactor.ask(_: Enumeration)(_: String)) expects (IngestStepLabel, *) returning IngestStepLabel.VALIDATE
+      expectInteractEnum(IngestStepLabel)(_.VALIDATE)
       repo.setIngestStep _ expects(depositId, InputIngestStep(IngestStepLabel.VALIDATE, lastModified)) returning IngestStep("my-id", IngestStepLabel.VALIDATE, lastModified).asRight
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.DOI, "my-doi-value", lastModified)) returning Identifier("my-id", IdentifierType.DOI, "my-doi-value", lastModified).asRight
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.URN, "my-urn-value", lastModified)) returning Identifier("my-id", IdentifierType.URN, "my-urn-value", lastModified).asRight
@@ -242,7 +234,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.FEDORA, "my-fedora-value", lastModified)) returning Identifier("my-id", IdentifierType.FEDORA, "my-fedora-value", lastModified).asRight
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       datacite.doiExists _ expects "my-doi-value" throws new DataciteServiceException("FAIL!!!", 418)
-      (interactor.ask(_: String => Boolean)(_: String)) expects(*, *) returning true
+      expectInteractFunc(true)
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
       repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
@@ -269,7 +261,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.FEDORA, "my-fedora-value", lastModified)) returning Identifier("my-id", IdentifierType.FEDORA, "my-fedora-value", lastModified).asRight
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
-      (interactor.ask(_: Enumeration)(_: String)) expects (DoiAction, *) returning DoiAction.CREATE
+      expectInteractEnum(DoiAction)(_.CREATE)
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.CREATE, lastModified)) returning DoiActionEvent(DoiAction.CREATE, lastModified).asRight
       repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
@@ -301,7 +293,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
       repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
       repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
-      (interactor.ask(_: Enumeration)(_: String)) expects(SpringfieldPlayMode, *) returning SpringfieldPlayMode.MENU
+      expectInteractEnum(SpringfieldPlayMode)(_.MENU)
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.MENU, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.MENU, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -329,7 +321,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
       repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
-      (interactor.ask(_: Enumeration)(_: String)) expects(ContentTypeValue, *) returning ContentTypeValue.ZIP
+      expectInteractEnum(ContentTypeValue)(_.ZIP)
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
 
@@ -354,5 +346,25 @@ class ImportPropsSpec extends TestSupportFixture
       d.depositorId == deposit.depositorId &&
       d.bagName == deposit.bagName &&
       d.creationTimestamp.getMillis == deposit.creationTimestamp.getMillis
+  }
+
+  private def fileProps(file: File): (DepositId, Timestamp, Timestamp) = {
+    (
+      UUID.fromString(file.parent.name),
+      new DateTime(file.attributes.creationTime().toMillis),
+      new DateTime(file.attributes.lastModifiedTime().toMillis),
+    )
+  }
+
+  private def expectInteractString(s: String) = {
+    (interactor.ask(_: String)) expects * returning s
+  }
+
+  private def expectInteractEnum(enum: Enumeration)(returnValue: enum.type => enum.Value) = {
+    (interactor.ask(_: Enumeration)(_: String)) expects(enum, *) returning returnValue(enum)
+  }
+
+  private def expectInteractFunc[T](t: T) = {
+    (interactor.ask(_: String => T)(_: String)) expects(*, *) returning t
   }
 }
