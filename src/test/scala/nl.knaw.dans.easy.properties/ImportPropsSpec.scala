@@ -29,11 +29,10 @@ import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, Identifie
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
 import nl.knaw.dans.easy.properties.app.repository.DepositRepository
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import nl.knaw.dans.easy.{ DataciteService, DataciteServiceConfiguration, DataciteServiceException }
-import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.scalamock.scalatest.MockFactory
 
@@ -42,12 +41,15 @@ class ImportPropsSpec extends TestSupportFixture
   with MockFactory
   with EitherMatchers with EitherValues {
 
-  private val dataciteConfig = {
-    val config = new DataciteServiceConfiguration()
-    config.setDatasetResolver(new URL("http://does.not.exist.dans.knaw.nl"))
-    config
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+
+    File(getClass.getResource("/legacy-import").toURI) copyTo testDir
   }
-  private class MockDataciteService extends DataciteService(dataciteConfig)
+
+  private class MockDataciteService extends DataciteService(new DataciteServiceConfiguration() {
+    setDatasetResolver(new URL("http://does.not.exist.dans.knaw.nl"))
+  })
 
   private val repo = mock[DepositRepository]
   private val interactor = mock[Interactor]
@@ -56,10 +58,17 @@ class ImportPropsSpec extends TestSupportFixture
   private val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
   private val importProps = new ImportProps(repo, interactor, datacite)
 
+  private def fileProps(file: File): (DepositId, Timestamp, Timestamp) = {
+    (
+      UUID.fromString(file.parent.name),
+      new DateTime(file.attributes.creationTime().toMillis),
+      new DateTime(file.attributes.lastModifiedTime().toMillis),
+    )
+  }
+
   "loadDepositProperties" should "read the given deposit.properties file and call the repository on it" in {
-    val file = writeProps()(defaultProps())
-    val depositId = UUID.fromString(file.parent.name)
-    val lastModified = new DateTime(file.attributes.lastModifiedTime().toMillis)
+    val file = testDir / "readProps" / "bf729483-5d9b-4509-a8f2-91db639fb52f" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
 
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
@@ -83,50 +92,8 @@ class ImportPropsSpec extends TestSupportFixture
   }
 
   it should "interact with the user when necessary values don't exist" in {
-    val file = writeProps()(defaultProps(cfg => {
-      // deposit
-      cfg.clearProperty("bag-store.bag-name") // no bag-store.bag-name, not set
-      cfg.clearProperty("creation.timestamp") // no creation.timestamp, defaults to creationTime
-      cfg.clearProperty("depositor.userId") // no depositor.userId, asked via interactor
-
-      // state
-      cfg.clearProperty("state.label") // no state.label, asked via interactor
-      cfg.clearProperty("state.description") // no state.description, asked via interactor
-
-      // ingest step
-      cfg.clearProperty("deposit.ingest.current-step") // no deposit.ingest.current-step, not set
-
-      // identifiers
-      cfg.clearProperty("identifier.doi") // no identifier.doi, asked via interactor
-      cfg.clearProperty("identifier.urn") // no identifier.urn, asked via interactor
-      cfg.clearProperty("identifier.fedora") // no identifier.fedora, asked via interactor
-      cfg.clearProperty("bag-store.bag-id") // no bag-store.bag-id, defaults to depositId
-
-      // doi events
-      cfg.setProperty("identifier.dans-doi.registered", "yes")
-      cfg.clearProperty("identifier.dans-doi.action") // no identifier.dans-doi.action, defaults to CREATE
-
-      // curator
-      cfg.clearProperty("curation.datamanager.userId") // no curation.datamanager.userId, not set
-      cfg.clearProperty("curation.datamanager.email") // no curation.datamanager.email, not set
-
-      // curation events
-      cfg.clearProperty("curation.is-new-version") // no curation.is-new-version, not set
-      cfg.clearProperty("curation.required") // no curation.required, not set
-      cfg.clearProperty("curation.performed") // no curation.performed, not set
-
-      // springfield
-      cfg.clearProperty("springfield.domain") // no springfield.domain, not set
-      cfg.clearProperty("springfield.user") // no springfield.user, not set
-      cfg.clearProperty("springfield.collection") // no springfield.collection, not set
-      cfg.clearProperty("springfield.playmode") // no springfield.playmode, not set
-
-      // content-type
-      cfg.clearProperty("easy-sword2.client-message.content-type") // no easy-sword2.client-message.content-type, not set
-    }))
-    val depositId = UUID.fromString(file.parent.name)
-    val creationTime = new DateTime(file.attributes.creationTime().toMillis)
-    val lastModified = new DateTime(file.attributes.lastModifiedTime().toMillis)
+    val file = testDir / "interact_max" / "0eb8c353-4b41-4db7-9b1c-15e06a69c143" / "deposit.properties"
+    val (depositId, creationTime, lastModified) = fileProps(file)
 
     inSequence {
       (interactor.ask(_: String)) expects * returning "user001"
@@ -157,12 +124,8 @@ class ImportPropsSpec extends TestSupportFixture
 
   it should "interact with the user when the state label is invalid" in {
     val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
-    val file = writeProps()(defaultProps(cfg => {
-      // state
-      cfg.setProperty("state.label", "INVALID_VALUE") // invalid, asked via interactor
-    }))
-    val depositId = UUID.fromString(file.parent.name)
-    val lastModified = new DateTime(file.attributes.lastModifiedTime().toMillis)
+    val file = testDir / "invalid_state_label" / "667ece00-2083-4930-a1ab-f265aca41021" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
 
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
@@ -188,15 +151,8 @@ class ImportPropsSpec extends TestSupportFixture
 
   it should "choose ingest step COMPLETED when it is not provided and state = ARCHIVED" in {
     val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
-    val file = writeProps()(defaultProps(cfg => {
-      // state
-      cfg.setProperty("state.label", "ARCHIVED")
-
-      // ingest step
-      cfg.clearProperty("deposit.ingest.current-step") // no deposit.ingest.current-step, COMPLETED due to state.label = ARCHIVED
-    }))
-    val depositId = UUID.fromString(file.parent.name)
-    val lastModified = new DateTime(file.attributes.lastModifiedTime().toMillis)
+    val file = testDir / "ingest_step_completed" / "0e00e954-8236-403f-80d3-e67792164b26" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
 
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
@@ -221,12 +177,8 @@ class ImportPropsSpec extends TestSupportFixture
 
   it should "interact with DataCite when the identifier.dans-doi.registered property is not set" in {
     val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
-    val file = writeProps()(defaultProps(cfg => {
-      // doi events
-      cfg.clearProperty("identifier.dans-doi.registered") // no identifier.dans-doi.registered, interaction with DataCite expected
-    }))
-    val depositId = UUID.fromString(file.parent.name)
-    val lastModified = new DateTime(file.attributes.lastModifiedTime().toMillis)
+    val file = testDir / "doi_registered_datacite" / "caa9e50a-a6a9-4cc1-a415-33d8384d4df5" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
 
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
@@ -252,12 +204,8 @@ class ImportPropsSpec extends TestSupportFixture
 
   it should "interact with the user when interaction with DataCite fails" in {
     val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
-    val file = writeProps()(defaultProps(cfg => {
-      // doi events
-      cfg.clearProperty("identifier.dans-doi.registered") // no identifier.dans-doi.registered, interaction with DataCite fails, interaction with user instead
-    }))
-    val depositId = UUID.fromString(file.parent.name)
-    val lastModified = new DateTime(file.attributes.lastModifiedTime().toMillis)
+    val file = testDir / "doi_registered_interact" / "7eb43c8d-0565-427d-9e6c-1c9c05d8a3f7" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
 
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
@@ -284,12 +232,8 @@ class ImportPropsSpec extends TestSupportFixture
 
   it should "interact with the user when an invalid value is given for springfield.playmode" in {
     val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
-    val file = writeProps()(defaultProps(cfg => {
-      // springfield
-      cfg.setProperty("springfield.playmode", "invalid-value") // invalid value for springfield.playmode, interaction expected
-    }))
-    val depositId = UUID.fromString(file.parent.name)
-    val lastModified = new DateTime(file.attributes.lastModifiedTime().toMillis)
+    val file = testDir / "invalid_springfield_playmode" / "26d3763e-566c-4860-9abe-ca161d40cd1f" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
 
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
@@ -315,12 +259,8 @@ class ImportPropsSpec extends TestSupportFixture
 
   it should "interact with the user when an invalid value is given for easy-sword2.client-message.content-type" in {
     val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
-    val file = writeProps()(defaultProps(cfg => {
-      // springfield
-      cfg.setProperty("easy-sword2.client-message.content-type", "invalid") // invalid value for easy-sword2.client-message.content-type, interaction expected
-    }))
-    val depositId = UUID.fromString(file.parent.name)
-    val lastModified = new DateTime(file.attributes.lastModifiedTime().toMillis)
+    val file = testDir / "invalid_content_type" / "d317ff0d-842f-49f4-8a18-cb396ce85a27" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
 
     inSequence {
       repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
@@ -345,78 +285,16 @@ class ImportPropsSpec extends TestSupportFixture
   }
 
   it should "fail when the properties file doesn't exist" in {
-    val file = writeProps("invalid-depositId")(_ => ())
-    file.delete()
+    val file = (testDir / "no_properties_file" / UUID.randomUUID().toString).createDirectoryIfNotExists(createParents = true) / "deposit.properties"
     file shouldNot exist
 
     importProps.loadDepositProperties(file).leftValue shouldBe NoSuchPropertiesFileError(file)
   }
 
   it should "fail when the parent directory is not a valid depositId" in {
-    val file = writeProps("invalid-depositId")(_ => ())
+    val file = testDir / "invalid_depositId" / "invalid-depositId" / "deposit.properties"
 
     importProps.loadDepositProperties(file).leftValue shouldBe NoDepositIdError("invalid-depositId")
-  }
-
-  private def writeProps(depositId: String)(initProps: PropertiesConfiguration => Unit): File = {
-    val file = (testDir / depositId.toString / "deposit.properties").createFileIfNotExists(createParents = true)
-
-    val props = new PropertiesConfiguration() {
-      setDelimiterParsingDisabled(true)
-    }
-    initProps(props)
-
-    props.save(file.toJava)
-
-    file
-  }
-
-  private def writeProps(depositId: DepositId = UUID.randomUUID())(initProps: PropertiesConfiguration => Unit): File = {
-    writeProps(depositId.toString)(initProps)
-  }
-
-  private def defaultProps(initProps: PropertiesConfiguration => Unit = _ => ())(cfg: PropertiesConfiguration): Unit = {
-    // deposit
-    cfg.setProperty("bag-store.bag-name", "bag")
-    cfg.setProperty("creation.timestamp", time.toString)
-    cfg.setProperty("depositor.userId", "user001")
-
-    // state
-    cfg.setProperty("state.label", "SUBMITTED")
-    cfg.setProperty("state.description", "my description")
-
-    // ingest step
-    cfg.setProperty("deposit.ingest.current-step", "BAGSTORE")
-
-    // identifiers
-    cfg.setProperty("identifier.doi", "my-doi-value")
-    cfg.setProperty("identifier.urn", "my-urn-value")
-    cfg.setProperty("identifier.fedora", "my-fedora-value")
-    cfg.setProperty("bag-store.bag-id", "my-bag-store-value")
-
-    // doi events
-    cfg.setProperty("identifier.dans-doi.registered", "yes")
-    cfg.setProperty("identifier.dans-doi.action", "update")
-
-    // curator
-    cfg.setProperty("curation.datamanager.userId", "archie001")
-    cfg.setProperty("curation.datamanager.email", "does.not.exists@dans.knaw.nl")
-
-    // curation events
-    cfg.setProperty("curation.is-new-version", "yes")
-    cfg.setProperty("curation.required", "no")
-    cfg.setProperty("curation.performed", "no")
-
-    // springfield
-    cfg.setProperty("springfield.domain", "domain")
-    cfg.setProperty("springfield.user", "user")
-    cfg.setProperty("springfield.collection", "collection")
-    cfg.setProperty("springfield.playmode", "continuous")
-
-    // content-type
-    cfg.setProperty("easy-sword2.client-message.content-type", "application/zip")
-
-    initProps(cfg)
   }
 
   private def isDeposit(deposit: Deposit): Deposit => Boolean = d => {
