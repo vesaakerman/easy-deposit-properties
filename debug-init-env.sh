@@ -15,12 +15,14 @@
 # limitations under the License.
 #
 
-echo -n "Pre-creating log and database..."
+echo -n "Pre-creating log, database and legacy import data..."
 DATADIR=data
 
 mkdir $DATADIR/database
 cp src/test/resources/database/db.properties $DATADIR/database/db.properties
 cp src/test/resources/database/db.script $DATADIR/database/db.script
+
+cp -r src/test/resources/legacy-import $DATADIR/legacy-import
 
 touch $DATADIR/easy-deposit-properties.log
 echo "OK"
