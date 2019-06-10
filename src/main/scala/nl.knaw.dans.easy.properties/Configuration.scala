@@ -44,20 +44,20 @@ object Configuration {
 
     new Configuration(
       version = (home / "bin" / "version").contentAsString.stripLineEnd,
-      serverPort = properties.getInt("daemon.http.port"),
+      serverPort = properties.getInt("deposit-properties.daemon.http.port"),
       databaseConfig = DatabaseConfiguration(
-        properties.getString("database.driver-class"),
-        properties.getString("database.url"),
-        properties.getString("database.username"),
-        properties.getString("database.password"),
+        properties.getString("deposit-properties.database.driver-class"),
+        properties.getString("deposit-properties.database.url"),
+        properties.getString("deposit-properties.database.username"),
+        properties.getString("deposit-properties.database.password"),
       ),
       dataciteConfig = new DataciteServiceConfiguration {
-        setConnectionTimeout(properties.getString("datacite.connection-timeout").toInt)
-        setReadTimeout(properties.getString("datacite.read-timeout").toInt)
-        setUsername(properties.getString("datacite.username"))
-        setPassword(properties.getString("datacite.password"))
-        setDoiRegistrationUri(properties.getString("datacite.registration.doi.uri"))
-        setDatasetResolver(new URL(properties.getString("datacite.resolver")))
+        setConnectionTimeout(properties.getString("deposit-properties.datacite.connection-timeout").toInt)
+        setReadTimeout(properties.getString("deposit-properties.datacite.read-timeout").toInt)
+        setUsername(properties.getString("deposit-properties.datacite.username"))
+        setPassword(properties.getString("deposit-properties.datacite.password"))
+        setDoiRegistrationUri(properties.getString("deposit-properties.datacite.registration.doi.uri"))
+        setDatasetResolver(new URL(properties.getString("deposit-properties.datacite.resolver")))
       }
     )
   }

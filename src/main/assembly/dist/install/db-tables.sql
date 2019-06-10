@@ -2,11 +2,11 @@ CREATE TABLE Deposit (
     depositId CHAR(36) NOT NULL PRIMARY KEY,
     bagName TEXT NOT NULL,
     creationTimestamp TIME WITH TIME ZONE NOT NULL,
-    depositorId VARCHAR(64) NOT NULL,
+    depositorId VARCHAR(64) NOT NULL
 );
 
 CREATE TABLE State (
-    value VARCHAR(64) NOT NULL PRIMARY KEY,
+    value VARCHAR(64) NOT NULL PRIMARY KEY
 );
 
 INSERT INTO State (value)
@@ -28,11 +28,11 @@ CREATE TABLE DepositState (
     description TEXT NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (state) REFERENCES State (value),
+    FOREIGN KEY (state) REFERENCES State (value)
 );
 
 CREATE TABLE IngestStep (
-    value VARCHAR(64) NOT NULL PRIMARY KEY,
+    value VARCHAR(64) NOT NULL PRIMARY KEY
 );
 
 INSERT INTO IngestStep (value)
@@ -50,11 +50,11 @@ CREATE TABLE DepositIngestStep (
     step VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (step) REFERENCES IngestStep (value),
+    FOREIGN KEY (step) REFERENCES IngestStep (value)
 );
 
 CREATE TABLE Identifier (
-    value VARCHAR(64) NOT NULL PRIMARY KEY,
+    value VARCHAR(64) NOT NULL PRIMARY KEY
 );
 
 INSERT INTO Identifier (value)
@@ -70,12 +70,12 @@ CREATE TABLE DepositIdentifier (
     identifierValue VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (identifier) REFERENCES Identifier (value),
+    FOREIGN KEY (identifier) REFERENCES Identifier (value)
 --    TODO add uniqueness constraint on (depositId, identifier)
 );
 
 CREATE TABLE DoiEventType (
-    value VARCHAR(64) NOT NULL PRIMARY KEY,
+    value VARCHAR(64) NOT NULL PRIMARY KEY
 );
 
 INSERT INTO DoiEventType (value)
@@ -89,7 +89,7 @@ CREATE TABLE DepositDoiEvent (
     value VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (doiEvent) REFERENCES DoiEventType (value),
+    FOREIGN KEY (doiEvent) REFERENCES DoiEventType (value)
 );
 
 CREATE TABLE DepositCurator (
@@ -98,11 +98,11 @@ CREATE TABLE DepositCurator (
     datamanagerUserId VARCHAR(64) NOT NULL,
     datamanagerEmail TEXT NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
 );
 
 CREATE TABLE CurationType (
-    value VARCHAR(64) NOT NULL PRIMARY KEY,
+    value VARCHAR(64) NOT NULL PRIMARY KEY
 );
 
 INSERT INTO CurationType (value)
@@ -117,11 +117,11 @@ CREATE TABLE DepositCurationEvent (
     value VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (curationType) REFERENCES CurationType (value),
+    FOREIGN KEY (curationType) REFERENCES CurationType (value)
 );
 
 CREATE TABLE SpringfieldPlayMode (
-    value VARCHAR(32) NOT NULL PRIMARY KEY,
+    value VARCHAR(32) NOT NULL PRIMARY KEY
 );
 
 INSERT INTO SpringfieldPlayMode (value)
@@ -137,7 +137,7 @@ CREATE TABLE DepositSpringfield (
     playmode VARCHAR(32) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (playmode) REFERENCES SpringfieldPlayMode (value),
+    FOREIGN KEY (playmode) REFERENCES SpringfieldPlayMode (value)
 );
 
 CREATE TABLE DepositClientMessageContentType (
@@ -145,7 +145,7 @@ CREATE TABLE DepositClientMessageContentType (
     depositId CHAR(36) NOT NULL,
     contentType VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
 );
 
 GRANT INSERT, SELECT ON Deposit TO easy_deposit_properties;
