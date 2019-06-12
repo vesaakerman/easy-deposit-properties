@@ -167,6 +167,32 @@ class ImportPropsSpec extends TestSupportFixture
     importProps.loadDepositProperties(file) shouldBe right
   }
 
+  it should "interact with the user when an invalid value is given for creation.timestamp" in {
+    val file = testDir / "invalid_creation_timestamp" / "f2a5c8b6-90ce-783c-dc25-c50e96d2e862" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
+
+    inSequence {
+      expectInteractFunc(time)
+      repo.addDeposit _ expects where(isDeposit(Deposit(depositId, "bag".some, time, "user001"))) returning Deposit(depositId, "bag".some, time, "user001").asRight
+      repo.setState _ expects(depositId, InputState(StateLabel.SUBMITTED, "my description", lastModified)) returning State("my-id", StateLabel.SUBMITTED, "my description", lastModified).asRight
+      repo.setIngestStep _ expects(depositId, InputIngestStep(IngestStepLabel.COMPLETED, lastModified)) returning IngestStep("my-id", IngestStepLabel.COMPLETED, lastModified).asRight
+      repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.DOI, "my-doi-value", lastModified)) returning Identifier("my-id", IdentifierType.DOI, "my-doi-value", lastModified).asRight
+      repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.URN, "my-urn-value", lastModified)) returning Identifier("my-id", IdentifierType.URN, "my-urn-value", lastModified).asRight
+      repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.FEDORA, "my-fedora-value", lastModified)) returning Identifier("my-id", IdentifierType.FEDORA, "my-fedora-value", lastModified).asRight
+      repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
+      repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
+      repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
+      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
+      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
+      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
+      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
+      repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
+    }
+
+    importProps.loadDepositProperties(file) shouldBe right
+  }
+
   it should "interact with the user when an invalid value is given for deposit.ingest.current-step" in {
     val file = testDir / "invalid_ingest_step" / "e194b7a5-7fbd-672b-cb14-b3fd85c1d751" / "deposit.properties"
     val (depositId, _, lastModified) = fileProps(file)

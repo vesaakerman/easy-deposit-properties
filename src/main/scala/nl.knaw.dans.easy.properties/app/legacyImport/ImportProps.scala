@@ -103,7 +103,12 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
 
   private def loadDeposit(depositId: DepositId, creationTime: Timestamp, props: PropertiesConfiguration): Deposit = {
     val bagName = Option(props.getString("bag-store.bag-name"))
-    val creationTimestamp = Option(props.getString("creation.timestamp")).fold(creationTime)(DateTime.parse)
+    val creationTimestamp = Option(props.getString("creation.timestamp"))
+      .map(s => Either.catchOnly[IllegalArgumentException] { DateTime.parse(s) }
+        .getOrElse {
+          interactor.ask(s => DateTime.parse(s))(s"Invalid value for creation timestamp for deposit $depositId. What value should this be?")
+        })
+      .getOrElse(creationTime)
     val depositorId = Option(props.getString("depositor.userId"))
       .getOrElse {
         interactor.ask(s"Could not find the depositor for deposit $depositId. What value should this be?")
