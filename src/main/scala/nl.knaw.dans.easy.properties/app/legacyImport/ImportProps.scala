@@ -44,6 +44,8 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   def loadDepositProperties(file: File): ApplicationErrorOr[FeedBackMessage] = {
     for {
       _ <- propsFileExists(file)
+      _ <- propsFileReadable(file)
+      _ <- propsFileWritable(file)
       properties = readDepositProperties(file)
       depositId <- getDepositId(file)
       creationTime = new DateTime(file.attributes.creationTime().toMillis)
@@ -69,6 +71,16 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def propsFileExists(file: File): LoadPropsErrorOr[Unit] = {
     Either.catchOnly[IllegalArgumentException] { require(file.exists) }
       .leftMap(_ => NoSuchPropertiesFileError(file))
+  }
+
+  private def propsFileReadable(file: File): LoadPropsErrorOr[Unit] = {
+    Either.catchOnly[IllegalArgumentException] { require(file.isReadable) }
+      .leftMap(_ => PropertiesFileNotReadableError(file))
+  }
+
+  private def propsFileWritable(file: File): LoadPropsErrorOr[Unit] = {
+    Either.catchOnly[IllegalArgumentException] { require(file.isWriteable) }
+      .leftMap(_ => PropertiesFileNotWritableError(file))
   }
 
   private def readDepositProperties(file: File): PropertiesConfiguration = {

@@ -24,6 +24,8 @@ package object legacyImport {
 
   abstract class LoadPropsError(val msg: String) extends ApplicationError
   case class NoSuchPropertiesFileError(file: File) extends LoadPropsError(s"Properties file '$file' does not exist.")
+  case class PropertiesFileNotReadableError(file: File) extends LoadPropsError(s"Properties file '$file' is not readable.")
+  case class PropertiesFileNotWritableError(file: File) extends LoadPropsError(s"Properties file '$file' is not writable.")
   case class NoSuchParentDirError(file: File) extends LoadPropsError(s"Could not find the parent directory for file '$file'.")
   case class NoDepositIdError(s: String) extends LoadPropsError(s"String '$s' is not a valid depositId.")
   case class IllegalValueError(s: String, enum: Enumeration) extends LoadPropsError(s"Value '$s' is not an element in enum ${ enum.getClass.getSimpleName }. Valid values include: ${ enum.values.mkString("{", ", ", "}") }.")
