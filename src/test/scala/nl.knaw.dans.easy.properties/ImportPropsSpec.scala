@@ -19,8 +19,10 @@ import java.net.URL
 import java.util.{ TimeZone, UUID }
 
 import better.files.File
+import cats.instances.list._
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import cats.syntax.either._
+import cats.syntax.functor._
 import cats.syntax.option._
 import nl.knaw.dans.easy.properties.app.legacyImport.{ ImportProps, Interactor, NoDepositIdError, NoSuchPropertiesFileError }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, InputContentType }
@@ -33,8 +35,11 @@ import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, Curation
 import nl.knaw.dans.easy.properties.app.repository.DepositRepository
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import nl.knaw.dans.easy.{ DataciteService, DataciteServiceConfiguration, DataciteServiceException }
+import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.scalamock.scalatest.MockFactory
+
+import scala.collection.JavaConverters._
 
 class ImportPropsSpec extends TestSupportFixture
   with FileSystemSupport
@@ -112,6 +117,18 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain allOf(
+      "depositor.userId" -> "user001",
+      "state.label" -> "SUBMITTED",
+      "state.description" -> "my description",
+      "identifier.doi" -> "my-doi-value",
+      "identifier.urn" -> "my-urn-value",
+      "identifier.fedora" -> "my-fedora-value",
+      "bag-store.bag-id" -> depositId.toString,
+      "identifier.dans-doi.registered" -> "yes",
+      "identifier.dans-doi.action" -> "create",
+    )
   }
 
   it should "interact with the user when the state label is invalid" in {
@@ -139,6 +156,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "state.label" -> "SUBMITTED",
+    )
   }
 
   it should "choose ingest step COMPLETED when it is not provided and state = ARCHIVED" in {
@@ -165,6 +186,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "deposit.ingest.current-step" -> "COMPLETED",
+    )
   }
 
   it should "interact with the user when an invalid value is given for creation.timestamp" in {
@@ -191,6 +216,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "creation.timestamp" -> time.toString(),
+    )
   }
 
   it should "interact with the user when an invalid value is given for deposit.ingest.current-step" in {
@@ -217,6 +246,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "deposit.ingest.current-step" -> "VALIDATE",
+    )
   }
 
   it should "interact with DataCite when the identifier.dans-doi.registered property is not set" in {
@@ -244,6 +277,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "identifier.dans-doi.registered" -> "yes",
+    )
   }
 
   it should "interact with the user when interaction with DataCite fails" in {
@@ -272,6 +309,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "identifier.dans-doi.registered" -> "yes",
+    )
   }
 
   it should "interact with the user when an invalid value is given for identifier.dans-doi.action" in {
@@ -298,6 +339,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "identifier.dans-doi.action" -> "create",
+    )
   }
 
   it should "interact with the user when an invalid value is given for springfield.playmode" in {
@@ -325,6 +370,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "springfield.playmode" -> "menu",
+    )
   }
 
   it should "interact with the user when an invalid value is given for easy-sword2.client-message.content-type" in {
@@ -352,6 +401,10 @@ class ImportPropsSpec extends TestSupportFixture
     }
 
     importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain (
+      "easy-sword2.client-message.content-type" -> "application/zip",
+    )
   }
 
   it should "fail when the properties file doesn't exist" in {
@@ -392,5 +445,14 @@ class ImportPropsSpec extends TestSupportFixture
 
   private def expectInteractFunc[T](t: T) = {
     (interactor.ask(_: String => T)(_: String)) expects(*, *) returning t
+  }
+
+  private def props(file: File): List[(String, String)] = {
+    val props = new PropertiesConfiguration() {
+      setDelimiterParsingDisabled(true)
+      load(file.toJava)
+    }
+
+    props.getKeys.asScala.toList.fproduct(props.getString)
   }
 }

@@ -41,7 +41,10 @@ import org.joda.time.DateTime
 
 class ImportProps(repository: DepositRepository, interactor: Interactor, datacite: DataciteService) {
 
+  private var newPropertiesProvided = false
+
   def loadDepositProperties(file: File): ApplicationErrorOr[FeedBackMessage] = {
+    newPropertiesProvided = false
     for {
       _ <- propsFileExists(file)
       _ <- propsFileReadable(file)
@@ -65,6 +68,7 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
       _ <- loadCurationPerformed(depositId, lastModifiedTime, properties).traverse(repository.setCurationPerformedAction(depositId, _))
       _ <- loadSpringfield(depositId, lastModifiedTime, properties).traverse(repository.setSpringfield(depositId, _))
       _ <- loadContentType(depositId, lastModifiedTime, properties).traverse(repository.setContentType(depositId, _))
+      _ = savePropertiesIfChanged(properties)
     } yield s"Loading properties for deposit $depositId succeeded."
   }
 
@@ -86,6 +90,7 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def readDepositProperties(file: File): PropertiesConfiguration = {
     new PropertiesConfiguration() {
       setDelimiterParsingDisabled(true)
+      setFile(file.toJava)
       load(file.toJava)
     }
   }
@@ -101,17 +106,33 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
     Either.catchOnly[IllegalArgumentException](UUID.fromString(s))
   }
 
+  private def storeProp[T](props: PropertiesConfiguration, key: String)(value: T): T = {
+    props.setProperty(key, value)
+    newPropertiesProvided = true
+    value
+  }
+
+  private def storeProp[T](props: PropertiesConfiguration, key: String, transform: T => String)(value: T): T = {
+    storeProp(props, key)(transform(value))
+
+    value
+  }
+
   private def loadDeposit(depositId: DepositId, creationTime: Timestamp, props: PropertiesConfiguration): Deposit = {
     val bagName = Option(props.getString("bag-store.bag-name"))
     val creationTimestamp = Option(props.getString("creation.timestamp"))
       .map(s => Either.catchOnly[IllegalArgumentException] { DateTime.parse(s) }
         .getOrElse {
-          interactor.ask(s => DateTime.parse(s))(s"Invalid value for creation timestamp for deposit $depositId. What value should this be?")
+          storeProp(props, "creation.timestamp") {
+            interactor.ask(s => DateTime.parse(s))(s"Invalid value for creation timestamp for deposit $depositId. What value should this be?")
+          }
         })
       .getOrElse(creationTime)
     val depositorId = Option(props.getString("depositor.userId"))
       .getOrElse {
-        interactor.ask(s"Could not find the depositor for deposit $depositId. What value should this be?")
+        storeProp(props, "depositor.userId") {
+          interactor.ask(s"Could not find the depositor for deposit $depositId. What value should this be?")
+        }
       }
 
     Deposit(depositId, bagName, creationTimestamp, depositorId)
@@ -120,14 +141,20 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def loadState(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): InputState = {
     val label = getEnumProp("state.label")(StateLabel)(props)
       .getOrElse {
-        interactor.ask(StateLabel)(s"Invalid state label found for deposit $depositId. What value should this be?").some
+        storeProp(props, "state.label") {
+          interactor.ask(StateLabel)(s"Invalid state label found for deposit $depositId. What value should this be?")
+        }.some
       }
       .getOrElse {
-        interactor.ask(StateLabel)(s"Could not find the state label for deposit $depositId. What value should this be?")
+        storeProp(props, "state.label") {
+          interactor.ask(StateLabel)(s"Could not find the state label for deposit $depositId. What value should this be?")
+        }
       }
     val description = Option(props.getString("state.description"))
       .getOrElse {
-        interactor.ask(s"Could not find the state description for deposit $depositId. What value should this be?")
+        storeProp(props, "state.description") {
+          interactor.ask(s"Could not find the state description for deposit $depositId. What value should this be?")
+        }
       }
 
     InputState(label, description, timestamp)
@@ -136,11 +163,13 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def loadIngestStep(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration, stateLabel: StateLabel): Option[InputIngestStep] = {
     getEnumProp("deposit.ingest.current-step")(IngestStepLabel)(props)
       .getOrElse {
-        interactor.ask(IngestStepLabel)(s"Invalid current-step label found for deposit $depositId. What value should this be?").some
+        storeProp(props, "deposit.ingest.current-step") {
+          interactor.ask(IngestStepLabel)(s"Invalid current-step label found for deposit $depositId. What value should this be?")
+        }.some
       }
       .orElse {
         if (stateLabel == StateLabel.ARCHIVED)
-          IngestStepLabel.COMPLETED.some
+          storeProp(props, "deposit.ingest.current-step")(IngestStepLabel.COMPLETED).some
         else none
       }
       .map(InputIngestStep(_, timestamp))
@@ -149,7 +178,9 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def loadDoi(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): InputIdentifier = {
     val doi = Option(props.getString("identifier.doi"))
       .getOrElse {
-        interactor.ask(s"Could not find DOI for deposit $depositId. What value should this be?")
+        storeProp(props, "identifier.doi") {
+          interactor.ask(s"Could not find DOI for deposit $depositId. What value should this be?")
+        }
       }
 
     InputIdentifier(IdentifierType.DOI, doi, timestamp)
@@ -158,7 +189,9 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def loadUrn(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): InputIdentifier = {
     val urn = Option(props.getString("identifier.urn"))
       .getOrElse {
-        interactor.ask(s"Could not find URN for deposit $depositId. What value should this be?")
+        storeProp(props, "identifier.urn") {
+          interactor.ask(s"Could not find URN for deposit $depositId. What value should this be?")
+        }
       }
 
     InputIdentifier(IdentifierType.URN, urn, timestamp)
@@ -167,14 +200,18 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def loadFedoraIdentifier(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): InputIdentifier = {
     val fedoraId = Option(props.getString("identifier.fedora"))
       .getOrElse {
-        interactor.ask(s"Could not find Fedora identifier for deposit $depositId. What value should this be?")
+        storeProp(props, "identifier.fedora") {
+          interactor.ask(s"Could not find Fedora identifier for deposit $depositId. What value should this be?")
+        }
       }
 
     InputIdentifier(IdentifierType.FEDORA, fedoraId, timestamp)
   }
 
   private def loadBagStoreIdentifier(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): InputIdentifier = {
-    val bagId = Option(props.getString("bag-store.bag-id")).getOrElse(depositId.toString)
+    val bagId = Option(props.getString("bag-store.bag-id")).getOrElse {
+      storeProp(props, "bag-store.bag-id")(depositId).toString
+    }
 
     InputIdentifier(IdentifierType.BAG_STORE, bagId, timestamp)
   }
@@ -183,10 +220,12 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
     val registered = Option(props.getString("identifier.dans-doi.registered"))
       .flatMap(s => Option(BooleanUtils.toBoolean(s)))
       .getOrElse {
-        Either.catchOnly[DataciteServiceException] { datacite.doiExists(doi) }
-          .getOrElse {
-            interactor.ask(s => BooleanUtils.toBoolean(s))(s"Could not find whether doi '$doi' is registered for deposit $depositId, neither could DataCite be contacted. What value should this be?")
-          }
+        storeProp[Boolean](props, "identifier.dans-doi.registered", (b: Boolean) => BooleanUtils.toStringYesNo(b)) {
+          Either.catchOnly[DataciteServiceException] { datacite.doiExists(doi) }
+            .getOrElse {
+              interactor.ask(s => BooleanUtils.toBoolean(s))(s"Could not find whether doi '$doi' is registered for deposit $depositId, neither could DataCite be contacted. What value should this be?")
+            }
+        }
       }
 
     DoiRegisteredEvent(registered, timestamp)
@@ -195,9 +234,13 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def loadDoiAction(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): DoiActionEvent = {
     val doiAction = getEnumProp("identifier.dans-doi.action")(DoiAction)(props)
       .getOrElse {
-        interactor.ask(DoiAction)(s"Invalid dans-doi action found for deposit $depositId. What value should this be?").some
+        storeProp(props, "identifier.dans-doi.action") {
+          interactor.ask(DoiAction)(s"Invalid dans-doi action found for deposit $depositId. What value should this be?")
+        }.some
       }
-      .getOrElse(DoiAction.CREATE) // if not set, use 'create' as default
+      .getOrElse {
+        storeProp(props, "identifier.dans-doi.action")(DoiAction.CREATE) // if not set, use 'create' as default
+      }
 
     DoiActionEvent(doiAction, timestamp)
   }
@@ -237,7 +280,9 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
       collection <- Option(props.getString("springfield.collection"))
       playMode <- getEnumProp("springfield.playmode")(SpringfieldPlayMode)(props)
         .getOrElse {
-          interactor.ask(SpringfieldPlayMode)(s"Invalid play mode found for deposit $depositId. What value should this be?").some
+          storeProp(props, "springfield.playmode") {
+            interactor.ask(SpringfieldPlayMode)(s"Invalid play mode found for deposit $depositId. What value should this be?")
+          }.some
         }
     } yield InputSpringfield(domain, user, collection, playMode, timestamp)
   }
@@ -245,7 +290,9 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def loadContentType(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): Option[InputContentType] = {
     getEnumProp("easy-sword2.client-message.content-type")(ContentTypeValue)(props)
       .getOrElse {
-        interactor.ask(ContentTypeValue)(s"Invalid content type found for deposit $depositId. What value should this be?").some
+        storeProp(props, "easy-sword2.client-message.content-type") {
+          interactor.ask(ContentTypeValue)(s"Invalid content type found for deposit $depositId. What value should this be?")
+        }.some
       }
       .map(InputContentType(_, timestamp))
   }
@@ -257,5 +304,10 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
   private def parseEnumValue(enum: Enumeration)(s: String): LoadPropsErrorOr[enum.Value] = {
     Either.catchOnly[NoSuchElementException] { enum.withName(s) }
       .leftMap(_ => IllegalValueError(s, enum))
+  }
+
+  private def savePropertiesIfChanged(props: PropertiesConfiguration): Unit = {
+    if (newPropertiesProvided)
+      props.save()
   }
 }
