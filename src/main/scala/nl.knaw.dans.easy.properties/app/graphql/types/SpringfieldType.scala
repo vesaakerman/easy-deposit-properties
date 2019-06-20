@@ -49,11 +49,9 @@ trait SpringfieldType {
   )
 
   private def getDepositBySpringfield(context: Context[DataContext, Springfield]): Try[Option[Deposit]] = {
-    val repository = context.ctx.deposits
-
-    val springfieldId = context.value.id
-
-    repository.getDepositBySpringfieldId(springfieldId).toTry
+    context.ctx.deposits
+      .getDepositBySpringfieldId(context.value.id)
+      .toTry
   }
 
   implicit val SpringfieldType: ObjectType[DataContext, Springfield] = deriveObjectType(
@@ -82,17 +80,14 @@ trait SpringfieldType {
   implicit val SpringfieldOrderFieldType: EnumType[SpringfieldOrderField.Value] = deriveEnumType()
 
   case class SpringfieldOrder(field: SpringfieldOrderField.SpringfieldOrderField,
-                              direction: OrderDirection.OrderDirection) {
-    lazy val ordering: Ordering[Springfield] = {
+                              direction: OrderDirection.OrderDirection) extends Ordering[Springfield] {
+    def compare(x: Springfield, y: Springfield): Int = {
       val orderByField: Ordering[Springfield] = field match {
         case SpringfieldOrderField.TIMESTAMP =>
           Ordering[Timestamp].on(_.timestamp)
       }
 
-      direction match {
-        case OrderDirection.ASC => orderByField
-        case OrderDirection.DESC => orderByField.reverse
-      }
+      direction.withOrder(orderByField).compare(x, y)
     }
   }
   implicit val SpringfieldOrderInputType: InputObjectType[SpringfieldOrder] = deriveInputObjectType(

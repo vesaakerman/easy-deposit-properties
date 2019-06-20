@@ -61,6 +61,8 @@ type ContentType implements Node {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int
@@ -183,6 +185,8 @@ type Curator implements Node {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int
@@ -255,6 +259,8 @@ type Deposit implements Node {
   states(
     """Ordering options for the returned states."""
     orderBy: StateOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int
@@ -274,6 +280,8 @@ type Deposit implements Node {
   ingestSteps(
     """Ordering options for the returned ingest steps."""
     orderBy: IngestStepOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int
@@ -314,6 +322,8 @@ type Deposit implements Node {
   curators(
     """Ordering options for the returned curators."""
     orderBy: CuratorOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int
@@ -345,6 +355,8 @@ type Deposit implements Node {
   springfields(
     """Ordering options for the returned springfields."""
     orderBy: SpringfieldOrder
+    earlierThan: DateTime
+    laterThan: DateTime
   ): [Springfield!]!
 
   """The content type currently associated with this deposit."""
@@ -354,6 +366,8 @@ type Deposit implements Node {
   contentTypes(
     """Ordering options for the returned content types."""
     orderBy: ContentTypeOrder
+    earlierThan: DateTime
+    laterThan: DateTime
   ): [ContentType!]!
 
   """The name of the deposited bag."""
@@ -540,6 +554,8 @@ type Depositor {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int
@@ -670,6 +686,8 @@ type IngestStep implements Node {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int
@@ -881,6 +899,8 @@ type Query {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int
@@ -1157,6 +1177,8 @@ type State implements Node {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+    earlierThan: DateTime
+    laterThan: DateTime
     before: String
     after: String
     first: Int

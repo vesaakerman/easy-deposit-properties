@@ -395,7 +395,7 @@ trait MutationType {
       stateTimestampInputField,
     ),
     outputFields = fields(
-      stateField
+      stateField,
     ),
     mutateAndGetPayload = updateState,
   )
@@ -409,7 +409,7 @@ trait MutationType {
       ingestStepTimestampInputField,
     ),
     outputFields = fields(
-      ingestStepField
+      ingestStepField,
     ),
     mutateAndGetPayload = updateIngestStep,
   )
@@ -424,7 +424,7 @@ trait MutationType {
       identifierTimestampInputField,
     ),
     outputFields = fields(
-      identifierField
+      identifierField,
     ),
     mutateAndGetPayload = addIdentifier,
   )
@@ -438,7 +438,7 @@ trait MutationType {
       doiRegisteredTimestampInputField,
     ),
     outputFields = fields(
-      doiRegisteredField
+      doiRegisteredField,
     ),
     mutateAndGetPayload = setDoiRegistered,
   )
@@ -452,7 +452,7 @@ trait MutationType {
       doiActionTimestampInputField,
     ),
     outputFields = fields(
-      doiActionField
+      doiActionField,
     ),
     mutateAndGetPayload = setDoiAction,
   )
@@ -467,7 +467,7 @@ trait MutationType {
       curatorTimestampInputField,
     ),
     outputFields = fields(
-      curatorField
+      curatorField,
     ),
     mutateAndGetPayload = setCurator,
   )
@@ -481,7 +481,7 @@ trait MutationType {
       isNewVersionTimestampInputField,
     ),
     outputFields = fields(
-      isNewVersionField
+      isNewVersionField,
     ),
     mutateAndGetPayload = setIsNewVersion,
   )
@@ -495,7 +495,7 @@ trait MutationType {
       curationRequiredTimestampInputField,
     ),
     outputFields = fields(
-      curationRequiredField
+      curationRequiredField,
     ),
     mutateAndGetPayload = setCurationRequired,
   )
@@ -509,7 +509,7 @@ trait MutationType {
       curationPerformedTimestampInputField,
     ),
     outputFields = fields(
-      curationPerformedField
+      curationPerformedField,
     ),
     mutateAndGetPayload = setCurationPerformed,
   )
@@ -526,7 +526,7 @@ trait MutationType {
       springfieldTimestampInputField,
     ),
     outputFields = fields(
-      springfieldField
+      springfieldField,
     ),
     mutateAndGetPayload = setSpringfield,
   )
@@ -540,171 +540,205 @@ trait MutationType {
       contentTypeTimestampInputField,
     ),
     outputFields = fields(
-      contentTypeField
+      contentTypeField,
     ),
     mutateAndGetPayload = setContentType,
   )
 
   private def addDeposit(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, AddDepositPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val bagName = input(bagNameInputField.name).asInstanceOf[String]
-    val creationTimestamp = input(creationTimestampInputField.name).asInstanceOf[Timestamp]
-    val depositorId = input(depositorIdInputField.name).asInstanceOf[String]
-
-    repository.addDeposit(Deposit(depositId, Option(bagName), creationTimestamp, depositorId))
-      .map(deposit => AddDepositPayload(mutationId, deposit.id))
+    context.ctx.deposits
+      .addDeposit(Deposit(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        bagName = Option(input(bagNameInputField.name).asInstanceOf[String]),
+        creationTimestamp = input(creationTimestampInputField.name).asInstanceOf[Timestamp],
+        depositorId = input(depositorIdInputField.name).asInstanceOf[String],
+      ))
+      .map(deposit => AddDepositPayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        depositId = deposit.id,
+      ))
       .toTry
   }
 
   private def updateState(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, UpdateStatePayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val label = input(stateLabelInputField.name).asInstanceOf[StateLabel.Value]
-    val description = input(stateDescriptionInputField.name).asInstanceOf[String]
-    val timestamp = input(stateTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setState(depositId, InputState(label, description, timestamp))
-      .map(state => UpdateStatePayload(mutationId, state.id))
+    context.ctx.deposits
+      .setState(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        state = InputState(
+          label = input(stateLabelInputField.name).asInstanceOf[StateLabel.Value],
+          description = input(stateDescriptionInputField.name).asInstanceOf[String],
+          timestamp = input(stateTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(state => UpdateStatePayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        objectId = state.id,
+      ))
       .toTry
   }
 
   private def updateIngestStep(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, UpdateIngestStepPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val step = input(ingestStepLabelInputField.name).asInstanceOf[IngestStepLabel.Value]
-    val timestamp = input(ingestStepTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setIngestStep(depositId, InputIngestStep(step, timestamp))
-      .map(ingestStep => UpdateIngestStepPayload(mutationId, ingestStep.id))
+    context.ctx.deposits
+      .setIngestStep(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        step = InputIngestStep(
+          step = input(ingestStepLabelInputField.name).asInstanceOf[IngestStepLabel.Value],
+          timestamp = input(ingestStepTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(ingestStep => UpdateIngestStepPayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        objectId = ingestStep.id,
+      ))
       .toTry
   }
 
   private def addIdentifier(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, AddIdentifierPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val idType = input(identifierTypeInputField.name).asInstanceOf[IdentifierType.Value]
-    val idValue = input(identifierValueInputField.name).asInstanceOf[String]
-    val timestamp = input(identifierTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.addIdentifier(depositId, InputIdentifier(idType, idValue, timestamp))
-      .map(identifier => AddIdentifierPayload(mutationId, identifier.id))
+    context.ctx.deposits
+      .addIdentifier(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        identifier = InputIdentifier(
+          idType = input(identifierTypeInputField.name).asInstanceOf[IdentifierType.Value],
+          idValue = input(identifierValueInputField.name).asInstanceOf[String],
+          timestamp = input(identifierTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(identifier => AddIdentifierPayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        objectId = identifier.id,
+      ))
       .toTry
   }
 
   private def setDoiRegistered(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetDoiRegisteredPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val doiRegistered = input(doiRegisteredValueInputField.name).asInstanceOf[Boolean]
-    val timestamp = input(doiRegisteredTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setDoiRegistered(depositId, DoiRegisteredEvent(doiRegistered, timestamp))
-      .map(doiRegisteredEvent => SetDoiRegisteredPayload(mutationId, doiRegisteredEvent))
+    context.ctx.deposits
+      .setDoiRegistered(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        registered = DoiRegisteredEvent(
+          value = input(doiRegisteredValueInputField.name).asInstanceOf[Boolean],
+          timestamp = input(doiRegisteredTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(doiRegisteredEvent => SetDoiRegisteredPayload(
+        input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        doiRegisteredEvent,
+      ))
       .toTry
   }
 
   private def setDoiAction(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetDoiActionPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val doiAction = input(doiActionValueInputField.name).asInstanceOf[DoiAction.Value]
-    val timestamp = input(doiActionTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setDoiAction(depositId, DoiActionEvent(doiAction, timestamp))
-      .map(doiActionEvent => SetDoiActionPayload(mutationId, doiActionEvent))
+    context.ctx.deposits
+      .setDoiAction(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        action = DoiActionEvent(
+          value = input(doiActionValueInputField.name).asInstanceOf[DoiAction.Value],
+          timestamp = input(doiActionTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(doiActionEvent => SetDoiActionPayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        obj = doiActionEvent,
+      ))
       .toTry
   }
 
   private def setCurator(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCuratorPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val userId = input(curatorUserIdInputField.name).asInstanceOf[String]
-    val email = input(curatorEmailInputField.name).asInstanceOf[String]
-    val timestamp = input(curatorTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setCurator(depositId, InputCurator(userId, email, timestamp))
-      .map(curator => SetCuratorPayload(mutationId, curator.id))
+    context.ctx.deposits
+      .setCurator(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        curator = InputCurator(
+          userId = input(curatorUserIdInputField.name).asInstanceOf[String],
+          email = input(curatorEmailInputField.name).asInstanceOf[String],
+          timestamp = input(curatorTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(curator => SetCuratorPayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        objectId = curator.id,
+      ))
       .toTry
   }
 
   private def setIsNewVersion(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetIsNewVersionPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val isNewVersion = input(isNewVersionValueInputField.name).asInstanceOf[Boolean]
-    val timestamp = input(isNewVersionTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setIsNewVersionAction(depositId, IsNewVersionEvent(isNewVersion, timestamp))
-      .map(isNewVersionEvent => SetIsNewVersionPayload(mutationId, isNewVersionEvent))
+    context.ctx.deposits
+      .setIsNewVersionAction(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        action = IsNewVersionEvent(
+          isNewVersion = input(isNewVersionValueInputField.name).asInstanceOf[Boolean],
+          timestamp = input(isNewVersionTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(isNewVersionEvent => SetIsNewVersionPayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        obj = isNewVersionEvent
+      ))
       .toTry
   }
 
   private def setCurationRequired(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCurationRequiredPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val curationRequired = input(curationRequiredValueInputField.name).asInstanceOf[Boolean]
-    val timestamp = input(curationRequiredTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setCurationRequiredAction(depositId, CurationRequiredEvent(curationRequired, timestamp))
-      .map(curationRequiredEvent => SetCurationRequiredPayload(mutationId, curationRequiredEvent))
+    context.ctx.deposits
+      .setCurationRequiredAction(
+        input(depositIdInputField.name).asInstanceOf[DepositId],
+        CurationRequiredEvent(
+          input(curationRequiredValueInputField.name).asInstanceOf[Boolean],
+          input(curationRequiredTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(curationRequiredEvent => SetCurationRequiredPayload(
+        input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        curationRequiredEvent
+      ))
       .toTry
   }
 
   private def setCurationPerformed(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCurationPerformedPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val curationPerformed = input(curationPerformedValueInputField.name).asInstanceOf[Boolean]
-    val timestamp = input(curationPerformedTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setCurationPerformedAction(depositId, CurationPerformedEvent(curationPerformed, timestamp))
-      .map(curationPerformedEvent => SetCurationPerformedPayload(mutationId, curationPerformedEvent))
+    context.ctx.deposits
+      .setCurationPerformedAction(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        action = CurationPerformedEvent(
+          curationPerformed = input(curationPerformedValueInputField.name).asInstanceOf[Boolean],
+          timestamp = input(curationPerformedTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(curationPerformedEvent => SetCurationPerformedPayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        obj = curationPerformedEvent,
+      ))
       .toTry
   }
 
   private def setSpringfield(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetSpringfieldPayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val domain = input(springfieldDomainInputField.name).asInstanceOf[String]
-    val user = input(springfieldUserInputField.name).asInstanceOf[String]
-    val collection = input(springfieldCollectionInputField.name).asInstanceOf[String]
-    val playMode = input(springfieldPlayModeInputField.name).asInstanceOf[SpringfieldPlayMode.Value]
-    val timestamp = input(springfieldTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setSpringfield(depositId, InputSpringfield(domain, user, collection, playMode, timestamp))
-      .map(springfield => SetSpringfieldPayload(mutationId, springfield.id))
+    context.ctx.deposits
+      .setSpringfield(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        springfield = InputSpringfield(
+          domain = input(springfieldDomainInputField.name).asInstanceOf[String],
+          user = input(springfieldUserInputField.name).asInstanceOf[String],
+          collection = input(springfieldCollectionInputField.name).asInstanceOf[String],
+          playmode = input(springfieldPlayModeInputField.name).asInstanceOf[SpringfieldPlayMode.Value],
+          timestamp = input(springfieldTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(springfield => SetSpringfieldPayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        objectId = springfield.id,
+      ))
       .toTry
   }
 
   private def setContentType(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetContentTypePayload] = {
-    val repository = context.ctx.deposits
-
-    val mutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]])
-    val depositId = input(depositIdInputField.name).asInstanceOf[DepositId]
-    val contentType = input(contentTypeValueInputField.name).asInstanceOf[ContentTypeValue.Value]
-    val timestamp = input(contentTypeTimestampInputField.name).asInstanceOf[Timestamp]
-
-    repository.setContentType(depositId, InputContentType(contentType, timestamp))
-      .map(contentType => SetContentTypePayload(mutationId, contentType.id))
+    context.ctx.deposits
+      .setContentType(
+        id = input(depositIdInputField.name).asInstanceOf[DepositId],
+        contentType = InputContentType(
+          value = input(contentTypeValueInputField.name).asInstanceOf[ContentTypeValue.Value],
+          timestamp = input(contentTypeTimestampInputField.name).asInstanceOf[Timestamp],
+        ),
+      )
+      .map(contentType => SetContentTypePayload(
+        input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        contentType.id,
+      ))
       .toTry
   }
 

@@ -37,6 +37,7 @@ trait CuratorType {
     with DoiEventTypes
     with CurationEventType
     with ContentTypeGraphQLType
+    with TimebasedSearch
     with NodeType
     with MetaTypes
     with Scalars =>
@@ -96,7 +97,7 @@ trait CuratorType {
       depositCurationPerformedFilterArgument,
       depositContentTypeFilterArgument,
       optDepositOrderArgument,
-    ) ++ Connection.Args.All,
+    ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
@@ -112,27 +113,18 @@ trait CuratorType {
   private def getDeposits(context: Context[DataContext, Curator]): DeferredValue[DataContext, Seq[Deposit]] = {
     val label = context.value.userId
     val curatorFilter = context.arg(seriesFilterArgument)
-    val stateInput = context.arg(depositStateFilterArgument)
-    val ingestStepInput = context.arg(depositIngestStepFilterArgument)
-    val doiRegistered = context.arg(depositDoiRegisteredFilterArgument)
-    val doiAction = context.arg(depositDoiActionFilterArgument)
-    val isNewVersion = context.arg(depositIsNewVersionFilterArgument)
-    val curationRequired = context.arg(depositCurationRequiredFilterArgument)
-    val curationPerformed = context.arg(depositCurationPerformedFilterArgument)
-    val contentType = context.arg(depositContentTypeFilterArgument)
-    val orderBy = context.arg(optDepositOrderArgument)
 
     DeferredValue(depositsFetcher.defer(DepositFilters(
-      stateFilter = stateInput,
-      ingestStepFilter = ingestStepInput,
-      doiRegisteredFilter = doiRegistered,
-      doiActionFilter = doiAction,
+      stateFilter = context.arg(depositStateFilterArgument),
+      ingestStepFilter = context.arg(depositIngestStepFilterArgument),
+      doiRegisteredFilter = context.arg(depositDoiRegisteredFilterArgument),
+      doiActionFilter = context.arg(depositDoiActionFilterArgument),
       curatorFilter = Some(DepositCuratorFilter(label, curatorFilter)),
-      isNewVersionFilter = isNewVersion,
-      curationRequiredFilter = curationRequired,
-      curationPerformedFilter = curationPerformed,
-      contentTypeFilter = contentType,
-    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
+      isNewVersionFilter = context.arg(depositIsNewVersionFilterArgument),
+      curationRequiredFilter = context.arg(depositCurationRequiredFilterArgument),
+      curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
+      contentTypeFilter = context.arg(depositContentTypeFilterArgument),
+    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
   }
 
   implicit lazy val CuratorType: ObjectType[DataContext, Curator] = deriveObjectType(
@@ -167,8 +159,8 @@ trait CuratorType {
   implicit val CuratorOrderFieldType: EnumType[CuratorOrderField.Value] = deriveEnumType()
 
   case class CuratorOrder(field: CuratorOrderField.CuratorOrderField,
-                          direction: OrderDirection.OrderDirection) {
-    lazy val ordering: Ordering[Curator] = {
+                          direction: OrderDirection.OrderDirection) extends Ordering[Curator] {
+    def compare(x: Curator, y: Curator): Int = {
       val orderByField: Ordering[Curator] = field match {
         case CuratorOrderField.USERID =>
           Ordering[String].on(_.userId)
@@ -176,10 +168,7 @@ trait CuratorType {
           Ordering[Timestamp].on(_.timestamp)
       }
 
-      direction match {
-        case OrderDirection.ASC => orderByField
-        case OrderDirection.DESC => orderByField.reverse
-      }
+      direction.withOrder(orderByField).compare(x, y)
     }
   }
   implicit val CuratorOrderInputType: InputObjectType[CuratorOrder] = deriveInputObjectType(

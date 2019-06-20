@@ -1,0 +1,41 @@
+query {
+    deposit(id: "00000000-0000-0000-0000-000000000001") {
+        states(laterThan: "2019-01-01T04:00:00.000+01:00") {
+            edges {
+                node {
+                    label
+                    description
+                    timestamp
+                }
+            }
+        }
+        ingestSteps(earlierThan: "2019-01-01T04:07:00.000+01:00") {
+            edges {
+                node {
+                    step
+                    timestamp
+                }
+            }
+        }
+        curators(laterThan: "2019-01-01T02:00:00.000+01:00") {
+            edges {
+                node {
+                    userId
+                    email
+                    timestamp
+                }
+            }
+        }
+        springfields(laterThan: "2019-01-01T02:00:00.000+01:00") {
+            domain
+            user
+            collection
+            playmode
+            timestamp
+        }
+        contentTypes(earlierThan: "2019-01-01T00:08:00.000+01:00") {
+            value
+            timestamp
+        }
+    }
+}

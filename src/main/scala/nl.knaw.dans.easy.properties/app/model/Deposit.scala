@@ -19,4 +19,6 @@ case class Deposit(id: DepositId,
                    bagName: Option[String],
                    creationTimestamp: Timestamp,
                    depositorId: DepositorId,
-                  )
+                  ) extends Timestamped {
+  def timestamp: Timestamp = creationTimestamp
+}

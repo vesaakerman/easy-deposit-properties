@@ -33,6 +33,7 @@ import scala.util.Try
 
 trait ContentTypeGraphQLType {
   this: DepositType
+    with TimebasedSearch
     with NodeType
     with MetaTypes
     with Scalars =>
@@ -89,7 +90,7 @@ trait ContentTypeGraphQLType {
     arguments = List(
       seriesFilterArgument,
       optDepositOrderArgument,
-    ) ++ Connection.Args.All,
+    ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
@@ -105,11 +106,10 @@ trait ContentTypeGraphQLType {
   private def getDeposits(context: Context[DataContext, ContentType]): DeferredValue[DataContext, Seq[Deposit]] = {
     val contentType = context.value.value
     val contentTypeFilter = context.arg(seriesFilterArgument)
-    val orderBy = context.arg(optDepositOrderArgument)
 
     DeferredValue(depositsFetcher.defer(DepositFilters(
       contentTypeFilter = Some(DepositContentTypeFilter(contentType, contentTypeFilter))
-    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
+    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
   }
 
   implicit val ContentTypeType: ObjectType[DataContext, ContentType] = deriveObjectType(
@@ -148,8 +148,8 @@ trait ContentTypeGraphQLType {
   implicit val ContentTypeOrderFieldType: EnumType[ContentTypeOrderField.Value] = deriveEnumType()
 
   case class ContentTypeOrder(field: ContentTypeOrderField.ContentTypeOrderField,
-                              direction: OrderDirection.OrderDirection) {
-    lazy val ordering: Ordering[ContentType] = {
+                              direction: OrderDirection.OrderDirection) extends Ordering[ContentType] {
+    def compare(x: ContentType, y: ContentType): Int = {
       val orderByField: Ordering[ContentType] = field match {
         case ContentTypeOrderField.VALUE =>
           Ordering[ContentTypeValue].on(_.value)
@@ -157,10 +157,7 @@ trait ContentTypeGraphQLType {
           Ordering[Timestamp].on(_.timestamp)
       }
 
-      direction match {
-        case OrderDirection.ASC => orderByField
-        case OrderDirection.DESC => orderByField.reverse
-      }
+      direction.withOrder(orderByField).compare(x, y)
     }
   }
   implicit val ContentTypeOrderInputType: InputObjectType[ContentTypeOrder] = deriveInputObjectType(

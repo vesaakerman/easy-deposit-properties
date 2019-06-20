@@ -1,0 +1,64 @@
+{
+  "data": {
+    "deposit": {
+      "states": {
+        "edges": [
+          {
+            "node": {
+              "label": "SUBMITTED",
+              "description": "deposit is processing",
+              "timestamp": "2019-01-01T04:04:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "label": "ARCHIVED",
+              "description": "deposit is archived",
+              "timestamp": "2019-01-01T05:05:00.000+01:00"
+            }
+          }
+        ]
+      },
+      "ingestSteps": {
+        "edges": [
+          {
+            "node": {
+              "step": "VALIDATE",
+              "timestamp": "2019-01-01T04:05:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "step": "PID_GENERATOR",
+              "timestamp": "2019-01-01T04:06:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "step": "FEDORA",
+              "timestamp": "2019-01-01T04:07:00.000+01:00"
+            }
+          }
+        ]
+      },
+      "curators": {
+        "edges": [
+          {
+            "node": {
+              "userId": "archie001",
+              "email": "does.not.exists1@dans.knaw.nl",
+              "timestamp": "2019-01-01T03:03:00.000+01:00"
+            }
+          }
+        ]
+      },
+      "springfields": [],
+      "contentTypes": [
+        {
+          "value": "application/zip",
+          "timestamp": "2019-01-01T00:05:00.000+01:00"
+        }
+      ]
+    }
+  }
+}

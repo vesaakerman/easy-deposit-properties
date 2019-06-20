@@ -515,6 +515,23 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
+  it should "resolve 'deposit/timebasedSearch/plain.graphql' with 6 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposit" / "timebasedSearch" / "plain.graphql"
+
+    inSequence {
+      repository.getDeposit _ expects depositId1 once() returning deposit1.asRight
+      inAnyOrder {
+        (repository.getAllStates(_: DepositId)) expects depositId1 once() returning Seq(state1, state2, state3, state1, state2).asRight
+        (repository.getAllIngestSteps(_: DepositId)) expects depositId1 once() returning Seq(step1, step2, step3, step1, step2).asRight
+        (repository.getAllCurators(_: DepositId)) expects depositId1 once() returning Seq(curator1, curator2, curator1).asRight
+        (repository.getAllSpringfields(_: DepositId)) expects depositId1 once() returning Seq(springfield1, springfield2, springfield1).asRight
+        (repository.getAllContentTypes(_: DepositId)) expects depositId1 once() returning Seq(contentType1, contentType2, contentType1).asRight
+      }
+    }
+
+    runQuery(input)
+  }
+
   // Currently 'once()' fails, because it is 'repeated 4'.
   // However, once we got caching working, we should see 'once()' working properly.
   it should "resolve 'deposit/nested.graphql' with n calls to the repository" in pendingUntilFixed {

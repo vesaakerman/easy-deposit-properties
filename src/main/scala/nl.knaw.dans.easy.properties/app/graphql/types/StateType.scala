@@ -32,7 +32,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 trait StateType {
-  this: DepositType with NodeType with MetaTypes with Scalars =>
+  this: DepositType
+    with TimebasedSearch
+    with NodeType
+    with MetaTypes
+    with Scalars =>
 
   implicit val StateLabelType: EnumType[StateLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the state of a deposit."),
@@ -94,27 +98,24 @@ trait StateType {
     arguments = List(
       seriesFilterArgument,
       optDepositOrderArgument,
-    ) ++ Connection.Args.All,
+    ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
   private def getDepositByState(context: Context[DataContext, State]): Try[Option[Deposit]] = {
-    val repository = context.ctx.deposits
-
-    val stateId = context.value.id
-
-    repository.getDepositByStateId(stateId).toTry
+    context.ctx.deposits
+      .getDepositByStateId(context.value.id)
+      .toTry
   }
 
   private def getDeposits(context: Context[DataContext, State]): DeferredValue[DataContext, Seq[Deposit]] = {
     val label = context.value.label
     val stateFilter = context.arg(seriesFilterArgument)
-    val orderBy = context.arg(optDepositOrderArgument)
 
     DeferredValue(depositsFetcher.defer(DepositFilters(
       stateFilter = Some(DepositStateFilter(label, stateFilter))
-    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
+    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
   }
 
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(
@@ -149,8 +150,8 @@ trait StateType {
   implicit val StateOrderFieldType: EnumType[StateOrderField.Value] = deriveEnumType()
 
   case class StateOrder(field: StateOrderField.StateOrderField,
-                        direction: OrderDirection.OrderDirection) {
-    lazy val ordering: Ordering[State] = {
+                        direction: OrderDirection.OrderDirection) extends Ordering[State] {
+    def compare(x: State, y: State): Int = {
       val orderByField: Ordering[State] = field match {
         case StateOrderField.LABEL =>
           Ordering[StateLabel].on(_.label)
@@ -158,10 +159,7 @@ trait StateType {
           Ordering[Timestamp].on(_.timestamp)
       }
 
-      direction match {
-        case OrderDirection.ASC => orderByField
-        case OrderDirection.DESC => orderByField.reverse
-      }
+      direction.withOrder(orderByField).compare(x, y)
     }
   }
   implicit val StateOrderInputType: InputObjectType[StateOrder] = deriveInputObjectType(

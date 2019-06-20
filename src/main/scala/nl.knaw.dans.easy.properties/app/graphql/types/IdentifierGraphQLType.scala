@@ -55,11 +55,9 @@ trait IdentifierGraphQLType {
   )
 
   private def getDepositByIdentifier(context: Context[DataContext, Identifier]): Try[Option[Deposit]] = {
-    val repository = context.ctx.deposits
-
-    val identifierId = context.value.id
-
-    repository.getDepositByIdentifierId(identifierId).toTry
+    context.ctx.deposits
+      .getDepositByIdentifierId(context.value.id)
+      .toTry
   }
 
   implicit val IdentifierObjectType: ObjectType[DataContext, Identifier] = deriveObjectType(

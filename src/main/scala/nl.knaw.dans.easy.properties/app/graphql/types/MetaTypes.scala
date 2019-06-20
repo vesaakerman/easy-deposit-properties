@@ -92,6 +92,16 @@ trait MetaTypes {
     @GraphQLDescription("Specifies a descending order for a given orderBy argument")
     val DESC: OrderDirection = Value("DESC")
     // @formatter:on
+
+    case class OrderDirectionValue(value: OrderDirection) {
+      def withOrder[T](ordering: Ordering[T]): Ordering[T] = {
+        value match {
+          case ASC => ordering
+          case DESC => ordering.reverse
+        }
+      }
+    }
+    implicit def value2OrderDirectionValue(value: OrderDirection): OrderDirectionValue = OrderDirectionValue(value)
   }
   implicit val OrderDirectionType: EnumType[OrderDirection.Value] = deriveEnumType()
 
@@ -111,9 +121,8 @@ trait MetaTypes {
   implicit val DepositOrderFieldType: EnumType[DepositOrderField.Value] = deriveEnumType()
 
   case class DepositOrder(field: DepositOrderField.DepositOrderField,
-                          direction: OrderDirection.OrderDirection) {
-
-    lazy val ordering: Ordering[Deposit] = {
+                          direction: OrderDirection.OrderDirection) extends Ordering[Deposit] {
+    def compare(x: Deposit, y: Deposit): Int = {
       val orderByField: Ordering[Deposit] = field match {
         case DepositOrderField.DEPOSIT_ID =>
           Ordering[DepositId].on(_.id)
@@ -123,10 +132,7 @@ trait MetaTypes {
           Ordering[Timestamp].on(_.creationTimestamp)
       }
 
-      direction match {
-        case OrderDirection.ASC => orderByField
-        case OrderDirection.DESC => orderByField.reverse
-      }
+      direction.withOrder(orderByField).compare(x, y)
     }
   }
   implicit val DepositOrderInputType: InputObjectType[DepositOrder] = deriveInputObjectType(

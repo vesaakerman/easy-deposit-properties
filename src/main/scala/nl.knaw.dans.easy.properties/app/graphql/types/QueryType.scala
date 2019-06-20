@@ -37,6 +37,7 @@ trait QueryType {
     with CuratorType
     with CurationEventType
     with ContentTypeGraphQLType
+    with TimebasedSearch
     with MetaTypes
     with NodeType
     with Scalars =>
@@ -99,7 +100,7 @@ trait QueryType {
       depositCurationPerformedFilterArgument,
       depositContentTypeFilterArgument,
       optDepositOrderArgument,
-    ) ++ Connection.Args.All,
+    ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
@@ -124,36 +125,23 @@ trait QueryType {
   )
 
   private def getDeposit(context: Context[DataContext, Unit]): Try[Deposit] = {
-    val repository = context.ctx.deposits
-
-    val depositId = context.arg(depositIdArgument)
-
-    repository.getDeposit(depositId).toTry
+    context.ctx.deposits
+      .getDeposit(context.arg(depositIdArgument))
+      .toTry
   }
 
   private def getDeposits(context: Context[DataContext, Unit]): DeferredValue[DataContext, Seq[Deposit]] = {
-    val stateInput = context.arg(depositStateFilterArgument)
-    val ingestStepInput = context.arg(depositIngestStepFilterArgument)
-    val doiRegistered = context.arg(depositDoiRegisteredFilterArgument)
-    val doiAction = context.arg(depositDoiActionFilterArgument)
-    val curator = context.arg(depositCuratorFilterArgument)
-    val isNewVersion = context.arg(depositIsNewVersionFilterArgument)
-    val curationRequired = context.arg(depositCurationRequiredFilterArgument)
-    val curationPerformed = context.arg(depositCurationPerformedFilterArgument)
-    val contentType = context.arg(depositContentTypeFilterArgument)
-    val orderBy = context.arg(optDepositOrderArgument)
-
     DeferredValue(depositsFetcher.defer(DepositFilters(
-      stateFilter = stateInput,
-      ingestStepFilter = ingestStepInput,
-      doiRegisteredFilter = doiRegistered,
-      doiActionFilter = doiAction,
-      curatorFilter = curator,
-      isNewVersionFilter = isNewVersion,
-      curationRequiredFilter = curationRequired,
-      curationPerformedFilter = curationPerformed,
-      contentTypeFilter = contentType
-    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
+      stateFilter = context.arg(depositStateFilterArgument),
+      ingestStepFilter = context.arg(depositIngestStepFilterArgument),
+      doiRegisteredFilter = context.arg(depositDoiRegisteredFilterArgument),
+      doiActionFilter = context.arg(depositDoiActionFilterArgument),
+      curatorFilter = context.arg(depositCuratorFilterArgument),
+      isNewVersionFilter = context.arg(depositIsNewVersionFilterArgument),
+      curationRequiredFilter = context.arg(depositCurationRequiredFilterArgument),
+      curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
+      contentTypeFilter = context.arg(depositContentTypeFilterArgument),
+    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
   }
 
   private def getDepositor(context: Context[DataContext, Unit]): Option[DepositorId] = {
@@ -161,12 +149,12 @@ trait QueryType {
   }
 
   private def getIdentifier(context: Context[DataContext, Unit]): Try[Option[Identifier]] = {
-    val repository = context.ctx.deposits
-
-    val identifierType = context.arg(identifierTypeArgument)
-    val identifierValue = context.arg(identifierValueArgument)
-
-    repository.getIdentifier(identifierType, identifierValue).toTry
+    context.ctx.deposits
+      .getIdentifier(
+        idType = context.arg(identifierTypeArgument),
+        idValue = context.arg(identifierValueArgument),
+      )
+      .toTry
   }
 
   implicit val QueryType: ObjectType[DataContext, Unit] = ObjectType(

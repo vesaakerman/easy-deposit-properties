@@ -32,6 +32,7 @@ trait DepositorType {
     with CuratorType
     with CurationEventType
     with ContentTypeGraphQLType
+    with TimebasedSearch
     with MetaTypes =>
 
   private val depositorIdField: Field[DataContext, DepositorId] = Field(
@@ -54,36 +55,24 @@ trait DepositorType {
       depositCuratorFilterArgument,
       depositContentTypeFilterArgument,
       optDepositOrderArgument,
-    ) ++ Connection.Args.All,
+    ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
   private def getDeposits(context: Context[DataContext, DepositorId]): DeferredValue[DataContext, Seq[Deposit]] = {
-    val depositorId = context.value
-    val stateInput = context.arg(depositStateFilterArgument)
-    val ingestStepInput = context.arg(depositIngestStepFilterArgument)
-    val doiRegistered = context.arg(depositDoiRegisteredFilterArgument)
-    val doiAction = context.arg(depositDoiActionFilterArgument)
-    val curator = context.arg(depositCuratorFilterArgument)
-    val isNewVersion = context.arg(depositIsNewVersionFilterArgument)
-    val curationRequired = context.arg(depositCurationRequiredFilterArgument)
-    val curationPerformed = context.arg(depositCurationPerformedFilterArgument)
-    val contentType = context.arg(depositContentTypeFilterArgument)
-    val orderBy = context.arg(optDepositOrderArgument)
-
     DeferredValue(depositsFetcher.defer(DepositFilters(
-      depositorId = Some(depositorId),
-      stateFilter = stateInput,
-      ingestStepFilter = ingestStepInput,
-      doiRegisteredFilter = doiRegistered,
-      doiActionFilter = doiAction,
-      curatorFilter = curator,
-      isNewVersionFilter = isNewVersion,
-      curationRequiredFilter = curationRequired,
-      curationPerformedFilter = curationPerformed,
-      contentTypeFilter = contentType,
-    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
+      depositorId = Some(context.value),
+      stateFilter = context.arg(depositStateFilterArgument),
+      ingestStepFilter = context.arg(depositIngestStepFilterArgument),
+      doiRegisteredFilter = context.arg(depositDoiRegisteredFilterArgument),
+      doiActionFilter = context.arg(depositDoiActionFilterArgument),
+      curatorFilter = context.arg(depositCuratorFilterArgument),
+      isNewVersionFilter = context.arg(depositIsNewVersionFilterArgument),
+      curationRequiredFilter = context.arg(depositCurationRequiredFilterArgument),
+      curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
+      contentTypeFilter = context.arg(depositContentTypeFilterArgument),
+    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
   }
 
   implicit val DepositorType: ObjectType[DataContext, DepositorId] = ObjectType(

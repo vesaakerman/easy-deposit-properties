@@ -22,6 +22,7 @@ import sangria.schema._
 object GraphQLSchema extends Scalars
   with NodeType
   with MetaTypes
+  with TimebasedSearch
   with ContentTypeGraphQLType
   with SpringfieldType
   with CurationEventType

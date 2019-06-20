@@ -32,7 +32,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 trait IngestStepType {
-  this: DepositType with NodeType with MetaTypes with Scalars =>
+  this: DepositType
+    with TimebasedSearch
+    with NodeType
+    with MetaTypes
+    with Scalars =>
 
   implicit val StepLabelType: EnumType[IngestStepLabel.Value] = deriveEnumType(
     EnumTypeDescription("The label identifying the ingest step."),
@@ -93,27 +97,24 @@ trait IngestStepType {
     arguments = List(
       seriesFilterArgument,
       optDepositOrderArgument,
-    ) ++ Connection.Args.All,
+    ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
   private def getDepositByIngestStep(context: Context[DataContext, IngestStep]): Try[Option[Deposit]] = {
-    val repository = context.ctx.deposits
-
-    val stepId = context.value.id
-
-    repository.getDepositByIngestStepId(stepId).toTry
+    context.ctx.deposits
+      .getDepositByIngestStepId(context.value.id)
+      .toTry
   }
 
   private def getDeposits(context: Context[DataContext, IngestStep]): DeferredValue[DataContext, Seq[Deposit]] = {
     val step = context.value.step
     val stepFilter = context.arg(seriesFilterArgument)
-    val orderBy = context.arg(optDepositOrderArgument)
 
     DeferredValue(depositsFetcher.defer(DepositFilters(
       ingestStepFilter = Some(DepositIngestStepFilter(step, stepFilter))
-    ))).map { case (_, deposits) => orderBy.fold(deposits)(order => deposits.sorted(order.ordering)) }
+    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
   }
 
   implicit lazy val IngestStepType: ObjectType[DataContext, IngestStep] = deriveObjectType(
@@ -147,8 +148,8 @@ trait IngestStepType {
   implicit val IngestStepOrderFieldType: EnumType[IngestStepOrderField.Value] = deriveEnumType()
 
   case class IngestStepOrder(field: IngestStepOrderField.IngestStepOrderField,
-                             direction: OrderDirection.OrderDirection) {
-    lazy val ordering: Ordering[IngestStep] = {
+                             direction: OrderDirection.OrderDirection) extends Ordering[IngestStep] {
+    def compare(x: IngestStep, y: IngestStep): Int = {
       val orderByField: Ordering[IngestStep] = field match {
         case IngestStepOrderField.STEP =>
           Ordering[IngestStepLabel].on(_.step)
@@ -156,10 +157,7 @@ trait IngestStepType {
           Ordering[Timestamp].on(_.timestamp)
       }
 
-      direction match {
-        case OrderDirection.ASC => orderByField
-        case OrderDirection.DESC => orderByField.reverse
-      }
+      direction.withOrder(orderByField).compare(x, y)
     }
   }
   implicit val IngestStepOrderInputType: InputObjectType[IngestStepOrder] = deriveInputObjectType(
