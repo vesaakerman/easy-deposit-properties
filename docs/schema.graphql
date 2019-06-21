@@ -61,8 +61,21 @@ type ContentType implements Node {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int
@@ -185,8 +198,21 @@ type Curator implements Node {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int
@@ -259,8 +285,21 @@ type Deposit implements Node {
   states(
     """Ordering options for the returned states."""
     orderBy: StateOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int
@@ -280,8 +319,21 @@ type Deposit implements Node {
   ingestSteps(
     """Ordering options for the returned ingest steps."""
     orderBy: IngestStepOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int
@@ -322,8 +374,21 @@ type Deposit implements Node {
   curators(
     """Ordering options for the returned curators."""
     orderBy: CuratorOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int
@@ -355,8 +420,21 @@ type Deposit implements Node {
   springfields(
     """Ordering options for the returned springfields."""
     orderBy: SpringfieldOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
   ): [Springfield!]!
 
   """The content type currently associated with this deposit."""
@@ -366,8 +444,21 @@ type Deposit implements Node {
   contentTypes(
     """Ordering options for the returned content types."""
     orderBy: ContentTypeOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
   ): [ContentType!]!
 
   """The name of the deposited bag."""
@@ -554,8 +645,21 @@ type Depositor {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int
@@ -686,8 +790,21 @@ type IngestStep implements Node {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int
@@ -899,8 +1016,21 @@ type Query {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int
@@ -1177,8 +1307,21 @@ type State implements Node {
 
     """Ordering options for the returned deposits."""
     orderBy: DepositOrder
+
+    """
+    List only those elements that have a timestamp earlier than this given timestamp.
+    """
     earlierThan: DateTime
+
+    """
+    List only those elements that have a timestamp later than this given timestamp.
+    """
     laterThan: DateTime
+
+    """
+    List only those elements that have a timestamp equal to the given timestamp.
+    """
+    atTimestamp: DateTime
     before: String
     after: String
     first: Int

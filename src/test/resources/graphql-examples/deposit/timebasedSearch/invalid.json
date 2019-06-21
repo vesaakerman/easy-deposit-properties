@@ -1,0 +1,22 @@
+{
+  "data": {
+    "deposit": {
+      "states": null
+    }
+  },
+  "errors": [
+    {
+      "message": "argument 'atTimestamp' cannot be used in conjunction with arguments 'earlierThan' or 'laterThan'",
+      "path": [
+        "deposit",
+        "states"
+      ],
+      "locations": [
+        {
+          "line": 3,
+          "column": 9
+        }
+      ]
+    }
+  ]
+}

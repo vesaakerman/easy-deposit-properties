@@ -1,8 +1,40 @@
 {
   "data": {
     "deposit": {
-      "states": {
+      "states1": {
         "edges": [
+          {
+            "node": {
+              "label": "UPLOADED",
+              "description": "deposit upload has been completed",
+              "timestamp": "2019-01-01T02:02:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "label": "FINALIZING",
+              "description": "deposit is finalizing",
+              "timestamp": "2019-01-01T03:03:00.000+01:00"
+            }
+          }
+        ]
+      },
+      "states2": {
+        "edges": [
+          {
+            "node": {
+              "label": "DRAFT",
+              "description": "draft with continued deposit",
+              "timestamp": "2019-01-01T00:00:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "label": "DRAFT",
+              "description": "draft with continued deposit",
+              "timestamp": "2019-01-01T01:01:00.000+01:00"
+            }
+          },
           {
             "node": {
               "label": "SUBMITTED",
@@ -15,6 +47,63 @@
               "label": "ARCHIVED",
               "description": "deposit is archived",
               "timestamp": "2019-01-01T05:05:00.000+01:00"
+            }
+          }
+        ]
+      },
+      "states3": {
+        "edges": [
+          {
+            "node": {
+              "label": "DRAFT",
+              "description": "draft with continued deposit",
+              "timestamp": "2019-01-01T00:00:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "label": "DRAFT",
+              "description": "draft with continued deposit",
+              "timestamp": "2019-01-01T01:01:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "label": "UPLOADED",
+              "description": "deposit upload has been completed",
+              "timestamp": "2019-01-01T02:02:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "label": "FINALIZING",
+              "description": "deposit is finalizing",
+              "timestamp": "2019-01-01T03:03:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "label": "SUBMITTED",
+              "description": "deposit is processing",
+              "timestamp": "2019-01-01T04:04:00.000+01:00"
+            }
+          },
+          {
+            "node": {
+              "label": "ARCHIVED",
+              "description": "deposit is archived",
+              "timestamp": "2019-01-01T05:05:00.000+01:00"
+            }
+          }
+        ]
+      },
+      "states4": {
+        "edges": [
+          {
+            "node": {
+              "label": "SUBMITTED",
+              "description": "deposit is processing",
+              "timestamp": "2019-01-01T04:04:00.000+01:00"
             }
           }
         ]
@@ -32,12 +121,6 @@
               "step": "PID_GENERATOR",
               "timestamp": "2019-01-01T04:06:00.000+01:00"
             }
-          },
-          {
-            "node": {
-              "step": "FEDORA",
-              "timestamp": "2019-01-01T04:07:00.000+01:00"
-            }
           }
         ]
       },
@@ -52,7 +135,8 @@
           }
         ]
       },
-      "springfields": [],
+      "springfields": [
+      ],
       "contentTypes": [
         {
           "value": "application/zip",

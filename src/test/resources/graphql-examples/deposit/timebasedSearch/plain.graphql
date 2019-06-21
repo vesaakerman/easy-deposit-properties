@@ -1,6 +1,33 @@
 query {
     deposit(id: "00000000-0000-0000-0000-000000000001") {
-        states(laterThan: "2019-01-01T04:00:00.000+01:00") {
+        states1: states(earlierThan: "2019-01-01T04:00:00.000+01:00", laterThan: "2019-01-01T02:00:00.000+01:00") {
+            edges {
+                node {
+                    label
+                    description
+                    timestamp
+                }
+            }
+        }
+        states2: states(earlierThan: "2019-01-01T02:00:00.000+01:00", laterThan: "2019-01-01T04:00:00.000+01:00") {
+            edges {
+                node {
+                    label
+                    description
+                    timestamp
+                }
+            }
+        }
+        states3: states(earlierThan: "2019-01-01T04:00:00.000+01:00", laterThan: "2019-01-01T04:00:00.000+01:00") {
+            edges {
+                node {
+                    label
+                    description
+                    timestamp
+                }
+            }
+        }
+        states4: states(atTimestamp: "2019-01-01T04:04:00.000+01:00") {
             edges {
                 node {
                     label

@@ -15,15 +15,28 @@
  */
 package nl.knaw.dans.easy.properties
 
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import sangria.execution.{ ExceptionHandler, HandledException }
 
-package object server {
+package object server extends DebugEnhancedLogging {
 
   case class GraphQLInput(query: String, variables: Option[String], operationName: Option[String])
 
   val defaultExceptionHandler = ExceptionHandler(
-    onException = { case (_, e) => HandledException(e.getMessage) },
-    onViolation = { case (_, e) => HandledException(e.errorMessage) },
-    onUserFacingError = { case (_, e) => HandledException(e.getMessage) },
+    onException = {
+      case (_, e) =>
+        logger.error(s"Exception: ${e.getMessage}", e)
+        HandledException(e.getMessage)
+    },
+    onViolation = {
+      case (_, e) =>
+        logger.error(s"Violation: ${e.errorMessage}", e)
+        HandledException(e.errorMessage)
+    },
+    onUserFacingError = {
+      case (_, e) =>
+        logger.error(s"User facing error: ${e.getMessage}", e)
+        HandledException(e.getMessage)
+    },
   )
 }
