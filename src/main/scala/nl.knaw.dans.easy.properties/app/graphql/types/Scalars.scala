@@ -17,8 +17,8 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import java.util.UUID
 
+import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
-import org.joda.time.{ DateTime, DateTimeZone }
 import sangria.ast.StringValue
 import sangria.schema.ScalarType
 import sangria.validation.{ StringCoercionViolation, ValueCoercionViolation, Violation }
@@ -50,7 +50,7 @@ trait Scalars {
   case object DateCoercionViolation extends ValueCoercionViolation("Date value expected")
 
   private def parseDate(s: String): Either[Violation, DateTime] = {
-    Try { new DateTime(s, DateTimeZone.UTC) }.fold(_ => Left(DateCoercionViolation), Right(_))
+    Try { DateTime.parse(s) }.fold(_ => Left(DateCoercionViolation), Right(_))
   }
 
   implicit val DateTimeType: ScalarType[DateTime] = ScalarType("DateTime",

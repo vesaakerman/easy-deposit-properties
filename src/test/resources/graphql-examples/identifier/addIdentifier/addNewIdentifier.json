@@ -1,12 +1,12 @@
 {
   "data": {
     "addIdentifier": {
-      "clientMutationId":"my-mutation-id",
-      "identifier":{
-        "id":"SWRlbnRpZmllcjozNTA=",
-        "type":"DOI",
-        "value":"abcdef",
-        "timestamp":"2019-05-26T21:08:00.000Z"
+      "clientMutationId": "my-mutation-id",
+      "identifier": {
+        "id": "SWRlbnRpZmllcjozNTA=",
+        "type": "DOI",
+        "value": "abcdef",
+        "timestamp": "2019-05-26T23:08:00.000+02:00"
       }
     }
   }

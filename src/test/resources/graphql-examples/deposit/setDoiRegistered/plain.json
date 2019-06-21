@@ -4,7 +4,7 @@
       "clientMutationId": "my-mutation-id",
       "doiRegistered": {
         "value": true,
-        "timestamp": "2019-05-27T21:41:00.000Z"
+        "timestamp": "2019-05-27T23:41:00.000+02:00"
       }
     }
   }
