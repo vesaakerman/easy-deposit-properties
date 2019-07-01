@@ -1,6 +1,7 @@
 -- differences with src/main/assembly/dist/install/db-tables.sql in order to support HSQLDB syntax
 -- * SERIAL --> INTEGER IDENTITY
 -- * TEXT --> CLOB
+-- * IdentifierSchema ENUM --> table with foreign key constraint
 
 CREATE TABLE Deposit (
     depositId CHAR(36) NOT NULL PRIMARY KEY,
@@ -9,7 +10,7 @@ CREATE TABLE Deposit (
     depositorId VARCHAR(64) NOT NULL
 );
 
-CREATE TABLE DepositState (
+CREATE TABLE State (
     stateId INTEGER IDENTITY NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     label VARCHAR(64) NOT NULL,
@@ -18,25 +19,25 @@ CREATE TABLE DepositState (
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
 );
 
-CREATE TABLE Identifier (
+CREATE TABLE IdentifierSchema (
     value VARCHAR(64) NOT NULL PRIMARY KEY
 );
 
-INSERT INTO Identifier (value)
+INSERT INTO IdentifierSchema (value)
 VALUES ('doi'),
        ('urn'),
        ('fedora'),
        ('bag-store');
 
-CREATE TABLE DepositIdentifier (
+CREATE TABLE Identifier (
     identifierId INTEGER IDENTITY NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
-    identifier VARCHAR(64) NOT NULL,
+    identifierSchema VARCHAR(64) NOT NULL,
     identifierValue VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (identifier) REFERENCES Identifier (value),
-    UNIQUE (depositId, identifier)
+    FOREIGN KEY (identifierSchema) REFERENCES IdentifierSchema (value),
+    UNIQUE (depositId, identifierSchema)
 );
 
 CREATE TABLE Curation (

@@ -14,25 +14,16 @@ CREATE TABLE State (
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
 );
 
+CREATE TYPE IdentifierSchema AS ENUM ('doi', 'urn', 'fedora', 'bag-store');
+
 CREATE TABLE Identifier (
-    value VARCHAR(64) NOT NULL PRIMARY KEY
-);
-
-INSERT INTO Identifier (value)
-VALUES ('doi'),
-       ('urn'),
-       ('fedora'),
-       ('bag-store');
-
-CREATE TABLE DepositIdentifier (
     identifierId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
-    identifier VARCHAR(64) NOT NULL,
+    identifierSchema IdentifierSchema NOT NULL,
     identifierValue VARCHAR(64) NOT NULL,
     timestamp TIME WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (identifier) REFERENCES Identifier (value),
-    UNIQUE (depositId, identifier)
+    UNIQUE (depositId, identifierSchema)
 );
 
 CREATE TABLE Curation (
@@ -47,7 +38,7 @@ CREATE TABLE Curation (
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
 );
 
-CREATE TABLE DepositSpringfield (
+CREATE TABLE Springfield (
     springfieldId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     domain VARCHAR(32) NOT NULL,
@@ -69,8 +60,7 @@ CREATE TABLE SimpleProperties (
 
 GRANT INSERT, SELECT ON Deposit TO easy_deposit_properties;
 GRANT INSERT, SELECT ON State TO easy_deposit_properties;
-GRANT SELECT ON Identifier TO easy_deposit_properties;
-GRANT INSERT, SELECT ON DepositIdentifier TO easy_deposit_properties;
+GRANT INSERT, SELECT ON Identifier TO easy_deposit_properties;
 GRANT INSERT, SELECT ON Curation TO easy_deposit_properties;
-GRANT INSERT, SELECT ON DepositSpringfield TO easy_deposit_properties;
+GRANT INSERT, SELECT ON Springfield TO easy_deposit_properties;
 GRANT INSERT, SELECT ON SimpleProperties TO easy_deposit_properties;
