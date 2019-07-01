@@ -49,7 +49,9 @@ class GraphiQLServlet(backendPath: String) extends ScalatraServlet {
           |    <script src="//cdn.jsdelivr.net/fetch/0.9.0/fetch.min.js"></script>
           |    <script src="//cdn.jsdelivr.net/npm/react@16.8.6/umd/react.production.min.js"></script>
           |    <script src="//cdn.jsdelivr.net/npm/react-dom@16.8.6/umd/react-dom.production.min.js"></script>
-          |    <script src="//cdn.jsdelivr.net/npm/graphiql@0.13.0/graphiql.min.js"></script>
+          |    <script src="//cdn.jsdelivr.net/npm/create-react-class@15.6.3/create-react-class.min.js"></script>
+          |    <script src="//cdn.jsdelivr.net/npm/graphiql@0.13.2/graphiql.min.js"></script>
+          |    <script src="//cdn.jsdelivr.net/npm/graphiql-explorer@0.4.3/graphiqlExplorer.min.js"></script>
           |
           |    <style>
           |      body {
@@ -61,10 +63,14 @@ class GraphiQLServlet(backendPath: String) extends ScalatraServlet {
           |      #graphiql {
           |        height: 100vh;
           |      }
+          |      .graphiql-container {
+          |        height: 100vh;
+          |        width: 100vw;
+          |      }
           |    </style>
           |</head>
           |<body>
-          |    <div id="graphiql">Loading...</div>
+          |    <div id="root">Loading...</div>
           |
           |    <script type="text/javascript">
           |      // Parse the search string to get url parameters.
@@ -111,7 +117,7 @@ class GraphiQLServlet(backendPath: String) extends ScalatraServlet {
           |        history.replaceState(null, null, newSearch);
           |      }
           |      function graphQLFetcher(graphQLParams) {
-          |        return fetch('$backendPath', {
+          |        return fetch('http://localhost:20200/graphql', {
           |          method: 'post',
           |          headers: {
           |            'Accept': 'application/json',
@@ -129,19 +135,103 @@ class GraphiQLServlet(backendPath: String) extends ScalatraServlet {
           |          }
           |        });
           |      }
+          |
+          |      function bindGraphiQLRef(ref) {
+          |        parameters._graphiql = ref;
+          |      }
+          |
+          |      const App = createReactClass({
+          |        getInitialState: function() {
+          |          return {
+          |            explorerIsOpen: true,
+          |            schema: undefined,
+          |            query: null,
+          |          };
+          |        },
+          |        
+          |        componentDidMount: function() {
+          |          console.log("state", this.state);
+          |          console.log("graphql component", parameters._graphiql);
+          |          console.log("graphql component state", parameters._graphiql.state);
+          |          
+          |          if (!this.state.schema) {
+          |            console.log("set schema from graphql object");
+          |            const schema = parameters._graphiql.state.schema;
+          |            schema && this.setState({ schema });
+          |          }
+          |        },
+          |
+          |        _handleEditQuery: function(query) {
+          |          parameters.query = query
+          |          updateURL()
+          |          this.setState({ query });
+          |        },
+          |
+          |        _handleToggleExplorer: function() {
+          |          console.log("graphql component state", parameters._graphiql.state);
+          |          
+          |          const schema = this.state.schema || parameters._graphiql.state.schema
+          |          
+          |          const newExplorerIsOpen = !this.state.explorerIsOpen
+          |          parameters.explorerIsOpen = newExplorerIsOpen
+          |          updateURL()
+          |          this.setState({ schema: schema, explorerIsOpen: newExplorerIsOpen });
+          |        },
+          |
+          |        render: function() {
+          |          const { query, schema, explorerIsOpen } = this.state;
+          |          console.log("schema", schema);
+          |          return React.createElement('div', { className: 'graphiql-container' },
+          |            React.createElement(GraphiQLExplorer.Explorer, {
+          |              schema: schema,
+          |              query: query,
+          |              onEdit: this._handleEditQuery,
+          |              onRunOperation: (operationName) => parameters._graphiql.handleRunQuery(operationName),
+          |              explorerIsOpen: explorerIsOpen,
+          |              onToggleExplorer: this._handleToggleExplorer,
+          |            }),
+          |            React.createElement(GraphiQL, {
+          |              ref: bindGraphiQLRef,
+          |              fetcher: graphQLFetcher,
+          |              schema: schema,
+          |              query: query,
+          |              variables: parameters.variables,
+          |              response: parameters.response,
+          |              operationName: parameters.operationName,
+          |              onEditQuery: this._handleEditQuery,
+          |              onEditVariables: onEditVariables,
+          |              onEditOperationName: onEditOperationName
+          |            },
+          |              React.createElement(GraphiQL.Toolbar, {},
+          |                React.createElement(GraphiQL.Button, {
+          |                  label: "Prettify",
+          |                  title: "Prettify Query (Shift-Ctrl-P)",
+          |                  onClick: () => parameters._graphiql.handlePrettifyQuery(),
+          |                }),
+          |                React.createElement(GraphiQL.Button, {
+          |                  label: "Merge",
+          |                  title: "Merge Query (Shift-Ctrl-M)",
+          |                  onClick: () => parameters._graphiql.handleMergeQuery(),
+          |                }),
+          |                React.createElement(GraphiQL.Button, {
+          |                  label: "History",
+          |                  title: "Show History",
+          |                  onClick: () => parameters._graphiql.handleToggleHistory(),
+          |                }),
+          |                React.createElement(GraphiQL.Button, {
+          |                  label: "Explorer",
+          |                  title: "Toggle Explorer",
+          |                  onClick: this._handleToggleExplorer,
+          |                }),
+          |              ),
+          |            ),
+          |          );
+          |        },
+          |      });
+          |
           |      ReactDOM.render(
-          |        React.createElement(GraphiQL, {
-          |          fetcher: graphQLFetcher,
-          |          schema: undefined,
-          |          query: parameters.query,
-          |          variables: parameters.variables,
-          |          response: parameters.response,
-          |          operationName: parameters.operationName,
-          |          onEditQuery: onEditQuery,
-          |          onEditVariables: onEditVariables,
-          |          onEditOperationName: onEditOperationName
-          |        }),
-          |        document.getElementById('graphiql')
+          |        React.createElement(App, {}),
+          |        document.getElementById('root'),
           |      );
           |    </script>
           |</body>
