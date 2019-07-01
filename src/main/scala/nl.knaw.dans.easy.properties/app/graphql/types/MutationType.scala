@@ -17,12 +17,12 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentTypeValue, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curator.InputCurator
+import nl.knaw.dans.easy.properties.app.model.curation.InputCuration
 import nl.knaw.dans.easy.properties.app.model.identifier.{ IdentifierType, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStepLabel, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DepositorId, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, DoiAction, DoiActionEvent, DoiRegisteredEvent, Timestamp }
 import sangria.relay.Mutation
 import sangria.schema.{ Action, BooleanType, Context, Field, InputField, InputObjectType, ObjectType, OptionType, StringType, fields }
 
@@ -32,8 +32,7 @@ trait MutationType {
     with IngestStepType
     with IdentifierGraphQLType
     with DoiEventTypes
-    with CuratorType
-    with CurationEventType
+    with CurationType
     with SpringfieldType
     with ContentTypeGraphQLType
     with Scalars =>
@@ -44,10 +43,7 @@ trait MutationType {
   case class AddIdentifierPayload(clientMutationId: Option[String], objectId: String) extends Mutation
   case class SetDoiRegisteredPayload(clientMutationId: Option[String], obj: DoiRegisteredEvent) extends Mutation
   case class SetDoiActionPayload(clientMutationId: Option[String], obj: DoiActionEvent) extends Mutation
-  case class SetCuratorPayload(clientMutationId: Option[String], objectId: String) extends Mutation
-  case class SetIsNewVersionPayload(clientMutationId: Option[String], obj: IsNewVersionEvent) extends Mutation
-  case class SetCurationRequiredPayload(clientMutationId: Option[String], obj: CurationRequiredEvent) extends Mutation
-  case class SetCurationPerformedPayload(clientMutationId: Option[String], obj: CurationPerformedEvent) extends Mutation
+  case class SetCurationPayload(clientMutationId: Option[String], objectId: String) extends Mutation
   case class SetSpringfieldPayload(clientMutationId: Option[String], objectId: String) extends Mutation
   case class SetContentTypePayload(clientMutationId: Option[String], objectId: String) extends Mutation
 
@@ -179,73 +175,49 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val curatorUserIdInputField: InputField[String] = InputField(
-    name = "userId",
+  private val curationUserIdInputField: InputField[String] = InputField(
+    name = "datamanagerUserId",
     description = Some("The data manager's username in EASY."),
     defaultValue = None,
     fieldType = StringType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val curatorEmailInputField: InputField[String] = InputField(
-    name = "email",
+  private val curationEmailInputField: InputField[String] = InputField(
+    name = "datamanagerEmail",
     description = Some("The data manager's email address."),
     defaultValue = None,
     fieldType = StringType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val curatorTimestampInputField: InputField[Timestamp] = InputField(
-    name = "timestamp",
-    description = Some("The timestamp at which the data manager was assigned to this deposit."),
-    defaultValue = None,
-    fieldType = DateTimeType,
-    astDirectives = Vector.empty,
-    astNodes = Vector.empty,
-  )
   private val isNewVersionValueInputField: InputField[Boolean] = InputField(
-    name = "value",
+    name = "isNewVersion",
     description = Some("True if the deposit is a new version."),
     defaultValue = None,
     fieldType = BooleanType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val isNewVersionTimestampInputField: InputField[Timestamp] = InputField(
-    name = "timestamp",
-    description = Some("The timestamp at which was decided that this is a new version."),
-    defaultValue = None,
-    fieldType = DateTimeType,
-    astDirectives = Vector.empty,
-    astNodes = Vector.empty,
-  )
   private val curationRequiredValueInputField: InputField[Boolean] = InputField(
-    name = "value",
+    name = "isCurationRequired",
     description = Some("True if curation by a data manager is required."),
     defaultValue = None,
     fieldType = BooleanType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val curationRequiredTimestampInputField: InputField[Timestamp] = InputField(
-    name = "timestamp",
-    description = Some("The timestamp at which was decided that this deposit requires curation."),
-    defaultValue = None,
-    fieldType = DateTimeType,
-    astDirectives = Vector.empty,
-    astNodes = Vector.empty,
-  )
   private val curationPerformedValueInputField: InputField[Boolean] = InputField(
-    name = "value",
+    name = "isCurationPerformed",
     description = Some("True if curation by the data manager has been performed."),
     defaultValue = None,
     fieldType = BooleanType,
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val curationPerformedTimestampInputField: InputField[Timestamp] = InputField(
+  private val curationTimestampInputField: InputField[Timestamp] = InputField(
     name = "timestamp",
-    description = Some("The timestamp at which the curation was completed."),
+    description = Some("The timestamp at which the curation event was assigned to this deposit."),
     defaultValue = None,
     fieldType = DateTimeType,
     astDirectives = Vector.empty,
@@ -338,25 +310,10 @@ trait MutationType {
     fieldType = OptionType(DoiActionEventType),
     resolve = ctx => ctx.value.obj,
   )
-  private val curatorField: Field[DataContext, SetCuratorPayload] = Field(
-    name = "curator",
-    fieldType = OptionType(CuratorType),
-    resolve = ctx => ctx.ctx.deposits.getCuratorById(ctx.value.objectId).toTry,
-  )
-  private val isNewVersionField: Field[DataContext, SetIsNewVersionPayload] = Field(
-    name = "isNewVersion",
-    fieldType = OptionType(IsNewVersionEventType),
-    resolve = ctx => ctx.value.obj,
-  )
-  private val curationRequiredField: Field[DataContext, SetCurationRequiredPayload] = Field(
-    name = "curationRequired",
-    fieldType = OptionType(CurationRequiredEventType),
-    resolve = ctx => ctx.value.obj,
-  )
-  private val curationPerformedField: Field[DataContext, SetCurationPerformedPayload] = Field(
-    name = "curationPerformed",
-    fieldType = OptionType(CurationPerformedEventType),
-    resolve = ctx => ctx.value.obj,
+  private val curationField: Field[DataContext, SetCurationPayload] = Field(
+    name = "curation",
+    fieldType = OptionType(CurationType),
+    resolve = ctx => ctx.ctx.deposits.getCurationById(ctx.value.objectId).toTry
   )
   private val springfieldField: Field[DataContext, SetSpringfieldPayload] = Field(
     name = "springfield",
@@ -456,62 +413,23 @@ trait MutationType {
     ),
     mutateAndGetPayload = setDoiAction,
   )
-  private val setCuratorField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetCuratorPayload, InputObjectType.DefaultInput](
-    fieldName = "setCurator",
-    typeName = "SetCurator",
-    fieldDescription = Some("Assign a data manager to the deposit identified by 'id'."),
+  private val setCurationField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetCurationPayload, InputObjectType.DefaultInput](
+    fieldName = "setCuration",
+    typeName = "SetCuration",
+    fieldDescription = Some("Assign a curation event to the deposit identified by 'id'."),
     inputFields = List(
       depositIdInputField,
-      curatorUserIdInputField,
-      curatorEmailInputField,
-      curatorTimestampInputField,
-    ),
-    outputFields = fields(
-      curatorField,
-    ),
-    mutateAndGetPayload = setCurator,
-  )
-  private val setIsNewVersionField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetIsNewVersionPayload, InputObjectType.DefaultInput](
-    fieldName = "setIsNewVersion",
-    typeName = "SetIsNewVersion",
-    fieldDescription = Some("Set whether this deposit is a new version."),
-    inputFields = List(
-      depositIdInputField,
+      curationUserIdInputField,
+      curationEmailInputField,
       isNewVersionValueInputField,
-      isNewVersionTimestampInputField,
-    ),
-    outputFields = fields(
-      isNewVersionField,
-    ),
-    mutateAndGetPayload = setIsNewVersion,
-  )
-  private val setCurationRequiredField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetCurationRequiredPayload, InputObjectType.DefaultInput](
-    fieldName = "setCurationRequired",
-    typeName = "SetCurationRequired",
-    fieldDescription = Some("Set whether this deposit requires curation."),
-    inputFields = List(
-      depositIdInputField,
       curationRequiredValueInputField,
-      curationRequiredTimestampInputField,
-    ),
-    outputFields = fields(
-      curationRequiredField,
-    ),
-    mutateAndGetPayload = setCurationRequired,
-  )
-  private val setCurationPerformedField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetCurationPerformedPayload, InputObjectType.DefaultInput](
-    fieldName = "setCurationPerformed",
-    typeName = "SetCurationPerformed",
-    fieldDescription = Some("Set whether curation is performed on this deposit."),
-    inputFields = List(
-      depositIdInputField,
       curationPerformedValueInputField,
-      curationPerformedTimestampInputField,
+      curationTimestampInputField,
     ),
     outputFields = fields(
-      curationPerformedField,
+      curationField,
     ),
-    mutateAndGetPayload = setCurationPerformed,
+    mutateAndGetPayload = setCuration,
   )
   private val setSpringfieldField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetSpringfieldPayload, InputObjectType.DefaultInput](
     fieldName = "setSpringfield",
@@ -642,67 +560,22 @@ trait MutationType {
       .toTry
   }
 
-  private def setCurator(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCuratorPayload] = {
+  private def setCuration(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCurationPayload] = {
     context.ctx.deposits
-      .setCurator(
+      .setCuration(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
-        curator = InputCurator(
-          userId = input(curatorUserIdInputField.name).asInstanceOf[String],
-          email = input(curatorEmailInputField.name).asInstanceOf[String],
-          timestamp = input(curatorTimestampInputField.name).asInstanceOf[Timestamp],
-        ),
-      )
-      .map(curator => SetCuratorPayload(
-        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
-        objectId = curator.id,
-      ))
-      .toTry
-  }
-
-  private def setIsNewVersion(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetIsNewVersionPayload] = {
-    context.ctx.deposits
-      .setIsNewVersionAction(
-        id = input(depositIdInputField.name).asInstanceOf[DepositId],
-        action = IsNewVersionEvent(
+        curation = InputCuration(
           isNewVersion = input(isNewVersionValueInputField.name).asInstanceOf[Boolean],
-          timestamp = input(isNewVersionTimestampInputField.name).asInstanceOf[Timestamp],
+          isRequired = input(curationRequiredValueInputField.name).asInstanceOf[Boolean],
+          isPerformed = input(curationPerformedValueInputField.name).asInstanceOf[Boolean],
+          datamanagerUserId = input(curationUserIdInputField.name).asInstanceOf[String],
+          datamanagerEmail = input(curationEmailInputField.name).asInstanceOf[String],
+          timestamp = input(curationTimestampInputField.name).asInstanceOf[Timestamp],
         ),
       )
-      .map(isNewVersionEvent => SetIsNewVersionPayload(
+      .map(curation => SetCurationPayload(
         clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
-        obj = isNewVersionEvent
-      ))
-      .toTry
-  }
-
-  private def setCurationRequired(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCurationRequiredPayload] = {
-    context.ctx.deposits
-      .setCurationRequiredAction(
-        input(depositIdInputField.name).asInstanceOf[DepositId],
-        CurationRequiredEvent(
-          input(curationRequiredValueInputField.name).asInstanceOf[Boolean],
-          input(curationRequiredTimestampInputField.name).asInstanceOf[Timestamp],
-        ),
-      )
-      .map(curationRequiredEvent => SetCurationRequiredPayload(
-        input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
-        curationRequiredEvent
-      ))
-      .toTry
-  }
-
-  private def setCurationPerformed(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCurationPerformedPayload] = {
-    context.ctx.deposits
-      .setCurationPerformedAction(
-        id = input(depositIdInputField.name).asInstanceOf[DepositId],
-        action = CurationPerformedEvent(
-          curationPerformed = input(curationPerformedValueInputField.name).asInstanceOf[Boolean],
-          timestamp = input(curationPerformedTimestampInputField.name).asInstanceOf[Timestamp],
-        ),
-      )
-      .map(curationPerformedEvent => SetCurationPerformedPayload(
-        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
-        obj = curationPerformedEvent,
+        objectId = curation.id,
       ))
       .toTry
   }
@@ -752,10 +625,7 @@ trait MutationType {
       addIdentifierField,
       setDoiRegisteredField,
       setDoiActionField,
-      setCuratorField,
-      setIsNewVersionField,
-      setCurationRequiredField,
-      setCurationPerformedField,
+      setCurationField,
       setSpringfieldField,
       setContentTypeField,
     ),

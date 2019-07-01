@@ -30,6 +30,7 @@ object GraphQLSchema extends Scalars
   with IdentifierGraphQLType
   with IngestStepType
   with StateType
+  with CurationType
   with CuratorType
   with DepositorType
   with DepositType
@@ -45,10 +46,7 @@ object GraphQLSchema extends Scalars
     fetchIdentifiersByDepositId, fetchIdentifiersByType,
     fetchCurrentDoisRegistered, fetchAllDoisRegistered,
     fetchCurrentDoisAction, fetchAllDoisAction,
-    fetchCurrentCurators, fetchAllCurators,
-    fetchCurrentIsNewVersion, fetchAllIsNewVersion,
-    fetchCurrentCurationRequired, fetchAllCurationRequired,
-    fetchCurrentCurationPerformed, fetchAllCurationPerformed,
+    fetchCurrentCuration, fetchAllCurations,
     fetchCurrentSpringfields, fetchAllSpringfields,
     fetchCurrentContentTypes, fetchAllContentTypes,
   )

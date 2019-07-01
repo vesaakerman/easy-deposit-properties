@@ -26,13 +26,13 @@ import cats.syntax.traverse._
 import nl.knaw.dans.easy.properties.ApplicationErrorOr
 import nl.knaw.dans.easy.properties.Command.FeedBackMessage
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentTypeValue, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curator.InputCurator
+import nl.knaw.dans.easy.properties.app.model.curation.InputCuration
 import nl.knaw.dans.easy.properties.app.model.identifier.{ IdentifierType, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStepLabel, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, Timestamp }
 import nl.knaw.dans.easy.properties.app.repository.DepositRepository
 import nl.knaw.dans.easy.{ DataciteService, DataciteServiceException }
 import org.apache.commons.configuration.PropertiesConfiguration
@@ -62,10 +62,7 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
       _ <- repository.addIdentifier(depositId, loadBagStoreIdentifier(depositId, lastModifiedTime, properties))
       _ <- repository.setDoiRegistered(depositId, loadDoiRegistered(depositId, lastModifiedTime, properties, doi.idValue))
       _ <- repository.setDoiAction(depositId, loadDoiAction(depositId, lastModifiedTime, properties))
-      _ <- loadCurator(depositId, lastModifiedTime, properties).traverse(repository.setCurator(depositId, _))
-      _ <- loadIsNewVersion(depositId, lastModifiedTime, properties).traverse(repository.setIsNewVersionAction(depositId, _))
-      _ <- loadCurationRequired(depositId, lastModifiedTime, properties).traverse(repository.setCurationRequiredAction(depositId, _))
-      _ <- loadCurationPerformed(depositId, lastModifiedTime, properties).traverse(repository.setCurationPerformedAction(depositId, _))
+      _ <- loadCuration(depositId, lastModifiedTime, properties).traverse(repository.setCuration(depositId, _))
       _ <- loadSpringfield(depositId, lastModifiedTime, properties).traverse(repository.setSpringfield(depositId, _))
       _ <- loadContentType(depositId, lastModifiedTime, properties).traverse(repository.setContentType(depositId, _))
       _ = savePropertiesIfChanged(properties)
@@ -245,32 +242,20 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
     DoiActionEvent(doiAction, timestamp)
   }
 
-  private def loadCurator(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): Option[InputCurator] = {
+  private def loadCuration(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): Option[InputCuration] = {
     for {
       userId <- Option(props.getString("curation.datamanager.userId"))
       email <- Option(props.getString("curation.datamanager.email"))
-    } yield InputCurator(userId, email, timestamp)
-  }
 
-  private def loadIsNewVersion(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): Option[IsNewVersionEvent] = {
-    for {
-      s <- Option(props.getString("curation.is-new-version"))
-      isNewVersion <- Option(BooleanUtils.toBoolean(s))
-    } yield IsNewVersionEvent(isNewVersion, timestamp)
-  }
+      isNewVersionString <- Option(props.getString("curation.is-new-version"))
+      isNewVersion <- Option(BooleanUtils.toBoolean(isNewVersionString))
 
-  private def loadCurationRequired(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): Option[CurationRequiredEvent] = {
-    for {
-      s <- Option(props.getString("curation.required"))
-      curationRequired <- Option(BooleanUtils.toBoolean(s))
-    } yield CurationRequiredEvent(curationRequired, timestamp)
-  }
+      curationRequiredString <- Option(props.getString("curation.required"))
+      curationRequired <- Option(BooleanUtils.toBoolean(curationRequiredString))
 
-  private def loadCurationPerformed(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): Option[CurationPerformedEvent] = {
-    for {
-      s <- Option(props.getString("curation.performed"))
-      curationPerformed <- Option(BooleanUtils.toBoolean(s))
-    } yield CurationPerformedEvent(curationPerformed, timestamp)
+      curationPerformedString <- Option(props.getString("curation.performed"))
+      curationPerformed <- Option(BooleanUtils.toBoolean(curationPerformedString))
+    } yield InputCuration(isNewVersion, curationRequired, curationPerformed, userId, email, timestamp)
   }
 
   private def loadSpringfield(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): Option[InputSpringfield] = {

@@ -1,9 +1,0 @@
-mutation {
-    setIsNewVersion(input: {clientMutationId: "my-mutation-id", depositId: "00000000-0000-0000-0000-000000000001", value: true, timestamp: "2019-05-31T19:32:00+02:00"}) {
-        clientMutationId
-        isNewVersion {
-            value
-            timestamp
-        }
-    }
-}

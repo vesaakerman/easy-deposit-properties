@@ -26,7 +26,7 @@ import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.springfield.Springfield
 import nl.knaw.dans.easy.properties.app.model.state.State
 import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositorId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp, timestampOrdering }
-import nl.knaw.dans.easy.properties.app.repository.{ DepositFilters, QueryError }
+import nl.knaw.dans.easy.properties.app.repository.{ CollectionExtensions, DepositFilters, QueryError }
 import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
@@ -43,6 +43,7 @@ trait DepositType {
     with DoiEventTypes
     with CuratorType
     with CurationEventType
+    with CurationType
     with SpringfieldType
     with ContentTypeGraphQLType
     with TimebasedSearch
@@ -291,43 +292,47 @@ trait DepositType {
   }
 
   private def getCurrentCurator(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Curator]] = {
-    DeferredValue(fetchCurrentCurators.defer(context.value.id))
-      .map { case (_, curator) => curator }
+    DeferredValue(fetchAllCurations.defer(context.value.id))
+      .map { case (_, curations) =>
+        curations.map(_.getCurator)
+          .distinctUntilChanged(curator => (curator.userId, curator.email))
+          .lastOption
+      }
   }
 
   private def getAllCurators(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[Curator]] = {
-    DeferredValue(fetchAllCurators.defer(context.value.id))
-      .map { case (_, curators) => timebasedFilterAndSort(context, optCuratorOrderArgument, curators) }
+    DeferredValue(fetchAllCurations.defer(context.value.id))
+      .map { case (_, curations) => timebasedFilterAndSort(context, optCuratorOrderArgument, curations.map(_.getCurator).distinctUntilChanged(curator => (curator.userId, curator.email))) }
   }
 
   private def getIsNewVersion(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
-    DeferredValue(fetchCurrentIsNewVersion.defer(context.value.id))
-      .map { case (_, isNewVersion) => isNewVersion.map(_.isNewVersion) }
+    DeferredValue(fetchCurrentCuration.defer(context.value.id))
+      .map { case (_, curation) => curation.map(_.getIsNewVersionEvent.isNewVersion) }
   }
 
   private def getIsNewVersionEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[IsNewVersionEvent]] = {
-    DeferredValue(fetchAllIsNewVersion.defer(context.value.id))
-      .map { case (_, events) => events.sortBy(_.timestamp) }
+    DeferredValue(fetchAllCurations.defer(context.value.id))
+      .map { case (_, curations) => curations.map(_.getIsNewVersionEvent).distinctUntilChanged(_.isNewVersion).sortBy(_.timestamp) }
   }
 
   private def getCurationRequired(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
-    DeferredValue(fetchCurrentCurationRequired.defer(context.value.id))
-      .map { case (_, curationRequired) => curationRequired.map(_.curationRequired) }
+    DeferredValue(fetchCurrentCuration.defer(context.value.id))
+      .map { case (_, curation) => curation.map(_.getCurationRequiredEvent.curationRequired) }
   }
 
   private def getCurationRequiredEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[CurationRequiredEvent]] = {
-    DeferredValue(fetchAllCurationRequired.defer(context.value.id))
-      .map { case (_, events) => events.sortBy(_.timestamp) }
+    DeferredValue(fetchAllCurations.defer(context.value.id))
+      .map { case (_, curations) => curations.map(_.getCurationRequiredEvent).distinctUntilChanged(_.curationRequired).sortBy(_.timestamp) }
   }
 
   private def getCurationPerformed(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {
-    DeferredValue(fetchCurrentCurationPerformed.defer(context.value.id))
-      .map { case (_, curationPerformed) => curationPerformed.map(_.curationPerformed) }
+    DeferredValue(fetchCurrentCuration.defer(context.value.id))
+      .map { case (_, curation) => curation.map(_.getCurationPerformedEvent.curationPerformed) }
   }
 
   private def getCurationPerformedEvents(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[CurationPerformedEvent]] = {
-    DeferredValue(fetchAllCurationPerformed.defer(context.value.id))
-      .map { case (_, events) => events.sortBy(_.timestamp) }
+    DeferredValue(fetchAllCurations.defer(context.value.id))
+      .map { case (_, curations) => curations.map(_.getCurationPerformedEvent).distinctUntilChanged(_.curationPerformed).sortBy(_.timestamp) }
   }
 
   private def getSpringfield(context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Springfield]] = {

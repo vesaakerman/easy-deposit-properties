@@ -21,13 +21,13 @@ import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
+import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, SeriesFilter, Timestamp, Timestamped, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, SeriesFilter, Timestamp, Timestamped, timestampOrdering }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import sangria.relay.Node
 
@@ -42,10 +42,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
   val identifierRepo: mutable.Map[(DepositId, IdentifierType), Identifier]
   val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]]
   val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]]
-  val curatorRepo: mutable.Map[DepositId, Seq[Curator]]
-  val isNewVersionRepo: mutable.Map[DepositId, Seq[IsNewVersionEvent]]
-  val curationRequiredRepo: mutable.Map[DepositId, Seq[CurationRequiredEvent]]
-  val curationPerformedRepo: mutable.Map[DepositId, Seq[CurationPerformedEvent]]
+  val curationRepo: mutable.Map[DepositId, Seq[Curation]]
   val springfieldRepo: mutable.Map[DepositId, Seq[Springfield]]
   val contentTypeRepo: mutable.Map[DepositId, Seq[ContentType]]
 
@@ -85,10 +82,10 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
         val withIngestStep = filter(withState)(ingestStepFilter, stepRepo)(_.label, _.step)
         val withDoiRegistered = filter(withIngestStep)(doiRegisteredFilter, doiRegisteredRepo)(_.value, _.value)
         val withDoiAction = filter(withDoiRegistered)(doiActionFilter, doiActionRepo)(_.value, _.value)
-        val withCurator = filter(withDoiAction)(curatorFilter, curatorRepo)(_.curator, _.userId)
-        val withIsNewVersion = filter(withCurator)(isNewVersionFilter, isNewVersionRepo)(_.isNewVersion, _.isNewVersion)
-        val withCurationRequired = filter(withIsNewVersion)(curationRequiredFilter, curationRequiredRepo)(_.curationRequired, _.curationRequired)
-        val withCurationPerformed = filter(withCurationRequired)(curationPerformedFilter, curationPerformedRepo)(_.curationPerformed, _.curationPerformed)
+        val withCurator = filter(withDoiAction)(curatorFilter, curationRepo)(_.curator, _.datamanagerUserId)
+        val withIsNewVersion = filter(withCurator)(isNewVersionFilter, curationRepo)(_.isNewVersion, _.isNewVersion)
+        val withCurationRequired = filter(withIsNewVersion)(curationRequiredFilter, curationRepo)(_.curationRequired, _.isRequired)
+        val withCurationPerformed = filter(withCurationRequired)(curationPerformedFilter, curationRepo)(_.curationPerformed, _.isPerformed)
         val withContentType = filter(withCurationPerformed)(contentTypeFilter, contentTypeRepo)(_.value, _.value)
 
         withContentType.map(identity)
@@ -127,10 +124,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
         identifierRepo.collect { case ((`id`, _), identifier) => identifier.timestamp }.toList :::
         doiRegisteredRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
         doiActionRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
-        curatorRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
-        isNewVersionRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
-        curationRequiredRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
-        curationPerformedRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
+        curationRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
         springfieldRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
         contentTypeRepo.get(id).toList.flatMap(_.map(_.timestamp)) :::
         Nil).asRight
@@ -415,110 +409,41 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
 
   //
 
-  override def getCuratorById(id: String): QueryErrorOr[Option[Curator]] = {
+  override def getCurationById(id: String): QueryErrorOr[Option[Curation]] = {
     trace(id)
-    getObjectById(id)(curatorRepo)
+    getObjectById(id)(curationRepo)
   }
 
-  override def getCurrentCurator(id: DepositId): QueryErrorOr[Option[Curator]] = {
+  override def getCurrentCuration(id: DepositId): QueryErrorOr[Option[Curation]] = {
     trace(id)
-    getCurrentObject(id)(curatorRepo)
+    getCurrentObject(id)(curationRepo)
   }
 
-  override def getAllCurators(id: DepositId): QueryErrorOr[Seq[Curator]] = {
+  override def getAllCurations(id: DepositId): QueryErrorOr[Seq[Curation]] = {
     trace(id)
-    getAllObjects(id)(curatorRepo)
+    getAllObjects(id)(curationRepo)
   }
 
-  override def getCurrentCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curator])]] = {
+  override def getCurrentCurations(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curation])]] = {
     trace(ids)
-    getCurrentObjects(ids)(curatorRepo)
+    getCurrentObjects(ids)(curationRepo)
   }
 
-  override def getAllCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Curator])]] = {
+  override def getAllCurations(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Curation])]] = {
     trace(ids)
-    getAllObjects(ids)(curatorRepo)
+    getAllObjects(ids)(curationRepo)
   }
 
-  override def setCurator(id: DepositId, curator: InputCurator): MutationErrorOr[Curator] = {
-    trace(id, curator)
-    setter(id, curator)(curatorRepo) {
-      case (curatorId, InputCurator(userId, email, timestamp)) => Curator(curatorId, userId, email, timestamp)
+  override def setCuration(id: DepositId, curation: InputCuration): MutationErrorOr[Curation] = {
+    trace(id, curation)
+    setter(id, curation)(curationRepo) {
+      case (curatorId, InputCuration(isNewVersion, isRequired, isPerformed, userId, email, timestamp)) => Curation(curatorId, isNewVersion, isRequired, isPerformed, userId, email, timestamp)
     }
   }
 
-  override def getDepositByCuratorId(id: String): QueryErrorOr[Option[Deposit]] = {
+  override def getDepositByCurationId(id: String): QueryErrorOr[Option[Deposit]] = {
     trace(id)
-    getDepositByObjectId(id)(curatorRepo)
-  }
-
-  //
-
-  override def getCurrentIsNewVersionAction(id: DepositId): QueryErrorOr[Option[IsNewVersionEvent]] = {
-    getCurrentObject(id)(isNewVersionRepo)
-  }
-
-  override def getCurrentIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IsNewVersionEvent])]] = {
-    getCurrentObjects(ids)(isNewVersionRepo)
-  }
-
-  override def getAllIsNewVersionAction(id: DepositId): QueryErrorOr[Seq[IsNewVersionEvent]] = {
-    getAllObjects(id)(isNewVersionRepo)
-  }
-
-  override def getAllIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[IsNewVersionEvent])]] = {
-    getAllObjects(ids)(isNewVersionRepo)
-  }
-
-  override def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): MutationErrorOr[IsNewVersionEvent] = {
-    trace(id, action)
-    setter(id, action, isNewVersionRepo)
-  }
-
-  //
-
-  override def getCurrentCurationRequiredAction(id: DepositId): QueryErrorOr[Option[CurationRequiredEvent]] = {
-    getCurrentObject(id)(curationRequiredRepo)
-  }
-
-  override def getCurrentCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[CurationRequiredEvent])]] = {
-    getCurrentObjects(ids)(curationRequiredRepo)
-  }
-
-  override def getAllCurationRequiredAction(id: DepositId): QueryErrorOr[Seq[CurationRequiredEvent]] = {
-    getAllObjects(id)(curationRequiredRepo)
-  }
-
-  override def getAllCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[CurationRequiredEvent])]] = {
-    getAllObjects(ids)(curationRequiredRepo)
-  }
-
-  override def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): MutationErrorOr[CurationRequiredEvent] = {
-    trace(id, action)
-    setter(id, action, curationRequiredRepo)
-  }
-
-  //
-
-  override def getCurrentCurationPerformedAction(id: DepositId): QueryErrorOr[Option[CurationPerformedEvent]] = {
-    getCurrentObject(id)(curationPerformedRepo)
-  }
-
-  override def getCurrentCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[CurationPerformedEvent])]] = {
-    getCurrentObjects(ids)(curationPerformedRepo)
-  }
-
-  override def getAllCurationPerformedAction(id: DepositId): QueryErrorOr[Seq[CurationPerformedEvent]] = {
-    getAllObjects(id)(curationPerformedRepo)
-  }
-
-  override def getAllCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[CurationPerformedEvent])]] = {
-    getAllObjects(ids)(curationPerformedRepo)
-  }
-
-  override def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): MutationErrorOr[CurationPerformedEvent] = {
-    trace(id, action)
-    setter(id, action, curationPerformedRepo)
+    getDepositByObjectId(id)(curationRepo)
   }
 
   //

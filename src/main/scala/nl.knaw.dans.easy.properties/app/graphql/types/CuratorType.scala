@@ -42,9 +42,6 @@ trait CuratorType {
     with MetaTypes
     with Scalars =>
 
-  val fetchCurrentCurators: CurrentFetcher[Curator] = fetchCurrent(_.deposits.getCurrentCurator, _.deposits.getCurrentCurators)
-  val fetchAllCurators: AllFetcher[Curator] = fetchAll(_.deposits.getAllCurators, _.deposits.getAllCurators)
-
   implicit val DepositCuratorFilterType: InputObjectType[DepositCuratorFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by curator."),
     DocumentInputField("curator", "If provided, only show deposits with this curator."),
@@ -107,7 +104,7 @@ trait CuratorType {
 
     val curatorId = context.value.id
 
-    repository.getDepositByCuratorId(curatorId).toTry
+    repository.getDepositByCurationId(curatorId).toTry
   }
 
   private def getDeposits(context: Context[DataContext, Curator]): DeferredValue[DataContext, Seq[Deposit]] = {

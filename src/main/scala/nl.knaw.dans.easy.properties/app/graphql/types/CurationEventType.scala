@@ -26,13 +26,6 @@ import sangria.schema.{ Argument, InputObjectType, ObjectType, OptionInputType }
 trait CurationEventType {
   this: MetaTypes with Scalars =>
 
-  val fetchCurrentIsNewVersion: CurrentFetcher[IsNewVersionEvent] = fetchCurrent(_.deposits.getCurrentIsNewVersionAction, _.deposits.getCurrentIsNewVersionActions)
-  val fetchAllIsNewVersion: AllFetcher[IsNewVersionEvent] = fetchAll(_.deposits.getAllIsNewVersionAction, _.deposits.getAllIsNewVersionActions)
-  val fetchCurrentCurationRequired: CurrentFetcher[CurationRequiredEvent] = fetchCurrent(_.deposits.getCurrentCurationRequiredAction, _.deposits.getCurrentCurationRequiredActions)
-  val fetchAllCurationRequired: AllFetcher[CurationRequiredEvent] = fetchAll(_.deposits.getAllCurationRequiredAction, _.deposits.getAllCurationRequiredActions)
-  val fetchCurrentCurationPerformed: CurrentFetcher[CurationPerformedEvent] = fetchCurrent(_.deposits.getCurrentCurationPerformedAction, _.deposits.getCurrentCurationPerformedActions)
-  val fetchAllCurationPerformed: AllFetcher[CurationPerformedEvent] = fetchAll(_.deposits.getAllCurationPerformedAction, _.deposits.getAllCurationPerformedActions)
-
   implicit val DepositIsNewVersionFilterType: InputObjectType[DepositIsNewVersionFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The value and filter to be used in searching for deposits by 'is-new-version'."),
     DocumentInputField("isNewVersion", "If provided, only show deposits with this value for 'is-new-version'."),

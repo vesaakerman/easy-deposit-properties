@@ -45,7 +45,7 @@
             "curator": {
               "userId": "archie001",
               "email": "does.not.exists1@dans.knaw.nl",
-              "timestamp": "2019-04-04T00:00:00.000+02:00"
+              "timestamp": "2019-05-05T00:00:00.000+02:00"
             },
             "curators": {
               "edges": [
@@ -53,7 +53,7 @@
                   "node": {
                     "userId": "archie001",
                     "email": "does.not.exists1@dans.knaw.nl",
-                    "timestamp": "2019-04-04T00:00:00.000+02:00"
+                    "timestamp": "2019-05-05T00:00:00.000+02:00"
                   }
                 }
               ]
@@ -165,10 +165,10 @@
                 }
               ]
             },
-            "isNewVersion": true,
+            "isNewVersion": false,
             "isNewVersionEvents": [
               {
-                "value": true,
+                "value": false,
                 "timestamp": "2019-04-04T00:00:00.000+02:00"
               }
             ],
@@ -213,7 +213,7 @@
             },
             "bagName": "bag3",
             "creationTimestamp": "2019-03-03T00:00:00.000+01:00",
-            "lastModified": "2019-03-03T04:06:00.000+01:00",
+            "lastModified": "2019-03-03T06:06:00.000+01:00",
             "state": {
               "label": "INVALID",
               "description": "deposit is invalid",
@@ -241,7 +241,7 @@
             "curator": {
               "userId": "archie002",
               "email": "does.not.exists2@dans.knaw.nl",
-              "timestamp": "2019-03-03T04:06:00.000+01:00"
+              "timestamp": "2019-03-03T04:04:00.000+01:00"
             },
             "curators": {
               "edges": [
@@ -256,7 +256,7 @@
                   "node": {
                     "userId": "archie002",
                     "email": "does.not.exists2@dans.knaw.nl",
-                    "timestamp": "2019-03-03T04:06:00.000+01:00"
+                    "timestamp": "2019-03-03T04:04:00.000+01:00"
                   }
                 }
               ]
@@ -283,7 +283,7 @@
               },
               {
                 "value": true,
-                "timestamp": "2019-03-03T04:04:00.000+01:00"
+                "timestamp": "2019-03-03T06:06:00.000+01:00"
               }
             ],
             "springfield": null,
@@ -514,26 +514,14 @@
               "edges": [
               ]
             },
-            "isNewVersion": false,
+            "isNewVersion": null,
             "isNewVersionEvents": [
-              {
-                "value": false,
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              }
             ],
-            "curationRequired": false,
+            "curationRequired": null,
             "curationRequiredEvents": [
-              {
-                "value": false,
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              }
             ],
-            "curationPerformed": false,
+            "curationPerformed": null,
             "curationPerformedEvents": [
-              {
-                "value": false,
-                "timestamp": "2019-02-02T00:00:00.000+01:00"
-              }
             ],
             "springfield": {
               "domain": "domain2",

@@ -16,13 +16,13 @@
 package nl.knaw.dans.easy.properties.app.repository
 
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
+import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiActionEvent, DoiRegisteredEvent, Timestamp }
 
 trait DepositRepository {
 
@@ -118,55 +118,19 @@ trait DepositRepository {
 
   //
 
-  def getCuratorById(id: String): QueryErrorOr[Option[Curator]]
+  def getCurationById(id: String): QueryErrorOr[Option[Curation]]
 
-  def getCurrentCurator(id: DepositId): QueryErrorOr[Option[Curator]]
+  def getCurrentCuration(id: DepositId): QueryErrorOr[Option[Curation]]
 
-  def getAllCurators(id: DepositId): QueryErrorOr[Seq[Curator]]
+  def getAllCurations(id: DepositId): QueryErrorOr[Seq[Curation]]
 
-  def getCurrentCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curator])]]
+  def getCurrentCurations(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curation])]]
 
-  def getAllCurators(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Curator])]]
+  def getAllCurations(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Curation])]]
 
-  def setCurator(id: DepositId, curator: InputCurator): MutationErrorOr[Curator]
+  def setCuration(id: DepositId, curation: InputCuration): MutationErrorOr[Curation]
 
-  def getDepositByCuratorId(id: String): QueryErrorOr[Option[Deposit]]
-
-  //
-
-  def getCurrentIsNewVersionAction(id: DepositId): QueryErrorOr[Option[IsNewVersionEvent]]
-
-  def getCurrentIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IsNewVersionEvent])]]
-
-  def getAllIsNewVersionAction(id: DepositId): QueryErrorOr[Seq[IsNewVersionEvent]]
-
-  def getAllIsNewVersionActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[IsNewVersionEvent])]]
-
-  def setIsNewVersionAction(id: DepositId, action: IsNewVersionEvent): MutationErrorOr[IsNewVersionEvent]
-
-  //
-
-  def getCurrentCurationRequiredAction(id: DepositId): QueryErrorOr[Option[CurationRequiredEvent]]
-
-  def getCurrentCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[CurationRequiredEvent])]]
-
-  def getAllCurationRequiredAction(id: DepositId): QueryErrorOr[Seq[CurationRequiredEvent]]
-
-  def getAllCurationRequiredActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[CurationRequiredEvent])]]
-
-  def setCurationRequiredAction(id: DepositId, action: CurationRequiredEvent): MutationErrorOr[CurationRequiredEvent]
-
-  //
-
-  def getCurrentCurationPerformedAction(id: DepositId): QueryErrorOr[Option[CurationPerformedEvent]]
-
-  def getCurrentCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[CurationPerformedEvent])]]
-
-  def getAllCurationPerformedAction(id: DepositId): QueryErrorOr[Seq[CurationPerformedEvent]]
-
-  def getAllCurationPerformedActions(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[CurationPerformedEvent])]]
-
-  def setCurationPerformedAction(id: DepositId, action: CurationPerformedEvent): MutationErrorOr[CurationPerformedEvent]
+  def getDepositByCurationId(id: String): QueryErrorOr[Option[Deposit]]
 
   //
 

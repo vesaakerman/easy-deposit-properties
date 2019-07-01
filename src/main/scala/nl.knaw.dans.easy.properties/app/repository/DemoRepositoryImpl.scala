@@ -19,7 +19,7 @@ import java.util.{ TimeZone, UUID }
 
 import nl.knaw.dans.easy.properties.app.model._
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue }
-import nl.knaw.dans.easy.properties.app.model.curator.Curator
+import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
@@ -123,37 +123,19 @@ class DemoRepositoryImpl extends DemoRepository {
   private val doiAction40 = DoiActionEvent(DoiAction.CREATE, new DateTime(2019, 2, 2, 0, 0, timeZone))
   private val doiAction50 = DoiActionEvent(DoiAction.UPDATE, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
-  private val curator11 = Curator("11", "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 1, 1, 0, 0, timeZone))
-  private val curator12 = Curator("12", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 3, 3, timeZone))
+  private val curation10 = Curation("10", isNewVersion = false, isRequired = true, isPerformed = false, "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 1, 1, 0, 0, timeZone))
+  private val curation11 = Curation("11", isNewVersion = false, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 3, 3, timeZone))
+  private val curation12 = Curation("12", isNewVersion = false, isRequired = true, isPerformed = true, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 4, 4, timeZone))
 
-  private val curator31 = Curator("31", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 3, 3, 0, 0, timeZone))
-  private val curator32 = Curator("32", "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 3, 3, 4, 6, timeZone))
+  private val curation30 = Curation("30", isNewVersion = true, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 3, 3, 0, 0, timeZone))
+  private val curation31 = Curation("31", isNewVersion = true, isRequired = true, isPerformed = false, "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 3, 3, 4, 4, timeZone))
+  private val curation32 = Curation("32", isNewVersion = true, isRequired = true, isPerformed = true, "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 3, 3, 6, 6, timeZone))
 
-  private val curator41 = Curator("41", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 0, 0, timeZone))
+  private val curation40 = Curation("40", isNewVersion = false, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 0, 0, timeZone))
+  private val curation41 = Curation("41", isNewVersion = false, isRequired = true, isPerformed = true, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 4, 4, timeZone))
 
-  private val curator51 = Curator("51", "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 0, 0, timeZone))
-
-  private val isNewVersion10 = IsNewVersionEvent(isNewVersion = false, new DateTime(2019, 1, 1, 0, 0, timeZone))
-  private val isNewVersion20 = IsNewVersionEvent(isNewVersion = false, new DateTime(2019, 2, 2, 0, 0, timeZone))
-  private val isNewVersion30 = IsNewVersionEvent(isNewVersion = true, new DateTime(2019, 3, 3, 0, 0, timeZone))
-  private val isNewVersion40 = IsNewVersionEvent(isNewVersion = true, new DateTime(2019, 4, 4, 0, 0, timeZone))
-  private val isNewVersion50 = IsNewVersionEvent(isNewVersion = false, new DateTime(2019, 5, 5, 0, 0, timeZone))
-
-  private val curationRequired10 = CurationRequiredEvent(curationRequired = true, new DateTime(2019, 1, 1, 0, 0, timeZone))
-  private val curationRequired20 = CurationRequiredEvent(curationRequired = false, new DateTime(2019, 2, 2, 0, 0, timeZone))
-  private val curationRequired30 = CurationRequiredEvent(curationRequired = true, new DateTime(2019, 3, 3, 0, 0, timeZone))
-  private val curationRequired40 = CurationRequiredEvent(curationRequired = true, new DateTime(2019, 4, 4, 0, 0, timeZone))
-  private val curationRequired50 = CurationRequiredEvent(curationRequired = true, new DateTime(2019, 5, 5, 0, 0, timeZone))
-
-  private val curationPerformed10 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 1, 1, 0, 0, timeZone))
-  private val curationPerformed11 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 1, 1, 4, 4, timeZone))
-  private val curationPerformed20 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 2, 2, 0, 0, timeZone))
-  private val curationPerformed30 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 3, 3, 0, 0, timeZone))
-  private val curationPerformed31 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 3, 3, 4, 4, timeZone))
-  private val curationPerformed40 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 4, 4, 0, 0, timeZone))
-  private val curationPerformed41 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 4, 4, 4, 4, timeZone))
-  private val curationPerformed50 = CurationPerformedEvent(curationPerformed = false, new DateTime(2019, 5, 5, 0, 0, timeZone))
-  private val curationPerformed51 = CurationPerformedEvent(curationPerformed = true, new DateTime(2019, 5, 5, 4, 4, timeZone))
+  private val curation50 = Curation("50", isNewVersion = false, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 5, 5, 0, 0, timeZone))
+  private val curation51 = Curation("51", isNewVersion = false, isRequired = true, isPerformed = true, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 5, 5, 4, 4, timeZone))
 
   private val springfield10 = Springfield("10", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 1, 1, 0, 0, timeZone))
   private val springfield20 = Springfield("20", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 2, 2, 0, 0, timeZone))
@@ -172,10 +154,7 @@ class DemoRepositoryImpl extends DemoRepository {
   override val identifierRepo: mutable.Map[(DepositId, IdentifierType), Identifier] = mutable.Map.empty
   override val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = mutable.Map.empty
   override val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]] = mutable.Map.empty
-  override val curatorRepo: mutable.Map[DepositId, Seq[Curator]] = mutable.Map.empty
-  override val isNewVersionRepo: mutable.Map[DepositId, Seq[IsNewVersionEvent]] = mutable.Map.empty
-  override val curationRequiredRepo: mutable.Map[DepositId, Seq[CurationRequiredEvent]] = mutable.Map.empty
-  override val curationPerformedRepo: mutable.Map[DepositId, Seq[CurationPerformedEvent]] = mutable.Map.empty
+  override val curationRepo: mutable.Map[DepositId, Seq[Curation]] = mutable.Map.empty
   override val springfieldRepo: mutable.Map[DepositId, Seq[Springfield]] = mutable.Map.empty
   override val contentTypeRepo: mutable.Map[DepositId, Seq[ContentType]] = mutable.Map.empty
 
@@ -188,15 +167,12 @@ class DemoRepositoryImpl extends DemoRepository {
     resetIdentifierRepo()
     resetDoiRegisteredRepo()
     resetDoiActionRepo()
-    resetCuratorRepo()
-    resetIsNewVersionRepo()
-    resetCurationRequiredRepo()
-    resetCurationPerformedRepo()
+    resetCurationRepo()
     resetSpringfieldRepo()
     resetContentTypeRepo()
   }
 
-  def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
+  private def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
     depositRepo.clear()
     depositRepo ++= Map(
       depositId1 -> deposit1,
@@ -207,7 +183,7 @@ class DemoRepositoryImpl extends DemoRepository {
     )
   }
 
-  def resetStateRepo(): mutable.Map[DepositId, Seq[State]] = {
+  private def resetStateRepo(): mutable.Map[DepositId, Seq[State]] = {
     stateRepo.clear()
     stateRepo ++= Map(
       depositId1 -> Seq(state10, state11, state12, state13, state14, state15),
@@ -218,7 +194,7 @@ class DemoRepositoryImpl extends DemoRepository {
     )
   }
 
-  def resetStepRepo(): mutable.Map[DepositId, Seq[IngestStep]] = {
+  private def resetStepRepo(): mutable.Map[DepositId, Seq[IngestStep]] = {
     stepRepo.clear()
     stepRepo ++= Map(
       depositId1 -> Seq(step10, step11, step12, step13, step14, step15, step16),
@@ -229,7 +205,7 @@ class DemoRepositoryImpl extends DemoRepository {
     )
   }
 
-  def resetIdentifierRepo(): mutable.Map[(DepositId, IdentifierType), Identifier] = {
+  private def resetIdentifierRepo(): mutable.Map[(DepositId, IdentifierType), Identifier] = {
     identifierRepo.clear()
     identifierRepo ++= Map(
       (depositId1 -> IdentifierType.BAG_STORE) -> identifier11,
@@ -253,7 +229,7 @@ class DemoRepositoryImpl extends DemoRepository {
     )
   }
 
-  def resetDoiRegisteredRepo(): mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = {
+  private def resetDoiRegisteredRepo(): mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = {
     doiRegisteredRepo.clear()
     doiRegisteredRepo ++= Map(
       depositId1 -> Seq(doiRegistered10, doiRegistered11),
@@ -262,7 +238,7 @@ class DemoRepositoryImpl extends DemoRepository {
     )
   }
 
-  def resetDoiActionRepo(): mutable.Map[DepositId, Seq[DoiActionEvent]] = {
+  private def resetDoiActionRepo(): mutable.Map[DepositId, Seq[DoiActionEvent]] = {
     doiActionRepo.clear()
     doiActionRepo ++= Map(
       depositId1 -> Seq(doiAction10, doiAction11),
@@ -273,50 +249,17 @@ class DemoRepositoryImpl extends DemoRepository {
     )
   }
 
-  def resetCuratorRepo(): mutable.Map[DepositId, Seq[Curator]] = {
-    curatorRepo.clear()
-    curatorRepo ++= Map(
-      depositId1 -> Seq(curator11, curator12),
-      depositId3 -> Seq(curator31, curator32),
-      depositId4 -> Seq(curator41),
-      depositId5 -> Seq(curator51),
+  private def resetCurationRepo(): mutable.Map[DepositId, Seq[Curation]] = {
+    curationRepo.clear()
+    curationRepo ++= Map(
+      depositId1 -> Seq(curation10, curation11, curation12),
+      depositId3 -> Seq(curation30, curation31, curation32),
+      depositId4 -> Seq(curation40, curation41),
+      depositId5 -> Seq(curation50, curation51),
     )
   }
 
-  def resetIsNewVersionRepo(): mutable.Map[DepositId, Seq[IsNewVersionEvent]] = {
-    isNewVersionRepo.clear()
-    isNewVersionRepo ++= Map(
-      depositId1 -> Seq(isNewVersion10),
-      depositId2 -> Seq(isNewVersion20),
-      depositId3 -> Seq(isNewVersion30),
-      depositId4 -> Seq(isNewVersion40),
-      depositId5 -> Seq(isNewVersion50),
-    )
-  }
-
-  def resetCurationRequiredRepo(): mutable.Map[DepositId, Seq[CurationRequiredEvent]] = {
-    curationRequiredRepo.clear()
-    curationRequiredRepo ++= Map(
-      depositId1 -> Seq(curationRequired10),
-      depositId2 -> Seq(curationRequired20),
-      depositId3 -> Seq(curationRequired30),
-      depositId4 -> Seq(curationRequired40),
-      depositId5 -> Seq(curationRequired50),
-    )
-  }
-
-  def resetCurationPerformedRepo(): mutable.Map[DepositId, Seq[CurationPerformedEvent]] = {
-    curationPerformedRepo.clear()
-    curationPerformedRepo ++= Map(
-      depositId1 -> Seq(curationPerformed10, curationPerformed11),
-      depositId2 -> Seq(curationPerformed20),
-      depositId3 -> Seq(curationPerformed30, curationPerformed31),
-      depositId4 -> Seq(curationPerformed40, curationPerformed41),
-      depositId5 -> Seq(curationPerformed50, curationPerformed51),
-    )
-  }
-
-  def resetSpringfieldRepo(): mutable.Map[DepositId, Seq[Springfield]] = {
+  private def resetSpringfieldRepo(): mutable.Map[DepositId, Seq[Springfield]] = {
     springfieldRepo.clear()
     springfieldRepo ++= Map(
       depositId1 -> Seq(springfield10),
@@ -324,7 +267,7 @@ class DemoRepositoryImpl extends DemoRepository {
     )
   }
 
-  def resetContentTypeRepo(): mutable.Map[DepositId, Seq[ContentType]] = {
+  private def resetContentTypeRepo(): mutable.Map[DepositId, Seq[ContentType]] = {
     contentTypeRepo.clear()
     contentTypeRepo ++= Map(
       depositId1 -> Seq(contentType10, contentType11),

@@ -26,12 +26,12 @@ import cats.syntax.functor._
 import cats.syntax.option._
 import nl.knaw.dans.easy.properties.app.legacyImport.{ ImportProps, Interactor, NoDepositIdError, NoSuchPropertiesFileError }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, InputCurator }
+import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, IsNewVersionEvent, Timestamp }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, Timestamp }
 import nl.knaw.dans.easy.properties.app.repository.DepositRepository
 import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
 import nl.knaw.dans.easy.{ DataciteService, DataciteServiceConfiguration, DataciteServiceException }
@@ -77,10 +77,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -108,10 +105,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, depositId.toString, lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, depositId.toString, lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.CREATE, lastModified)) returning DoiActionEvent(DoiAction.CREATE, lastModified).asRight
-      // no repo.setCurator
-      // no repo.setIsNewVersionAction
-      // no repo.setCurationRequiredAction
-      // no repo.setCurationPerformedAction
+      // no repo.setCuration
       // no repo.setSpringfield
       // no repo.setContentType
     }
@@ -147,10 +141,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -177,10 +168,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -207,10 +195,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -237,10 +222,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -268,10 +250,7 @@ class ImportPropsSpec extends TestSupportFixture
       datacite.doiExists _ expects "my-doi-value" returning true
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -300,10 +279,7 @@ class ImportPropsSpec extends TestSupportFixture
       expectInteractFunc(true)
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -330,10 +306,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       expectInteractEnum(DoiAction)(_.CREATE)
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.CREATE, lastModified)) returning DoiActionEvent(DoiAction.CREATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
     }
@@ -360,10 +333,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       expectInteractEnum(SpringfieldPlayMode)(_.MENU)
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.MENU, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.MENU, lastModified).asRight
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
@@ -391,10 +361,7 @@ class ImportPropsSpec extends TestSupportFixture
       repo.addIdentifier _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
       repo.setDoiRegistered _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
       repo.setDoiAction _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
-      repo.setCurator _ expects(depositId, InputCurator("archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curator("my-id", "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
-      repo.setIsNewVersionAction _ expects(depositId, IsNewVersionEvent(isNewVersion = true, lastModified)) returning IsNewVersionEvent(isNewVersion = true, lastModified).asRight
-      repo.setCurationRequiredAction _ expects(depositId, CurationRequiredEvent(curationRequired = false, lastModified)) returning CurationRequiredEvent(curationRequired = false, lastModified).asRight
-      repo.setCurationPerformedAction _ expects(depositId, CurationPerformedEvent(curationPerformed = false, lastModified)) returning CurationPerformedEvent(curationPerformed = false, lastModified).asRight
+      repo.setCuration _ expects (depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
       repo.setSpringfield _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
       expectInteractEnum(ContentTypeValue)(_.ZIP)
       repo.setContentType _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
