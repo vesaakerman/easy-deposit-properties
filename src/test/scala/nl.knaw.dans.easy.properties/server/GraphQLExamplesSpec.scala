@@ -24,21 +24,29 @@ import org.json4s.ext.UUIDSerializer
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization._
 import org.json4s.{ DefaultFormats, Formats }
+import org.scalatest.BeforeAndAfterEach
 import org.scalatra.test.EmbeddedJettyContainer
 import org.scalatra.test.scalatest.ScalatraSuite
 
 class GraphQLExamplesSpec extends TestSupportFixture
+  with BeforeAndAfterEach
   with EmbeddedJettyContainer
   with ScalatraSuite {
 
-  private val servlet = DepositPropertiesGraphQLServlet(() => new DemoRepositoryImpl)
+  private val repo = new DemoRepositoryImpl
+  private val servlet = DepositPropertiesGraphQLServlet(() => repo)
+  implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
   addServlet(servlet, "/*")
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    repo.resetRepository()
+  }
 
   "graphQL examples" should behave like {
     val testDir = currentWorkingDirectory / "target" / "test" / getClass.getSimpleName
     val graphqlExamplesDir = testDir / "graphql"
-    implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
     if (testDir.exists) testDir.delete()
     testDir.createDirectories()
@@ -62,13 +70,88 @@ class GraphQLExamplesSpec extends TestSupportFixture
         val inputBody = compact(render("query" -> graphQLExample.contentAsString))
         val expectedOutput = writePretty(parse(expectedJsonOutput.contentAsString))
 
-        (new DemoRepositoryImpl).resetRepository()
-
         post(uri = "/", body = inputBody.getBytes) {
           body shouldBe expectedOutput
           status shouldBe 200
         }
       }
+    }
+  }
+
+  "graphQL" should "return the updated value after doing a sequence of 'query', 'mutation', 'query'" in {
+    val query =
+      """query {
+        |  deposit(id: "00000000-0000-0000-0000-000000000001") {
+        |    state {
+        |      label
+        |      description
+        |      timestamp
+        |    }
+        |  }
+        |}""".stripMargin
+    val mutation =
+      """mutation {
+        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000+02:00"}) {
+        |    clientMutationId
+        |    state {
+        |      label
+        |      description
+        |      timestamp
+        |    }
+        |  }
+        |}""".stripMargin
+
+    val queryBody = compact(render("query" -> query))
+    val mutationBody = compact(render("query" -> mutation))
+
+    val expectedQueryOutput1 = writePretty {
+      "data" -> {
+        "deposit" -> {
+          "state" -> {
+            ("label" -> "ARCHIVED") ~
+              ("description" -> "deposit is archived") ~
+              ("timestamp" -> "2019-01-01T05:05:00.000+01:00")
+          }
+        }
+      }
+    }
+    val expectedMutationOutput = writePretty {
+      "data" -> {
+        "updateState" -> {
+          ("clientMutationId" -> "Hello Internet") ~
+            ("state" -> {
+              ("label" -> "FEDORA_ARCHIVED") ~
+                ("description" -> "the deposit is archived in Fedora as easy-dataset:13") ~
+                ("timestamp" -> "2019-07-02T08:15:00.000+02:00")
+            })
+        }
+      }
+    }
+    val expectedQueryOutput2 = writePretty {
+      "data" -> {
+        "deposit" -> {
+          "state" -> {
+            ("label" -> "FEDORA_ARCHIVED") ~
+              ("description" -> "the deposit is archived in Fedora as easy-dataset:13") ~
+              ("timestamp" -> "2019-07-02T08:15:00.000+02:00")
+          }
+        }
+      }
+    }
+    
+    post(uri = "/", body = queryBody.getBytes) {
+      body shouldBe expectedQueryOutput1
+      status shouldBe 200
+    }
+
+    post(uri = "/", body = mutationBody.getBytes) {
+      body shouldBe expectedMutationOutput
+      status shouldBe 200
+    }
+    
+    post(uri = "/", body = queryBody.getBytes) {
+      body shouldBe expectedQueryOutput2
+      status shouldBe 200
     }
   }
 }
