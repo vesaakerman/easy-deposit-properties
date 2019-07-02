@@ -85,6 +85,7 @@ trait CuratorType {
     description = Some("List all deposits with the same data manager."),
     arguments = List(
       seriesFilterArgument,
+      depositBagNameFilterArgument,
       depositStateFilterArgument,
       depositIngestStepFilterArgument,
       depositDoiRegisteredFilterArgument,
@@ -112,6 +113,7 @@ trait CuratorType {
     val curatorFilter = context.arg(seriesFilterArgument)
 
     DeferredValue(depositsFetcher.defer(DepositFilters(
+      bagName = context.arg(depositBagNameFilterArgument),
       stateFilter = context.arg(depositStateFilterArgument),
       ingestStepFilter = context.arg(depositIngestStepFilterArgument),
       doiRegisteredFilter = context.arg(depositDoiRegisteredFilterArgument),

@@ -22,6 +22,7 @@ import nl.knaw.dans.easy.properties.app.model.state.DepositStateFilter
 import nl.knaw.dans.easy.properties.app.model.{ DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositIsNewVersionFilter, DepositorId }
 
 case class DepositFilters(depositorId: Option[DepositorId] = Option.empty,
+                          bagName: Option[String] = Option.empty,
                           stateFilter: Option[DepositStateFilter] = Option.empty,
                           ingestStepFilter: Option[DepositIngestStepFilter] = Option.empty,
                           doiRegisteredFilter: Option[DepositDoiRegisteredFilter] = Option.empty,
@@ -35,6 +36,7 @@ case class DepositFilters(depositorId: Option[DepositorId] = Option.empty,
   override def toString: String = {
     Seq(
       depositorId,
+      bagName,
       stateFilter,
       ingestStepFilter,
       doiRegisteredFilter,

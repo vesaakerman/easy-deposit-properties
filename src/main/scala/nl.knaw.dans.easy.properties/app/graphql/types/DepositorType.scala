@@ -45,6 +45,7 @@ trait DepositorType {
     name = "deposits",
     description = Some("List all deposits originating from the same depositor."),
     arguments = List(
+      depositBagNameFilterArgument,
       depositStateFilterArgument,
       depositIngestStepFilterArgument,
       depositDoiRegisteredFilterArgument,
@@ -63,6 +64,7 @@ trait DepositorType {
   private def getDeposits(context: Context[DataContext, DepositorId]): DeferredValue[DataContext, Seq[Deposit]] = {
     DeferredValue(depositsFetcher.defer(DepositFilters(
       depositorId = Some(context.value),
+      bagName = context.arg(depositBagNameFilterArgument),
       stateFilter = context.arg(depositStateFilterArgument),
       ingestStepFilter = context.arg(depositIngestStepFilterArgument),
       doiRegisteredFilter = context.arg(depositDoiRegisteredFilterArgument),

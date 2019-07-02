@@ -31,7 +31,7 @@ import sangria.execution.deferred.{ Fetcher, HasId }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay._
-import sangria.schema.{ Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionType, StringType }
+import sangria.schema.{ Argument, BooleanType, Context, DeferredValue, Field, ListType, ObjectType, OptionInputType, OptionType, StringType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -66,6 +66,15 @@ trait DepositType {
     name = "type",
     argumentType = IdentifierTypeType,
     description = Some("Find the identifier with this specific type."),
+    defaultValue = None,
+    fromInput = coercedScalaInput,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  lazy val depositBagNameFilterArgument: Argument[Option[String]] = Argument(
+    name = "bagName",
+    argumentType = OptionInputType(StringType),
+    description = Some("Find only those deposits that have this specified bag name"),
     defaultValue = None,
     fromInput = coercedScalaInput,
     astDirectives = Vector.empty,

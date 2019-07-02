@@ -69,7 +69,7 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
       })
     }
 
-    val DepositFilters(depositorId, stateFilter, ingestStepFilter, doiRegisteredFilter, doiActionFilter, curatorFilter, isNewVersionFilter, curationRequiredFilter, curationPerformedFilter, contentTypeFilter) = filters
+    val DepositFilters(depositorId, bagName, stateFilter, ingestStepFilter, doiRegisteredFilter, doiActionFilter, curatorFilter, isNewVersionFilter, curationRequiredFilter, curationPerformedFilter, contentTypeFilter) = filters
 
     getAllDeposits
       .map(deposits => {
@@ -78,7 +78,12 @@ trait DemoRepository extends DepositRepository with DebugEnhancedLogging {
           case None => deposits.withFilter(_ => true)
         }
 
-        val withState = filter(fromDepositor)(stateFilter, stateRepo)(_.label, _.label)
+        val withBagName = bagName match {
+          case Some(name) => fromDepositor.withFilter(_.bagName.exists(_ == name))
+          case None => fromDepositor
+        }
+        
+        val withState = filter(withBagName)(stateFilter, stateRepo)(_.label, _.label)
         val withIngestStep = filter(withState)(ingestStepFilter, stepRepo)(_.label, _.step)
         val withDoiRegistered = filter(withIngestStep)(doiRegisteredFilter, doiRegisteredRepo)(_.value, _.value)
         val withDoiAction = filter(withDoiRegistered)(doiActionFilter, doiActionRepo)(_.value, _.value)

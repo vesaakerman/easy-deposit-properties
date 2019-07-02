@@ -513,11 +513,11 @@ class GraphQLResolveSpec extends TestSupportFixture
       depositId3 -> Seq.empty,
     ).asRight
     repository.getDepositsAggregated _ expects Seq(
-      DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.DRAFT))),
       DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.ARCHIVED))),
+      DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.DRAFT))),
     ) once() returning Seq(
-      DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.DRAFT))) -> Seq(deposit1, deposit2, deposit3),
       DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.ARCHIVED))) -> Seq(deposit1, deposit2, deposit3),
+      DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.DRAFT))) -> Seq(deposit1, deposit2, deposit3),
     ).asRight
 
     runQuery(input)

@@ -90,6 +90,7 @@ trait QueryType {
     name = "deposits",
     description = Some("List all registered deposits."),
     arguments = List(
+      depositBagNameFilterArgument,
       depositStateFilterArgument,
       depositIngestStepFilterArgument,
       depositDoiRegisteredFilterArgument,
@@ -132,6 +133,7 @@ trait QueryType {
 
   private def getDeposits(context: Context[DataContext, Unit]): DeferredValue[DataContext, Seq[Deposit]] = {
     DeferredValue(depositsFetcher.defer(DepositFilters(
+      bagName = context.arg(depositBagNameFilterArgument),
       stateFilter = context.arg(depositStateFilterArgument),
       ingestStepFilter = context.arg(depositIngestStepFilterArgument),
       doiRegisteredFilter = context.arg(depositDoiRegisteredFilterArgument),

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "depositor": {
+      "deposits": {
+        "edges": [
+          {
+            "node": {
+              "depositId": "00000000-0000-0000-0000-000000000003",
+              "bagName": "bag3"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

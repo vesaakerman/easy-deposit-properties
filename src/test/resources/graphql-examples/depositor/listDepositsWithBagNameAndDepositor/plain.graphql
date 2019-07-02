@@ -1,0 +1,12 @@
+query {
+    depositor(id: "user002") {
+        deposits(bagName: "bag3") {
+            edges {
+                node {
+                    depositId
+                    bagName
+                }
+            }
+        }
+    }
+}
