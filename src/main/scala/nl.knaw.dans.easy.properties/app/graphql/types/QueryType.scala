@@ -126,8 +126,8 @@ trait QueryType {
   )
 
   private def getDeposit(context: Context[DataContext, Unit]): Try[Deposit] = {
-    context.ctx.deposits
-      .getDeposit(context.arg(depositIdArgument))
+    context.ctx.repo.deposits
+      .find(context.arg(depositIdArgument))
       .toTry
   }
 
@@ -151,8 +151,8 @@ trait QueryType {
   }
 
   private def getIdentifier(context: Context[DataContext, Unit]): Try[Option[Identifier]] = {
-    context.ctx.deposits
-      .getIdentifier(
+    context.ctx.repo.identifiers
+      .getByTypeAndValue(
         idType = context.arg(identifierTypeArgument),
         idValue = context.arg(identifierValueArgument),
       )

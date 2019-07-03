@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.server
 
 import better.files.File
 import better.files.File.currentWorkingDirectory
-import nl.knaw.dans.easy.properties.app.repository.DemoRepositoryImpl
+import nl.knaw.dans.easy.properties.app.repository.demo.DemoRepo
 import nl.knaw.dans.easy.properties.fixture.TestSupportFixture
 import org.json4s.JsonDSL._
 import org.json4s.ext.UUIDSerializer
@@ -33,8 +33,8 @@ class GraphQLExamplesSpec extends TestSupportFixture
   with EmbeddedJettyContainer
   with ScalatraSuite {
 
-  private val repo = new DemoRepositoryImpl
-  private val servlet = DepositPropertiesGraphQLServlet(() => repo)
+  private val repo = new DemoRepo()
+  private val servlet = DepositPropertiesGraphQLServlet(() => repo.repository)
   implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
   addServlet(servlet, "/*")

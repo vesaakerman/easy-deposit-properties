@@ -44,8 +44,8 @@ trait ContentTypeGraphQLType {
     DocumentValue("OCTET", "content type 'application/octet-stream'"),
   )
 
-  val fetchCurrentContentTypes: CurrentFetcher[ContentType] = fetchCurrent(_.deposits.getCurrentContentType, _.deposits.getCurrentContentTypes)
-  val fetchAllContentTypes: AllFetcher[ContentType] = fetchAll(_.deposits.getAllContentTypes, _.deposits.getAllContentTypes)
+  val fetchCurrentContentTypes: CurrentFetcher[ContentType] = fetchCurrent(_.repo.contentType.getCurrent, _.repo.contentType.getCurrent)
+  val fetchAllContentTypes: AllFetcher[ContentType] = fetchAll(_.repo.contentType.getAll, _.repo.contentType.getAll)
 
   implicit val DepositContentTypeFilterType: InputObjectType[DepositContentTypeFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by content type."),
@@ -96,11 +96,9 @@ trait ContentTypeGraphQLType {
   )
 
   private def getDepositByContentType(context: Context[DataContext, ContentType]): Try[Option[Deposit]] = {
-    val repository = context.ctx.deposits
-
-    val contentTypeId = context.value.id
-
-    repository.getDepositByContentTypeId(contentTypeId).toTry
+    context.ctx.repo.contentType
+      .getDepositById(context.value.id)
+      .toTry
   }
 
   private def getDeposits(context: Context[DataContext, ContentType]): DeferredValue[DataContext, Seq[Deposit]] = {

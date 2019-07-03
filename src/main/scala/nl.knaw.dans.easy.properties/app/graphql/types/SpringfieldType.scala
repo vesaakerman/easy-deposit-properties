@@ -38,8 +38,8 @@ trait SpringfieldType {
     DocumentValue("MENU", "Play audio/video in Springfield as selected in a menu."),
   )
 
-  val fetchCurrentSpringfields: CurrentFetcher[Springfield] = fetchCurrent(_.deposits.getCurrentSpringfield, _.deposits.getCurrentSpringfields)
-  val fetchAllSpringfields: AllFetcher[Springfield] = fetchAll(_.deposits.getAllSpringfields, _.deposits.getAllSpringfields)
+  val fetchCurrentSpringfields: CurrentFetcher[Springfield] = fetchCurrent(_.repo.springfield.getCurrent, _.repo.springfield.getCurrent)
+  val fetchAllSpringfields: AllFetcher[Springfield] = fetchAll(_.repo.springfield.getAll, _.repo.springfield.getAll)
 
   private val depositField: Field[DataContext, Springfield] = Field(
     name = "deposit",
@@ -49,8 +49,8 @@ trait SpringfieldType {
   )
 
   private def getDepositBySpringfield(context: Context[DataContext, Springfield]): Try[Option[Deposit]] = {
-    context.ctx.deposits
-      .getDepositBySpringfieldId(context.value.id)
+    context.ctx.repo.springfield
+      .getDepositById(context.value.id)
       .toTry
   }
 

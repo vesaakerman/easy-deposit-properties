@@ -52,8 +52,8 @@ trait StateType {
     DocumentValue("ARCHIVED", "Was successfully archived in the data vault."),
   )
 
-  val fetchCurrentStates: CurrentFetcher[State] = fetchCurrent(_.deposits.getCurrentState, _.deposits.getCurrentStates)
-  val fetchAllStates: AllFetcher[State] = fetchAll(_.deposits.getAllStates, _.deposits.getAllStates)
+  val fetchCurrentStates: CurrentFetcher[State] = fetchCurrent(_.repo.states.getCurrent, _.repo.states.getCurrent)
+  val fetchAllStates: AllFetcher[State] = fetchAll(_.repo.states.getAll, _.repo.states.getAll)
 
   implicit val DepositStateFilterType: InputObjectType[DepositStateFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by state"),
@@ -104,8 +104,8 @@ trait StateType {
   )
 
   private def getDepositByState(context: Context[DataContext, State]): Try[Option[Deposit]] = {
-    context.ctx.deposits
-      .getDepositByStateId(context.value.id)
+    context.ctx.repo.states
+      .getDepositById(context.value.id)
       .toTry
   }
 

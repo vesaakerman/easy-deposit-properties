@@ -19,7 +19,7 @@ import better.files.File
 import nl.knaw.dans.easy.DataciteService
 import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
 import nl.knaw.dans.easy.properties.app.legacyImport.{ ImportProps, Interactor }
-import nl.knaw.dans.easy.properties.app.repository.DemoRepositoryImpl
+import nl.knaw.dans.easy.properties.app.repository.demo.DemoRepo
 import nl.knaw.dans.easy.properties.server.{ DepositPropertiesGraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -48,7 +48,7 @@ object Command extends App with DebugEnhancedLogging {
         case loadProps @ commandLine.loadProps =>
           val propsFile = loadProps.properties()
           val importer = new ImportProps(
-            repository = new DemoRepositoryImpl,
+            repository = new DemoRepo().repository,
             interactor = new Interactor,
             datacite = new DataciteService(configuration.dataciteConfig),
           )
@@ -65,7 +65,7 @@ object Command extends App with DebugEnhancedLogging {
   private def runAsService(): Try[FeedBackMessage] = Try {
     val service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepositoryImpl()),
+      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepo().repository),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     Runtime.getRuntime.addShutdownHook(new Thread("service-shutdown") {

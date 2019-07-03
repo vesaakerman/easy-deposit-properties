@@ -1,35 +1,21 @@
-/**
- * Copyright (C) 2019 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package nl.knaw.dans.easy.properties.app.repository
+package nl.knaw.dans.easy.properties.app.repository.demo
 
 import java.util.{ TimeZone, UUID }
 
-import nl.knaw.dans.easy.properties.app.model._
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue }
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
-import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
+import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, CurationDao, DepositDao, DoiActionDao, DoiRegisteredDao, IdentifierDao, IngestStepDao, Repository, SpringfieldDao, StateDao }
 import org.joda.time.{ DateTime, DateTimeZone }
 
 import scala.collection.mutable
 
-class DemoRepositoryImpl extends DemoRepository {
+class DemoRepo {
 
   private val timeZone = DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/Amsterdam"))
 
@@ -148,15 +134,37 @@ class DemoRepositoryImpl extends DemoRepository {
   private val contentType40 = ContentType("40", ContentTypeValue.ZIP, new DateTime(2019, 4, 4, 0, 5, timeZone))
   private val contentType50 = ContentType("50", ContentTypeValue.ZIP, new DateTime(2019, 5, 5, 0, 5, timeZone))
 
-  override val depositRepo: mutable.Map[DepositId, Deposit] = mutable.Map.empty
-  override val stateRepo: mutable.Map[DepositId, Seq[State]] = mutable.Map.empty
-  override val stepRepo: mutable.Map[DepositId, Seq[IngestStep]] = mutable.Map.empty
-  override val identifierRepo: mutable.Map[(DepositId, IdentifierType), Identifier] = mutable.Map.empty
-  override val doiRegisteredRepo: mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = mutable.Map.empty
-  override val doiActionRepo: mutable.Map[DepositId, Seq[DoiActionEvent]] = mutable.Map.empty
-  override val curationRepo: mutable.Map[DepositId, Seq[Curation]] = mutable.Map.empty
-  override val springfieldRepo: mutable.Map[DepositId, Seq[Springfield]] = mutable.Map.empty
-  override val contentTypeRepo: mutable.Map[DepositId, Seq[ContentType]] = mutable.Map.empty
+  private implicit val depositRepo: DepositRepo = Repo.empty
+  private implicit val stateRepo: StateRepo = Repo.empty
+  private implicit val ingestStepRepo: IngestStepRepo = Repo.empty
+  private implicit val identifierRepo: IdentifierRepo = Repo.empty
+  private implicit val doiRegisteredRepo: DoiRegisteredRepo = Repo.empty
+  private implicit val doiActionRepo: DoiActionRepo = Repo.empty
+  private implicit val curationRepo: CurationRepo = Repo.empty
+  private implicit val springfieldRepo: SpringfieldRepo = Repo.empty
+  private implicit val contentTypeRepo: ContentTypeRepo = Repo.empty
+
+  val depositDao: DepositDao = new DemoDepositDao
+  val stateDao: StateDao = new DemoStateDao
+  val ingestStepDao: IngestStepDao = new DemoIngestStepDao
+  val identifierDao: IdentifierDao = new DemoIdentifierDao
+  val doiRegisteredDao: DoiRegisteredDao = new DemoDoiRegisteredDao
+  val doiActionDao: DoiActionDao = new DemoDoiActionDao
+  val curationDao: CurationDao = new DemoCurationDao
+  val springfieldDao: SpringfieldDao = new DemoSpringfieldDao
+  val contentTypeDao: ContentTypeDao = new DemoContentTypeDao
+  
+  def repository: Repository = Repository(
+    depositDao,
+    stateDao,
+    ingestStepDao,
+    identifierDao,
+    doiRegisteredDao,
+    doiActionDao,
+    curationDao,
+    springfieldDao,
+    contentTypeDao,
+  )
 
   resetRepository()
 
@@ -174,7 +182,7 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private def resetDepositRepo(): mutable.Map[DepositId, Deposit] = {
     depositRepo.clear()
-    depositRepo ++= Map(
+    depositRepo ++= Repo(
       depositId1 -> deposit1,
       depositId2 -> deposit2,
       depositId3 -> deposit3,
@@ -185,7 +193,7 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private def resetStateRepo(): mutable.Map[DepositId, Seq[State]] = {
     stateRepo.clear()
-    stateRepo ++= Map(
+    stateRepo ++= Repo(
       depositId1 -> Seq(state10, state11, state12, state13, state14, state15),
       depositId2 -> Seq(state20, state21, state22, state23),
       depositId3 -> Seq(state30, state31, state32),
@@ -195,8 +203,8 @@ class DemoRepositoryImpl extends DemoRepository {
   }
 
   private def resetStepRepo(): mutable.Map[DepositId, Seq[IngestStep]] = {
-    stepRepo.clear()
-    stepRepo ++= Map(
+    ingestStepRepo.clear()
+    ingestStepRepo ++= Repo(
       depositId1 -> Seq(step10, step11, step12, step13, step14, step15, step16),
       depositId2 -> Seq(step20, step21, step22, step23, step24, step25, step26),
       depositId3 -> Seq.empty,
@@ -207,7 +215,7 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private def resetIdentifierRepo(): mutable.Map[(DepositId, IdentifierType), Identifier] = {
     identifierRepo.clear()
-    identifierRepo ++= Map(
+    identifierRepo ++= Repo(
       (depositId1 -> IdentifierType.BAG_STORE) -> identifier11,
       (depositId1 -> IdentifierType.DOI) -> identifier12,
       (depositId1 -> IdentifierType.URN) -> identifier13,
@@ -231,7 +239,7 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private def resetDoiRegisteredRepo(): mutable.Map[DepositId, Seq[DoiRegisteredEvent]] = {
     doiRegisteredRepo.clear()
-    doiRegisteredRepo ++= Map(
+    doiRegisteredRepo ++= Repo(
       depositId1 -> Seq(doiRegistered10, doiRegistered11),
       depositId2 -> Seq(doiRegistered20, doiRegistered21),
       depositId5 -> Seq(doiRegistered50),
@@ -240,7 +248,7 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private def resetDoiActionRepo(): mutable.Map[DepositId, Seq[DoiActionEvent]] = {
     doiActionRepo.clear()
-    doiActionRepo ++= Map(
+    doiActionRepo ++= Repo(
       depositId1 -> Seq(doiAction10, doiAction11),
       depositId2 -> Seq(doiAction20),
       depositId3 -> Seq(doiAction30),
@@ -251,7 +259,7 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private def resetCurationRepo(): mutable.Map[DepositId, Seq[Curation]] = {
     curationRepo.clear()
-    curationRepo ++= Map(
+    curationRepo ++= Repo(
       depositId1 -> Seq(curation10, curation11, curation12),
       depositId3 -> Seq(curation30, curation31, curation32),
       depositId4 -> Seq(curation40, curation41),
@@ -261,7 +269,7 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private def resetSpringfieldRepo(): mutable.Map[DepositId, Seq[Springfield]] = {
     springfieldRepo.clear()
-    springfieldRepo ++= Map(
+    springfieldRepo ++= Repo(
       depositId1 -> Seq(springfield10),
       depositId2 -> Seq(springfield20, springfield21),
     )
@@ -269,7 +277,7 @@ class DemoRepositoryImpl extends DemoRepository {
 
   private def resetContentTypeRepo(): mutable.Map[DepositId, Seq[ContentType]] = {
     contentTypeRepo.clear()
-    contentTypeRepo ++= Map(
+    contentTypeRepo ++= Repo(
       depositId1 -> Seq(contentType10, contentType11),
       depositId2 -> Seq(contentType20),
       depositId3 -> Seq(contentType30),

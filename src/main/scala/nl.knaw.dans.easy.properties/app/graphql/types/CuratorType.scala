@@ -101,11 +101,9 @@ trait CuratorType {
   )
 
   private def getDepositByCurator(context: Context[DataContext, Curator]): Try[Option[Deposit]] = {
-    val repository = context.ctx.deposits
-
-    val curatorId = context.value.id
-
-    repository.getDepositByCurationId(curatorId).toTry
+    context.ctx.repo.curation
+      .getDepositById(context.value.id)
+      .toTry
   }
 
   private def getDeposits(context: Context[DataContext, Curator]): DeferredValue[DataContext, Seq[Deposit]] = {

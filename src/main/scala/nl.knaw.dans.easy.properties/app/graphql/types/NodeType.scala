@@ -32,13 +32,13 @@ trait NodeType {
     with ContentTypeGraphQLType =>
 
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[DataContext, Unit]) => {
-    if (id.typeName == "Deposit") ctx.ctx.deposits.getDeposit(UUID.fromString(id.id)).map(Option(_)).toTry
-    else if (id.typeName == "State") ctx.ctx.deposits.getStateById(id.id).toTry
-    else if (id.typeName == "IngestStep") ctx.ctx.deposits.getIngestStepById(id.id).toTry
-    else if (id.typeName == "Identifier") ctx.ctx.deposits.getIdentifierById(id.id).toTry
-    else if (id.typeName == "Curator") ctx.ctx.deposits.getCurationById(id.id).map(_.map(_.getCurator)).toTry
-    else if (id.typeName == "Springfield") ctx.ctx.deposits.getSpringfieldById(id.id).toTry
-    else if (id.typeName == "ContentType") ctx.ctx.deposits.getContentTypeById(id.id).toTry
+    if (id.typeName == "Deposit") ctx.ctx.repo.deposits.find(UUID.fromString(id.id)).map(Option(_)).toTry
+    else if (id.typeName == "State") ctx.ctx.repo.states.getById(id.id).toTry
+    else if (id.typeName == "IngestStep") ctx.ctx.repo.ingestSteps.getById(id.id).toTry
+    else if (id.typeName == "Identifier") ctx.ctx.repo.identifiers.getById(id.id).toTry
+    else if (id.typeName == "Curator") ctx.ctx.repo.curation.getById(id.id).map(_.map(_.getCurator)).toTry
+    else if (id.typeName == "Springfield") ctx.ctx.repo.springfield.getById(id.id).toTry
+    else if (id.typeName == "ContentType") ctx.ctx.repo.contentType.getById(id.id).toTry
     else None
   }, Node.possibleNodeTypes[DataContext, Node](DepositType, StateType, IngestStepType, IdentifierObjectType, CurationType, SpringfieldType, ContentTypeType))
 }

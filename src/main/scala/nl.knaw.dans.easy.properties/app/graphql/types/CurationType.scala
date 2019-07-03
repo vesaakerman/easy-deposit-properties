@@ -42,8 +42,8 @@ trait CurationType {
     with MetaTypes
     with Scalars =>
 
-  val fetchCurrentCuration: CurrentFetcher[Curation] = fetchCurrent(_.deposits.getCurrentCuration, _.deposits.getCurrentCurations)
-  val fetchAllCurations: AllFetcher[Curation] = fetchAll(_.deposits.getAllCurations, _.deposits.getAllCurations)
+  val fetchCurrentCuration: CurrentFetcher[Curation] = fetchCurrent(_.repo.curation.getCurrent, _.repo.curation.getCurrent)
+  val fetchAllCurations: AllFetcher[Curation] = fetchAll(_.repo.curation.getAll, _.repo.curation.getAll)
 
   private val seriesFilterArgument: Argument[SeriesFilter] = Argument(
     name = "curatorFilter",
@@ -82,8 +82,8 @@ trait CurationType {
   )
 
   private def getDepositByCuration(context: Context[DataContext, Curation]): Try[Option[Deposit]] = {
-    context.ctx.deposits
-      .getDepositByCurationId(context.value.id)
+    context.ctx.repo.curation
+      .getDepositById(context.value.id)
       .toTry
   }
 

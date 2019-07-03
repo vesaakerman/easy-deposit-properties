@@ -27,10 +27,10 @@ import sangria.schema.{ Argument, EnumType, InputObjectType, ObjectType, OptionI
 trait DoiEventTypes {
   this: MetaTypes with Scalars =>
 
-  val fetchCurrentDoisRegistered: CurrentFetcher[DoiRegisteredEvent] = fetchCurrent(_.deposits.getCurrentDoiRegistered, _.deposits.getCurrentDoisRegistered)
-  val fetchAllDoisRegistered: AllFetcher[DoiRegisteredEvent] = fetchAll(_.deposits.getAllDoiRegistered, _.deposits.getAllDoisRegistered)
-  val fetchCurrentDoisAction: CurrentFetcher[DoiActionEvent] = fetchCurrent(_.deposits.getCurrentDoiAction, _.deposits.getCurrentDoisAction)
-  val fetchAllDoisAction: AllFetcher[DoiActionEvent] = fetchAll(_.deposits.getAllDoiAction, _.deposits.getAllDoisAction)
+  val fetchCurrentDoisRegistered: CurrentFetcher[DoiRegisteredEvent] = fetchCurrent(_.repo.doiRegistered.getCurrent, _.repo.doiRegistered.getCurrent)
+  val fetchAllDoisRegistered: AllFetcher[DoiRegisteredEvent] = fetchAll(_.repo.doiRegistered.getAll, _.repo.doiRegistered.getAll)
+  val fetchCurrentDoisAction: CurrentFetcher[DoiActionEvent] = fetchCurrent(_.repo.doiAction.getCurrent, _.repo.doiAction.getCurrent)
+  val fetchAllDoisAction: AllFetcher[DoiActionEvent] = fetchAll(_.repo.doiAction.getAll, _.repo.doiAction.getAll)
 
   implicit val DepositDoiRegisteredFilterType: InputObjectType[DepositDoiRegisteredFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by whether the DOI is registered."),

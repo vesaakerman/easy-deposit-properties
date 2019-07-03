@@ -50,8 +50,8 @@ trait IngestStepType {
     DocumentValue("COMPLETED", "The ingest process of this deposit has completed."),
   )
 
-  val fetchCurrentIngestSteps: CurrentFetcher[IngestStep] = fetchCurrent(_.deposits.getCurrentIngestStep, _.deposits.getCurrentIngestSteps)
-  val fetchAllIngestSteps: AllFetcher[IngestStep] = fetchAll(_.deposits.getAllIngestSteps, _.deposits.getAllIngestSteps)
+  val fetchCurrentIngestSteps: CurrentFetcher[IngestStep] = fetchCurrent(_.repo.ingestSteps.getCurrent, _.repo.ingestSteps.getCurrent)
+  val fetchAllIngestSteps: AllFetcher[IngestStep] = fetchAll(_.repo.ingestSteps.getAll, _.repo.ingestSteps.getAll)
 
   implicit val DepositIngestStepFilterType: InputObjectType[DepositIngestStepFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by ingest step"),
@@ -103,8 +103,8 @@ trait IngestStepType {
   )
 
   private def getDepositByIngestStep(context: Context[DataContext, IngestStep]): Try[Option[Deposit]] = {
-    context.ctx.deposits
-      .getDepositByIngestStepId(context.value.id)
+    context.ctx.repo.ingestSteps
+      .getDepositById(context.value.id)
       .toTry
   }
 

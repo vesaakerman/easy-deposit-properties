@@ -15,6 +15,6 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
-import nl.knaw.dans.easy.properties.app.repository.DepositRepository
+import nl.knaw.dans.easy.properties.app.repository.Repository
 
-case class DataContext(deposits: DepositRepository)
+case class DataContext(repo: Repository)

@@ -15,13 +15,13 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.repository.DepositRepository
+import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
+import nl.knaw.dans.easy.properties.app.repository.Repository
 
 object DepositPropertiesGraphQLServlet {
 
-  def apply(repository: () => DepositRepository): GraphQLServlet[DataContext] = {
+  def apply(repository: () => Repository): GraphQLServlet[DataContext] = {
     new GraphQLServlet(DepositSchema, () => DataContext(repository()), deferredResolver)
   }
 }

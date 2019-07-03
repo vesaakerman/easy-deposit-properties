@@ -283,22 +283,22 @@ trait MutationType {
   private val depositField: Field[DataContext, AddDepositPayload] = Field(
     name = "deposit",
     fieldType = OptionType(DepositType),
-    resolve = ctx => ctx.ctx.deposits.getDeposit(ctx.value.depositId).toTry,
+    resolve = ctx => ctx.ctx.repo.deposits.find(ctx.value.depositId).toTry,
   )
   private val stateField: Field[DataContext, UpdateStatePayload] = Field(
     name = "state",
     fieldType = OptionType(StateType),
-    resolve = ctx => ctx.ctx.deposits.getStateById(ctx.value.objectId).toTry,
+    resolve = ctx => ctx.ctx.repo.states.getById(ctx.value.objectId).toTry,
   )
   private val ingestStepField: Field[DataContext, UpdateIngestStepPayload] = Field(
     name = "ingestStep",
     fieldType = OptionType(IngestStepType),
-    resolve = ctx => ctx.ctx.deposits.getIngestStepById(ctx.value.objectId).toTry,
+    resolve = ctx => ctx.ctx.repo.ingestSteps.getById(ctx.value.objectId).toTry,
   )
   private val identifierField: Field[DataContext, AddIdentifierPayload] = Field(
     name = "identifier",
     fieldType = OptionType(IdentifierObjectType),
-    resolve = ctx => ctx.ctx.deposits.getIdentifierById(ctx.value.objectId).toTry,
+    resolve = ctx => ctx.ctx.repo.identifiers.getById(ctx.value.objectId).toTry,
   )
   private val doiRegisteredField: Field[DataContext, SetDoiRegisteredPayload] = Field(
     name = "doiRegistered",
@@ -313,17 +313,17 @@ trait MutationType {
   private val curationField: Field[DataContext, SetCurationPayload] = Field(
     name = "curation",
     fieldType = OptionType(CurationType),
-    resolve = ctx => ctx.ctx.deposits.getCurationById(ctx.value.objectId).toTry
+    resolve = ctx => ctx.ctx.repo.curation.getById(ctx.value.objectId).toTry
   )
   private val springfieldField: Field[DataContext, SetSpringfieldPayload] = Field(
     name = "springfield",
     fieldType = OptionType(SpringfieldType),
-    resolve = ctx => ctx.ctx.deposits.getSpringfieldById(ctx.value.objectId).toTry,
+    resolve = ctx => ctx.ctx.repo.springfield.getById(ctx.value.objectId).toTry,
   )
   private val contentTypeField: Field[DataContext, SetContentTypePayload] = Field(
     name = "contentType",
     fieldType = OptionType(ContentTypeType),
-    resolve = ctx => ctx.ctx.deposits.getContentTypeById(ctx.value.objectId).toTry,
+    resolve = ctx => ctx.ctx.repo.contentType.getById(ctx.value.objectId).toTry,
   )
 
   private val addDepositField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, AddDepositPayload, InputObjectType.DefaultInput](
@@ -464,8 +464,8 @@ trait MutationType {
   )
 
   private def addDeposit(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, AddDepositPayload] = {
-    context.ctx.deposits
-      .addDeposit(Deposit(
+    context.ctx.repo.deposits
+      .store(Deposit(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         bagName = Option(input(bagNameInputField.name).asInstanceOf[String]),
         creationTimestamp = input(creationTimestampInputField.name).asInstanceOf[Timestamp],
@@ -479,8 +479,8 @@ trait MutationType {
   }
 
   private def updateState(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, UpdateStatePayload] = {
-    context.ctx.deposits
-      .setState(
+    context.ctx.repo.states
+      .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         state = InputState(
           label = input(stateLabelInputField.name).asInstanceOf[StateLabel.Value],
@@ -496,8 +496,8 @@ trait MutationType {
   }
 
   private def updateIngestStep(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, UpdateIngestStepPayload] = {
-    context.ctx.deposits
-      .setIngestStep(
+    context.ctx.repo.ingestSteps
+      .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         step = InputIngestStep(
           step = input(ingestStepLabelInputField.name).asInstanceOf[IngestStepLabel.Value],
@@ -512,8 +512,8 @@ trait MutationType {
   }
 
   private def addIdentifier(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, AddIdentifierPayload] = {
-    context.ctx.deposits
-      .addIdentifier(
+    context.ctx.repo.identifiers
+      .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         identifier = InputIdentifier(
           idType = input(identifierTypeInputField.name).asInstanceOf[IdentifierType.Value],
@@ -529,8 +529,8 @@ trait MutationType {
   }
 
   private def setDoiRegistered(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetDoiRegisteredPayload] = {
-    context.ctx.deposits
-      .setDoiRegistered(
+    context.ctx.repo.doiRegistered
+      .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         registered = DoiRegisteredEvent(
           value = input(doiRegisteredValueInputField.name).asInstanceOf[Boolean],
@@ -545,8 +545,8 @@ trait MutationType {
   }
 
   private def setDoiAction(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetDoiActionPayload] = {
-    context.ctx.deposits
-      .setDoiAction(
+    context.ctx.repo.doiAction
+      .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         action = DoiActionEvent(
           value = input(doiActionValueInputField.name).asInstanceOf[DoiAction.Value],
@@ -561,8 +561,8 @@ trait MutationType {
   }
 
   private def setCuration(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetCurationPayload] = {
-    context.ctx.deposits
-      .setCuration(
+    context.ctx.repo.curation
+      .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         curation = InputCuration(
           isNewVersion = input(isNewVersionValueInputField.name).asInstanceOf[Boolean],
@@ -581,8 +581,8 @@ trait MutationType {
   }
 
   private def setSpringfield(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetSpringfieldPayload] = {
-    context.ctx.deposits
-      .setSpringfield(
+    context.ctx.repo.springfield
+      .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         springfield = InputSpringfield(
           domain = input(springfieldDomainInputField.name).asInstanceOf[String],
@@ -600,8 +600,8 @@ trait MutationType {
   }
 
   private def setContentType(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, SetContentTypePayload] = {
-    context.ctx.deposits
-      .setContentType(
+    context.ctx.repo.contentType
+      .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         contentType = InputContentType(
           value = input(contentTypeValueInputField.name).asInstanceOf[ContentTypeValue.Value],

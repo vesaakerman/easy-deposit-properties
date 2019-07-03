@@ -56,11 +56,11 @@ trait DepositType {
   val depositsFetcher = Fetcher((ctx: DataContext, filters: Seq[DepositFilters]) => {
     filters match {
       case Seq() => Seq.empty.asRight[QueryError].toFuture
-      case Seq(filter) => ctx.deposits.getDeposits(filter).map(deposits => Seq(filter -> deposits)).toFuture
-      case _ => ctx.deposits.getDepositsAggregated(filters).toFuture
+      case Seq(filter) => ctx.repo.deposits.search(filter).map(deposits => Seq(filter -> deposits)).toFuture
+      case _ => ctx.repo.deposits.search(filters).toFuture
     }
   })
-  val fetchLastModified: CurrentFetcher[Timestamp] = fetchCurrent(_.deposits.getLastModified, _.deposits.getLastModifieds)
+  val fetchLastModified: CurrentFetcher[Timestamp] = fetchCurrent(_.repo.deposits.lastModified, _.repo.deposits.lastModified)
 
   private val identifierTypeArgument: Argument[IdentifierType.Value] = Argument(
     name = "type",

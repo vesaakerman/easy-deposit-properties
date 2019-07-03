@@ -33,13 +33,13 @@ import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Sp
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, Timestamp }
-import nl.knaw.dans.easy.properties.app.repository.DepositRepository
+import nl.knaw.dans.easy.properties.app.repository.Repository
 import nl.knaw.dans.easy.{ DataciteService, DataciteServiceException }
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.lang.BooleanUtils
 import org.joda.time.DateTime
 
-class ImportProps(repository: DepositRepository, interactor: Interactor, datacite: DataciteService) {
+class ImportProps(repository: Repository, interactor: Interactor, datacite: DataciteService) {
 
   private var newPropertiesProvided = false
 
@@ -53,18 +53,18 @@ class ImportProps(repository: DepositRepository, interactor: Interactor, datacit
       depositId <- getDepositId(file)
       creationTime = new DateTime(file.attributes.creationTime().toMillis)
       lastModifiedTime = new DateTime(file.attributes.lastModifiedTime().toMillis)
-      _ <- repository.addDeposit(loadDeposit(depositId, creationTime, properties))
-      state <- repository.setState(depositId, loadState(depositId, lastModifiedTime, properties))
-      _ <- loadIngestStep(depositId, lastModifiedTime, properties, state.label).traverse(repository.setIngestStep(depositId, _))
-      doi <- repository.addIdentifier(depositId, loadDoi(depositId, lastModifiedTime, properties))
-      _ <- repository.addIdentifier(depositId, loadUrn(depositId, lastModifiedTime, properties))
-      _ <- repository.addIdentifier(depositId, loadFedoraIdentifier(depositId, lastModifiedTime, properties))
-      _ <- repository.addIdentifier(depositId, loadBagStoreIdentifier(depositId, lastModifiedTime, properties))
-      _ <- repository.setDoiRegistered(depositId, loadDoiRegistered(depositId, lastModifiedTime, properties, doi.idValue))
-      _ <- repository.setDoiAction(depositId, loadDoiAction(depositId, lastModifiedTime, properties))
-      _ <- loadCuration(depositId, lastModifiedTime, properties).traverse(repository.setCuration(depositId, _))
-      _ <- loadSpringfield(depositId, lastModifiedTime, properties).traverse(repository.setSpringfield(depositId, _))
-      _ <- loadContentType(depositId, lastModifiedTime, properties).traverse(repository.setContentType(depositId, _))
+      _ <- repository.deposits.store(loadDeposit(depositId, creationTime, properties))
+      state <- repository.states.store(depositId, loadState(depositId, lastModifiedTime, properties))
+      _ <- loadIngestStep(depositId, lastModifiedTime, properties, state.label).traverse(repository.ingestSteps.store(depositId, _))
+      doi <- repository.identifiers.store(depositId, loadDoi(depositId, lastModifiedTime, properties))
+      _ <- repository.identifiers.store(depositId, loadUrn(depositId, lastModifiedTime, properties))
+      _ <- repository.identifiers.store(depositId, loadFedoraIdentifier(depositId, lastModifiedTime, properties))
+      _ <- repository.identifiers.store(depositId, loadBagStoreIdentifier(depositId, lastModifiedTime, properties))
+      _ <- repository.doiRegistered.store(depositId, loadDoiRegistered(depositId, lastModifiedTime, properties, doi.idValue))
+      _ <- repository.doiAction.store(depositId, loadDoiAction(depositId, lastModifiedTime, properties))
+      _ <- loadCuration(depositId, lastModifiedTime, properties).traverse(repository.curation.store(depositId, _))
+      _ <- loadSpringfield(depositId, lastModifiedTime, properties).traverse(repository.springfield.store(depositId, _))
+      _ <- loadContentType(depositId, lastModifiedTime, properties).traverse(repository.contentType.store(depositId, _))
       _ = savePropertiesIfChanged(properties)
     } yield s"Loading properties for deposit $depositId succeeded."
   }

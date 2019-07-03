@@ -38,12 +38,12 @@ trait IdentifierGraphQLType {
     DocumentValue("BAG_STORE", "The bagstore identifier."),
   )
 
-  val fetchIdentifiersByDepositId: AllFetcher[Identifier] = fetchAll(_.deposits.getIdentifiers, _.deposits.getIdentifiers)
+  val fetchIdentifiersByDepositId: AllFetcher[Identifier] = fetchAll(_.repo.identifiers.getAll, _.repo.identifiers.getAll)
   val fetchIdentifiersByType = Fetcher((ctx: DataContext, ids: Seq[(DepositId, IdentifierType.Value)]) => {
     ids match {
       case Seq() => Seq.empty.asRight[QueryError].toFuture
-      case Seq((depositId, identifierType)) => ctx.deposits.getIdentifier(depositId, identifierType).map(optIdentifier => Seq((depositId, identifierType) -> optIdentifier)).toFuture
-      case _ => ctx.deposits.getIdentifiersForTypes(ids).toFuture
+      case Seq((depositId, identifierType)) => ctx.repo.identifiers.getByType(depositId, identifierType).map(optIdentifier => Seq((depositId, identifierType) -> optIdentifier)).toFuture
+      case _ => ctx.repo.identifiers.getByType(ids).toFuture
     }
   })
 
@@ -55,8 +55,9 @@ trait IdentifierGraphQLType {
   )
 
   private def getDepositByIdentifier(context: Context[DataContext, Identifier]): Try[Option[Deposit]] = {
-    context.ctx.deposits
-      .getDepositByIdentifierId(context.value.id)
+    context.ctx.repo
+      .identifiers
+      .getDepositById(context.value.id)
       .toTry
   }
 
