@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.contentType.ContentTypeValue.ContentTypeValue
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter }
@@ -43,9 +44,6 @@ trait ContentTypeGraphQLType {
     DocumentValue("ZIP", "content type 'application/zip'"),
     DocumentValue("OCTET", "content type 'application/octet-stream'"),
   )
-
-  val fetchCurrentContentTypes: CurrentFetcher[ContentType] = fetchCurrent(_.repo.contentType.getCurrent, _.repo.contentType.getCurrent)
-  val fetchAllContentTypes: AllFetcher[ContentType] = fetchAll(_.repo.contentType.getAll, _.repo.contentType.getAll)
 
   implicit val DepositContentTypeFilterType: InputObjectType[DepositContentTypeFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by content type."),
@@ -101,13 +99,13 @@ trait ContentTypeGraphQLType {
       .toTry
   }
 
-  private def getDeposits(context: Context[DataContext, ContentType]): DeferredValue[DataContext, Seq[Deposit]] = {
+  private def getDeposits(implicit context: Context[DataContext, ContentType]): DeferredValue[DataContext, Seq[Deposit]] = {
     val contentType = context.value.value
     val contentTypeFilter = context.arg(seriesFilterArgument)
 
-    DeferredValue(depositsFetcher.defer(DepositFilters(
+    DepositResolver.findDeposit(DepositFilters(
       contentTypeFilter = Some(DepositContentTypeFilter(contentType, contentTypeFilter))
-    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
+    )).map(timebasedFilterAndSort(optDepositOrderArgument))
   }
 
   implicit val ContentTypeType: ObjectType[DataContext, ContentType] = deriveObjectType(

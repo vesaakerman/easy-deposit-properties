@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
@@ -106,11 +107,11 @@ trait CuratorType {
       .toTry
   }
 
-  private def getDeposits(context: Context[DataContext, Curator]): DeferredValue[DataContext, Seq[Deposit]] = {
+  private def getDeposits(implicit context: Context[DataContext, Curator]): DeferredValue[DataContext, Seq[Deposit]] = {
     val label = context.value.userId
     val curatorFilter = context.arg(seriesFilterArgument)
 
-    DeferredValue(depositsFetcher.defer(DepositFilters(
+    DepositResolver.findDeposit(DepositFilters(
       bagName = context.arg(depositBagNameFilterArgument),
       stateFilter = context.arg(depositStateFilterArgument),
       ingestStepFilter = context.arg(depositIngestStepFilterArgument),
@@ -121,7 +122,7 @@ trait CuratorType {
       curationRequiredFilter = context.arg(depositCurationRequiredFilterArgument),
       curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
       contentTypeFilter = context.arg(depositContentTypeFilterArgument),
-    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
+    )).map(timebasedFilterAndSort(optDepositOrderArgument))
   }
 
   implicit lazy val CuratorType: ObjectType[DataContext, Curator] = deriveObjectType(

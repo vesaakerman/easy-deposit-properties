@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.curator.DepositCuratorFilter
@@ -41,9 +42,6 @@ trait CurationType {
     with NodeType
     with MetaTypes
     with Scalars =>
-
-  val fetchCurrentCuration: CurrentFetcher[Curation] = fetchCurrent(_.repo.curation.getCurrent, _.repo.curation.getCurrent)
-  val fetchAllCurations: AllFetcher[Curation] = fetchAll(_.repo.curation.getAll, _.repo.curation.getAll)
 
   private val seriesFilterArgument: Argument[SeriesFilter] = Argument(
     name = "curatorFilter",
@@ -87,11 +85,11 @@ trait CurationType {
       .toTry
   }
 
-  private def getDeposits(context: Context[DataContext, Curation]): DeferredValue[DataContext, Seq[Deposit]] = {
+  private def getDeposits(implicit context: Context[DataContext, Curation]): DeferredValue[DataContext, Seq[Deposit]] = {
     val label = context.value.datamanagerUserId
     val curatorFilter = context.arg(seriesFilterArgument)
 
-    DeferredValue(depositsFetcher.defer(DepositFilters(
+    DepositResolver.findDeposit(DepositFilters(
       bagName = context.arg(depositBagNameFilterArgument),
       stateFilter = context.arg(depositStateFilterArgument),
       ingestStepFilter = context.arg(depositIngestStepFilterArgument),
@@ -102,7 +100,7 @@ trait CurationType {
       curationRequiredFilter = context.arg(depositCurationRequiredFilterArgument),
       curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
       contentTypeFilter = context.arg(depositContentTypeFilterArgument),
-    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
+    )).map(timebasedFilterAndSort(optDepositOrderArgument))
   }
 
   implicit val CurationType: ObjectType[DataContext, Curation] = deriveObjectType(

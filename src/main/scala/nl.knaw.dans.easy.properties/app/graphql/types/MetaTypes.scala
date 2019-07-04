@@ -15,13 +15,9 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
-import cats.syntax.either._
-import nl.knaw.dans.easy.properties.app.repository._
-import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
-import nl.knaw.dans.easy.properties.app.repository.QueryErrorOr
-import sangria.execution.deferred.{ Fetcher, HasId }
+import sangria.execution.deferred.HasId
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.ToInput.ScalarToInput
@@ -33,37 +29,9 @@ import scala.language.implicitConversions
 
 trait MetaTypes {
 
-  implicit def depositIdTupleHasId[T]: HasId[(DepositId, T), DepositId] = HasId { case (id, _) => id }
-
-  implicit def depositIdCompositeKeyTupleHasId[K, T]: HasId[((DepositId, K), T), (DepositId, K)] = HasId { case (id, _) => id }
+  implicit def keyBasedHasId[K, V]: HasId[(K, V), K] = HasId { case (id, _) => id }
 
   implicit def nodeIdentifiable[T <: Node]: Identifiable[T] = _.id
-
-  type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, Option[T]), (DepositId, Option[T]), DepositId]
-
-  def fetchCurrent[T](currentOne: DataContext => DepositId => QueryErrorOr[Option[T]],
-                      currentMany: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Option[T])]]): CurrentFetcher[T] = {
-    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => {
-      ids match {
-        case Seq() => Seq.empty.asRight[QueryError].toFuture
-        case Seq(id) => currentOne(ctx)(id).map(optT => Seq(id -> optT)).toFuture
-        case _ => currentMany(ctx)(ids).toFuture
-      }
-    })
-  }
-
-  type AllFetcher[T] = Fetcher[DataContext, (DepositId, Seq[T]), (DepositId, Seq[T]), DepositId]
-
-  def fetchAll[T](currentOne: DataContext => DepositId => QueryErrorOr[Seq[T]],
-                  currentMany: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Seq[T])]]): AllFetcher[T] = {
-    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => {
-      ids match {
-        case Seq() => Seq.empty.asRight[QueryError].toFuture
-        case Seq(id) => currentOne(ctx)(id).map(seqT => Seq(id -> seqT)).toFuture
-        case _ => currentMany(ctx)(ids).toFuture
-      }
-    })
-  }
 
   implicit def fromInput[T](create: Map[String, Any] => T): FromInput[T] = new FromInput[T] {
     val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default

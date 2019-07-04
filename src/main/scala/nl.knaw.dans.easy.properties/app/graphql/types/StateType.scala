@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
@@ -51,9 +52,6 @@ trait StateType {
     DocumentValue("FEDORA_ARCHIVED", "Was successfully archived in the Fedora Archive."),
     DocumentValue("ARCHIVED", "Was successfully archived in the data vault."),
   )
-
-  val fetchCurrentStates: CurrentFetcher[State] = fetchCurrent(_.repo.states.getCurrent, _.repo.states.getCurrent)
-  val fetchAllStates: AllFetcher[State] = fetchAll(_.repo.states.getAll, _.repo.states.getAll)
 
   implicit val DepositStateFilterType: InputObjectType[DepositStateFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by state"),
@@ -109,13 +107,10 @@ trait StateType {
       .toTry
   }
 
-  private def getDeposits(context: Context[DataContext, State]): DeferredValue[DataContext, Seq[Deposit]] = {
-    val label = context.value.label
-    val stateFilter = context.arg(seriesFilterArgument)
-
-    DeferredValue(depositsFetcher.defer(DepositFilters(
-      stateFilter = Some(DepositStateFilter(label, stateFilter))
-    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
+  private def getDeposits(implicit context: Context[DataContext, State]): DeferredValue[DataContext, Seq[Deposit]] = {
+    DepositResolver.findDeposit(DepositFilters(
+      stateFilter = Some(DepositStateFilter(context.value.label, context.arg(seriesFilterArgument)))
+    )).map(timebasedFilterAndSort(optDepositOrderArgument))
   }
 
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(

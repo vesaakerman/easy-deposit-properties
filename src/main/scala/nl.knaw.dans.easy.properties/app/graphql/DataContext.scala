@@ -17,4 +17,6 @@ package nl.knaw.dans.easy.properties.app.graphql
 
 import nl.knaw.dans.easy.properties.app.repository.Repository
 
-case class DataContext(repo: Repository)
+import scala.concurrent.ExecutionContext
+
+case class DataContext(repo: Repository)(implicit val executionContext: ExecutionContext)

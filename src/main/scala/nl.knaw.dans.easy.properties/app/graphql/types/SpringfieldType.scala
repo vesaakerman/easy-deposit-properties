@@ -38,9 +38,6 @@ trait SpringfieldType {
     DocumentValue("MENU", "Play audio/video in Springfield as selected in a menu."),
   )
 
-  val fetchCurrentSpringfields: CurrentFetcher[Springfield] = fetchCurrent(_.repo.springfield.getCurrent, _.repo.springfield.getCurrent)
-  val fetchAllSpringfields: AllFetcher[Springfield] = fetchAll(_.repo.springfield.getAll, _.repo.springfield.getAll)
-
   private val depositField: Field[DataContext, Springfield] = Field(
     name = "deposit",
     description = Some("Returns the deposit that is associated with this particular springfield configuration."),

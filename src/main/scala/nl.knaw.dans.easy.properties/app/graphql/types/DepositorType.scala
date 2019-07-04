@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.relay.{ Connection, ConnectionArgs }
@@ -61,8 +62,8 @@ trait DepositorType {
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDeposits(context: Context[DataContext, DepositorId]): DeferredValue[DataContext, Seq[Deposit]] = {
-    DeferredValue(depositsFetcher.defer(DepositFilters(
+  private def getDeposits(implicit context: Context[DataContext, DepositorId]): DeferredValue[DataContext, Seq[Deposit]] = {
+    DepositResolver.findDeposit(DepositFilters(
       depositorId = Some(context.value),
       bagName = context.arg(depositBagNameFilterArgument),
       stateFilter = context.arg(depositStateFilterArgument),
@@ -74,7 +75,7 @@ trait DepositorType {
       curationRequiredFilter = context.arg(depositCurationRequiredFilterArgument),
       curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
       contentTypeFilter = context.arg(depositContentTypeFilterArgument),
-    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
+    )).map(timebasedFilterAndSort(optDepositOrderArgument))
   }
 
   implicit val DepositorType: ObjectType[DataContext, DepositorId] = ObjectType(

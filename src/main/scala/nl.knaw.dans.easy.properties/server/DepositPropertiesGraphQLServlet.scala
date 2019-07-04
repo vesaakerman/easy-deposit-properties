@@ -19,6 +19,8 @@ import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
 import nl.knaw.dans.easy.properties.app.repository.Repository
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 object DepositPropertiesGraphQLServlet {
 
   def apply(repository: () => Repository): GraphQLServlet[DataContext] = {

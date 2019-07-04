@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
@@ -49,9 +50,6 @@ trait IngestStepType {
     DocumentValue("SOLR4FILES", "The file content of the deposit's payload is being index."),
     DocumentValue("COMPLETED", "The ingest process of this deposit has completed."),
   )
-
-  val fetchCurrentIngestSteps: CurrentFetcher[IngestStep] = fetchCurrent(_.repo.ingestSteps.getCurrent, _.repo.ingestSteps.getCurrent)
-  val fetchAllIngestSteps: AllFetcher[IngestStep] = fetchAll(_.repo.ingestSteps.getAll, _.repo.ingestSteps.getAll)
 
   implicit val DepositIngestStepFilterType: InputObjectType[DepositIngestStepFilter] = deriveInputObjectType(
     InputObjectTypeDescription("The label and filter to be used in searching for deposits by ingest step"),
@@ -108,13 +106,13 @@ trait IngestStepType {
       .toTry
   }
 
-  private def getDeposits(context: Context[DataContext, IngestStep]): DeferredValue[DataContext, Seq[Deposit]] = {
+  private def getDeposits(implicit context: Context[DataContext, IngestStep]): DeferredValue[DataContext, Seq[Deposit]] = {
     val step = context.value.step
     val stepFilter = context.arg(seriesFilterArgument)
 
-    DeferredValue(depositsFetcher.defer(DepositFilters(
+    DepositResolver.findDeposit(DepositFilters(
       ingestStepFilter = Some(DepositIngestStepFilter(step, stepFilter))
-    ))).map { case (_, deposits) => timebasedFilterAndSort(context, optDepositOrderArgument, deposits) }
+    )).map(timebasedFilterAndSort(optDepositOrderArgument))
   }
 
   implicit lazy val IngestStepType: ObjectType[DataContext, IngestStep] = deriveObjectType(

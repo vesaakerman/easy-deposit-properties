@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, DepositResolver, DoiEventResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
 import nl.knaw.dans.easy.properties.app.graphql.types._
 import sangria.execution.deferred.DeferredResolver
 import sangria.schema._
@@ -38,16 +39,15 @@ object GraphQLSchema extends Scalars
   with MutationType {
 
   val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
-  val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(
-    depositsFetcher,
-    fetchLastModified,
-    fetchCurrentStates, fetchAllStates,
-    fetchCurrentIngestSteps, fetchAllIngestSteps,
-    fetchIdentifiersByDepositId, fetchIdentifiersByType,
-    fetchCurrentDoisRegistered, fetchAllDoisRegistered,
-    fetchCurrentDoisAction, fetchAllDoisAction,
-    fetchCurrentCuration, fetchAllCurations,
-    fetchCurrentSpringfields, fetchAllSpringfields,
-    fetchCurrentContentTypes, fetchAllContentTypes,
+  lazy val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(
+    DepositResolver.depositsFetcher, DepositResolver.lastModifiedFetcher,
+    StateResolver.currentStatesFetcher, StateResolver.allStatesFetcher,
+    IngestStepResolver.currentIngestStepsFetcher, IngestStepResolver.allIngestStepsFetcher,
+    IdentifierResolver.identifiersByDepositIdFetcher, IdentifierResolver.identifiersByTypeFetcher,
+    DoiEventResolver.currentDoisRegisteredFetcher, DoiEventResolver.allDoisRegisteredFetcher,
+    DoiEventResolver.currentDoisActionFetcher, DoiEventResolver.allDoisActionFetcher,
+    CurationResolver.currentCurationsFetcher, CurationResolver.allCurationsFetcher,
+    SpringfieldResolver.currentSpringfieldsFetcher, SpringfieldResolver.allSpringfieldsFetcher,
+    ContentTypeResolver.currentContentTypesFetcher, ContentTypeResolver.allContentTypesFetcher,
   )
 }

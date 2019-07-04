@@ -94,9 +94,9 @@ trait TimebasedSearch extends DebugEnhancedLogging {
     atTimestampArgument,
   )
 
-  def timebasedFilterAndSort[T <: Timestamped, Ord <: Ordering[T]](context: WithArguments,
-                                                                   orderArgument: Argument[Option[Ord]],
-                                                                   input: Seq[T]): Seq[T] = {
+  def timebasedFilterAndSort[T <: Timestamped, Ord <: Ordering[T]](orderArgument: Argument[Option[Ord]])
+                                                                  (input: Seq[T])
+                                                                  (implicit context: WithArguments): Seq[T] = {
     val filtered = input.filter(filterTimebased(context))
 
     context.arg(orderArgument)

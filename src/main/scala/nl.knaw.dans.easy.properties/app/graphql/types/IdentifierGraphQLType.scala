@@ -15,12 +15,9 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
-import cats.syntax.either._
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.model.Deposit
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import nl.knaw.dans.easy.properties.app.repository.QueryError
-import sangria.execution.deferred.Fetcher
 import sangria.macros.derive._
 import sangria.relay.Node
 import sangria.schema.{ Context, EnumType, Field, ObjectType, OptionType }
@@ -37,15 +34,6 @@ trait IdentifierGraphQLType {
     DocumentValue("FEDORA", "The Fedora identifier."),
     DocumentValue("BAG_STORE", "The bagstore identifier."),
   )
-
-  val fetchIdentifiersByDepositId: AllFetcher[Identifier] = fetchAll(_.repo.identifiers.getAll, _.repo.identifiers.getAll)
-  val fetchIdentifiersByType = Fetcher((ctx: DataContext, ids: Seq[(DepositId, IdentifierType.Value)]) => {
-    ids match {
-      case Seq() => Seq.empty.asRight[QueryError].toFuture
-      case Seq((depositId, identifierType)) => ctx.repo.identifiers.getByType(depositId, identifierType).map(optIdentifier => Seq((depositId, identifierType) -> optIdentifier)).toFuture
-      case _ => ctx.repo.identifiers.getByType(ids).toFuture
-    }
-  })
 
   private val depositField: Field[DataContext, Identifier] = Field(
     name = "deposit",
