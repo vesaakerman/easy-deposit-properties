@@ -48,26 +48,25 @@ class DemoDepositDao(implicit depositRepo: DepositRepo,
   }
 
   private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
-    getAll
-      .map(deposits => {
-        val fromDepositor = filters.depositorId
-          .fold(deposits.withFilter(_ => true))(depositor => {
-            deposits.withFilter(_.depositorId == depositor)
-          })
-
-        filters.bagName
-          .fold(fromDepositor)(name => fromDepositor.withFilter(_.bagName.exists(_ == name)))
-          .filter(filters.stateFilter, stateRepo)(_.label, _.label)
-          .filter(filters.ingestStepFilter, ingestStepRepo)(_.label, _.step)
-          .filter(filters.doiRegisteredFilter, doiRegisteredRepo)(_.value, _.value)
-          .filter(filters.doiActionFilter, doiActionRepo)(_.value, _.value)
-          .filter(filters.curatorFilter, curationRepo)(_.curator, _.datamanagerUserId)
-          .filter(filters.isNewVersionFilter, curationRepo)(_.isNewVersion, _.isNewVersion)
-          .filter(filters.curationRequiredFilter, curationRepo)(_.curationRequired, _.isRequired)
-          .filter(filters.curationPerformedFilter, curationRepo)(_.curationPerformed, _.isPerformed)
-          .filter(filters.contentTypeFilter, contentTypeRepo)(_.value, _.value)
-          .map(identity)
+    val deposits = depositRepo.values.toSeq
+    val fromDepositor = filters.depositorId
+      .fold(deposits.withFilter(_ => true))(depositor => {
+        deposits.withFilter(_.depositorId == depositor)
       })
+
+    filters.bagName
+      .fold(fromDepositor)(name => fromDepositor.withFilter(_.bagName.exists(_ == name)))
+      .filter(filters.stateFilter, stateRepo)(_.label, _.label)
+      .filter(filters.ingestStepFilter, ingestStepRepo)(_.label, _.step)
+      .filter(filters.doiRegisteredFilter, doiRegisteredRepo)(_.value, _.value)
+      .filter(filters.doiActionFilter, doiActionRepo)(_.value, _.value)
+      .filter(filters.curatorFilter, curationRepo)(_.curator, _.datamanagerUserId)
+      .filter(filters.isNewVersionFilter, curationRepo)(_.isNewVersion, _.isNewVersion)
+      .filter(filters.curationRequiredFilter, curationRepo)(_.curationRequired, _.isRequired)
+      .filter(filters.curationPerformedFilter, curationRepo)(_.curationPerformed, _.isPerformed)
+      .filter(filters.contentTypeFilter, contentTypeRepo)(_.value, _.value)
+      .map(identity)
+      .asRight
   }
 
   override def search(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]] = {
