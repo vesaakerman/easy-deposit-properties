@@ -20,12 +20,9 @@ import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositFilter, DepositId, SeriesFilter, Timestamp, Timestamped, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp, timestampOrdering }
 import nl.knaw.dans.easy.properties.app.repository.{ DepositAlreadyExistsError, DepositDao, DepositDoesNotExistError, DepositFilters, MaxByOption, MutationErrorOr, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-
-import scala.collection.generic.FilterMonadic
-import scala.collection.mutable
 
 class DemoDepositDao(implicit depositRepo: DepositRepo,
                      stateRepo: StateRepo,
@@ -51,48 +48,25 @@ class DemoDepositDao(implicit depositRepo: DepositRepo,
   }
 
   private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
-    trace(filters)
-
-    def filter[T <: Timestamped, F <: DepositFilter, V](collection: FilterMonadic[Deposit, Seq[Deposit]])
-                                                       (filter: Option[F], repo: mutable.Map[DepositId, Seq[T]])
-                                                       (get: F => V, label: T => V): FilterMonadic[Deposit, Seq[Deposit]] = {
-      filter.fold(collection)(depositFilter => {
-        collection.withFilter(d => {
-          val ts = repo.getOrElse(d.id, Seq.empty)
-          val selectedTs = depositFilter.filter match {
-            case SeriesFilter.LATEST => ts.maxByOption(_.timestamp).toSeq
-            case SeriesFilter.ALL => ts
-          }
-          selectedTs.exists(t => label(t) == get(depositFilter))
-        })
-      })
-    }
-
-    val DepositFilters(depositorId, bagName, stateFilter, ingestStepFilter, doiRegisteredFilter, doiActionFilter, curatorFilter, isNewVersionFilter, curationRequiredFilter, curationPerformedFilter, contentTypeFilter) = filters
-
     getAll
       .map(deposits => {
-        val fromDepositor = depositorId match {
-          case Some(depositor) => deposits.withFilter(_.depositorId == depositor)
-          case None => deposits.withFilter(_ => true)
-        }
+        val fromDepositor = filters.depositorId
+          .fold(deposits.withFilter(_ => true))(depositor => {
+            deposits.withFilter(_.depositorId == depositor)
+          })
 
-        val withBagName = bagName match {
-          case Some(name) => fromDepositor.withFilter(_.bagName.exists(_ == name))
-          case None => fromDepositor
-        }
-
-        val withState = filter(withBagName)(stateFilter, stateRepo)(_.label, _.label)
-        val withIngestStep = filter(withState)(ingestStepFilter, ingestStepRepo)(_.label, _.step)
-        val withDoiRegistered = filter(withIngestStep)(doiRegisteredFilter, doiRegisteredRepo)(_.value, _.value)
-        val withDoiAction = filter(withDoiRegistered)(doiActionFilter, doiActionRepo)(_.value, _.value)
-        val withCurator = filter(withDoiAction)(curatorFilter, curationRepo)(_.curator, _.datamanagerUserId)
-        val withIsNewVersion = filter(withCurator)(isNewVersionFilter, curationRepo)(_.isNewVersion, _.isNewVersion)
-        val withCurationRequired = filter(withIsNewVersion)(curationRequiredFilter, curationRepo)(_.curationRequired, _.isRequired)
-        val withCurationPerformed = filter(withCurationRequired)(curationPerformedFilter, curationRepo)(_.curationPerformed, _.isPerformed)
-        val withContentType = filter(withCurationPerformed)(contentTypeFilter, contentTypeRepo)(_.value, _.value)
-
-        withContentType.map(identity)
+        filters.bagName
+          .fold(fromDepositor)(name => fromDepositor.withFilter(_.bagName.exists(_ == name)))
+          .filter(filters.stateFilter, stateRepo)(_.label, _.label)
+          .filter(filters.ingestStepFilter, ingestStepRepo)(_.label, _.step)
+          .filter(filters.doiRegisteredFilter, doiRegisteredRepo)(_.value, _.value)
+          .filter(filters.doiActionFilter, doiActionRepo)(_.value, _.value)
+          .filter(filters.curatorFilter, curationRepo)(_.curator, _.datamanagerUserId)
+          .filter(filters.isNewVersionFilter, curationRepo)(_.isNewVersion, _.isNewVersion)
+          .filter(filters.curationRequiredFilter, curationRepo)(_.curationRequired, _.isRequired)
+          .filter(filters.curationPerformedFilter, curationRepo)(_.curationPerformed, _.isPerformed)
+          .filter(filters.contentTypeFilter, contentTypeRepo)(_.value, _.value)
+          .map(identity)
       })
   }
 
@@ -110,8 +84,6 @@ class DemoDepositDao(implicit depositRepo: DepositRepo,
       deposit.asRight
     }
   }
-
-  //
 
   private def getTimestamps(id: DepositId): QueryErrorOr[Seq[Timestamp]] = {
     if (depositRepo.contains(id)) {

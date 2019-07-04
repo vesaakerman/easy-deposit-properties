@@ -22,12 +22,13 @@ import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.Identifi
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStep
 import nl.knaw.dans.easy.properties.app.model.springfield.Springfield
 import nl.knaw.dans.easy.properties.app.model.state.State
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiActionEvent, DoiRegisteredEvent }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositFilter, DepositId, DoiActionEvent, DoiRegisteredEvent, SeriesFilter, Timestamped, timestampOrdering }
 
+import scala.collection.generic.FilterMonadic
 import scala.collection.mutable
 
 package object demo {
-  
+
   type Repo[T] = mutable.Map[DepositId, T]
   val Repo: mutable.Map.type = mutable.Map
 
@@ -40,4 +41,20 @@ package object demo {
   type CurationRepo = Repo[Seq[Curation]]
   type SpringfieldRepo = Repo[Seq[Springfield]]
   type ContentTypeRepo = Repo[Seq[ContentType]]
+
+  private[demo] implicit class FilterExt(val collection: FilterMonadic[Deposit, Seq[Deposit]]) extends AnyVal {
+    def filter[T <: Timestamped, F <: DepositFilter, V](filter: Option[F], repo: mutable.Map[DepositId, Seq[T]])
+                                                       (get: F => V, label: T => V): FilterMonadic[Deposit, Seq[Deposit]] = {
+      filter.fold(collection)(depositFilter => {
+        collection.withFilter(d => {
+          val ts = repo.getOrElse(d.id, Seq.empty)
+          val selectedTs = depositFilter.filter match {
+            case SeriesFilter.LATEST => ts.maxByOption(_.timestamp).toSeq
+            case SeriesFilter.ALL => ts
+          }
+          selectedTs.exists(t => label(t) == get(depositFilter))
+        })
+      })
+    }
+  }
 }
