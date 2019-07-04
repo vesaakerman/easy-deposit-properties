@@ -22,7 +22,7 @@ trait DemoDao {
   }
 
   def getCurrentObjects[T <: Timestamped](ids: Seq[DepositId])(implicit repo: Repo[Seq[T]]): QueryErrorOr[Seq[(DepositId, Option[T])]] = {
-    ids.toList.traverse(id => getCurrentObject(id)(repo).tupleLeft(id))
+    ids.toList.traverse(id => getCurrentObject(id).tupleLeft(id))
   }
 
   def getAllObjects[T](id: DepositId)(implicit repo: Repo[Seq[T]]): QueryErrorOr[Seq[T]] = {
@@ -30,7 +30,7 @@ trait DemoDao {
   }
 
   def getAllObjects[T](ids: Seq[DepositId])(implicit repo: Repo[Seq[T]]): QueryErrorOr[Seq[(DepositId, Seq[T])]] = {
-    ids.toList.traverse(id => getAllObjects(id)(repo).tupleLeft(id))
+    ids.toList.traverse(id => getAllObjects(id).tupleLeft(id))
   }
 
   def storeNode[I, O <: Node](id: DepositId, input: I)(conversion: (String, I) => O)(implicit repo: Repo[Seq[O]], depositRepo: DepositRepo): MutationErrorOr[O] = {
