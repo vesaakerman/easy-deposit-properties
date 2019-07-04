@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ CurationResolver, DepositResolver }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.curator.DepositCuratorFilter
@@ -29,7 +29,6 @@ import sangria.relay.{ Connection, ConnectionArgs, Node }
 import sangria.schema.{ Argument, Context, DeferredValue, Field, ObjectType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Try
 
 trait CurationType {
   this: DepositType
@@ -57,7 +56,7 @@ trait CurationType {
     name = "deposit",
     description = Some("Returns the deposit that is associated with this particular curation object."),
     fieldType = OptionType(DepositType),
-    resolve = getDepositByCuration,
+    resolve = getDepositByCuration(_),
   )
   private val depositsField: Field[DataContext, Curation] = Field(
     name = "deposits",
@@ -79,10 +78,8 @@ trait CurationType {
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDepositByCuration(context: Context[DataContext, Curation]): Try[Option[Deposit]] = {
-    context.ctx.repo.curation
-      .getDepositById(context.value.id)
-      .toTry
+  private def getDepositByCuration(implicit context: Context[DataContext, Curation]): DeferredValue[DataContext, Option[Deposit]] = {
+    CurationResolver.depositByCurationId(context.value.id)
   }
 
   private def getDeposits(implicit context: Context[DataContext, Curation]): DeferredValue[DataContext, Seq[Deposit]] = {

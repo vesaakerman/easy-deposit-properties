@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.resolvers
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.DepositId
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.model.contentType.ContentType
 import sangria.schema.DeferredValue
 
@@ -24,6 +24,7 @@ object ContentTypeResolver {
 
   lazy val currentContentTypesFetcher: CurrentFetcher[ContentType] = fetchCurrent(_.repo.contentType.getCurrent)
   lazy val allContentTypesFetcher: AllFetcher[ContentType] = fetchAll(_.repo.contentType.getAll)
+  lazy val depositByContentTypeIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.contentType.getDepositsById)
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[ContentType]] = {
     DeferredValue(currentContentTypesFetcher.defer(depositId))
@@ -33,5 +34,10 @@ object ContentTypeResolver {
   def allById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[ContentType]] = {
     DeferredValue(allContentTypesFetcher.defer(depositId))
       .map { case (_, contentTypes) => contentTypes }
+  }
+
+  def depositByContentTypeId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
+    DeferredValue(depositByContentTypeIdFetcher.defer(id))
+      .map { case (_, optDeposit) => optDeposit }
   }
 }

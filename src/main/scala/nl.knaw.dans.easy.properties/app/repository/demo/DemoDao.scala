@@ -84,4 +84,8 @@ trait DemoDao {
       .flatMap(depositRepo.get)
       .asRight
   }
+  
+  def getDepositsByObjectId[T <: Node](ids: Seq[String])(implicit repo: Repo[Seq[T]], depositRepo: DepositRepo): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+    ids.toList.traverse(id => getDepositByObjectId(id).tupleLeft(id))
+  }
 }

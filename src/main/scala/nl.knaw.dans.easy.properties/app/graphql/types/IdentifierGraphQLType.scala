@@ -16,11 +16,12 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.IdentifierResolver
 import nl.knaw.dans.easy.properties.app.model.Deposit
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import sangria.macros.derive._
 import sangria.relay.Node
-import sangria.schema.{ Context, EnumType, Field, ObjectType, OptionType }
+import sangria.schema.{ Context, DeferredValue, EnumType, Field, ObjectType, OptionType }
 
 import scala.util.Try
 
@@ -39,14 +40,11 @@ trait IdentifierGraphQLType {
     name = "deposit",
     description = Some("Returns the deposit that is associated with this particular ingest step"),
     fieldType = OptionType(DepositType),
-    resolve = getDepositByIdentifier,
+    resolve = getDepositByIdentifier(_),
   )
 
-  private def getDepositByIdentifier(context: Context[DataContext, Identifier]): Try[Option[Deposit]] = {
-    context.ctx.repo
-      .identifiers
-      .getDepositById(context.value.id)
-      .toTry
+  private def getDepositByIdentifier(implicit context: Context[DataContext, Identifier]): DeferredValue[DataContext, Option[Deposit]] = {
+    IdentifierResolver.depositByIdentifierId(context.value.id)
   }
 
   implicit val IdentifierObjectType: ObjectType[DataContext, Identifier] = deriveObjectType(

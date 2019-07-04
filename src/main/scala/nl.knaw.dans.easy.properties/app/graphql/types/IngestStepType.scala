@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ DepositResolver, IngestStepResolver }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
@@ -30,7 +30,6 @@ import sangria.relay._
 import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Try
 
 trait IngestStepType {
   this: DepositType
@@ -86,7 +85,7 @@ trait IngestStepType {
     name = "deposit",
     description = Some("Returns the deposit that is associated with this particular ingest step"),
     fieldType = OptionType(DepositType),
-    resolve = getDepositByIngestStep,
+    resolve = getDepositByIngestStep(_),
   )
 
   private val depositsField: Field[DataContext, IngestStep] = Field(
@@ -100,10 +99,8 @@ trait IngestStepType {
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDepositByIngestStep(context: Context[DataContext, IngestStep]): Try[Option[Deposit]] = {
-    context.ctx.repo.ingestSteps
-      .getDepositById(context.value.id)
-      .toTry
+  private def getDepositByIngestStep(implicit context: Context[DataContext, IngestStep]): DeferredValue[DataContext, Option[Deposit]] = {
+    IngestStepResolver.depositByIngestStepId(context.value.id)
   }
 
   private def getDeposits(implicit context: Context[DataContext, IngestStep]): DeferredValue[DataContext, Seq[Deposit]] = {

@@ -28,5 +28,5 @@ trait IngestStepDao {
 
   def store(id: DepositId, step: InputIngestStep): MutationErrorOr[IngestStep]
 
-  def getDepositById(id: String): QueryErrorOr[Option[Deposit]]
+  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]]
 }

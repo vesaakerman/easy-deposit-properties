@@ -16,15 +16,14 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.SpringfieldResolver
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
 import sangria.relay._
-import sangria.schema.{ Argument, Context, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
-
-import scala.util.Try
+import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
 trait SpringfieldType {
   this: DepositType
@@ -42,13 +41,11 @@ trait SpringfieldType {
     name = "deposit",
     description = Some("Returns the deposit that is associated with this particular springfield configuration."),
     fieldType = OptionType(DepositType),
-    resolve = getDepositBySpringfield,
+    resolve = getDepositBySpringfield(_),
   )
 
-  private def getDepositBySpringfield(context: Context[DataContext, Springfield]): Try[Option[Deposit]] = {
-    context.ctx.repo.springfield
-      .getDepositById(context.value.id)
-      .toTry
+  private def getDepositBySpringfield(implicit context: Context[DataContext, Springfield]): DeferredValue[DataContext, Option[Deposit]] = {
+    SpringfieldResolver.depositBySpringfieldId(context.value.id)
   }
 
   implicit val SpringfieldType: ObjectType[DataContext, Springfield] = deriveObjectType(

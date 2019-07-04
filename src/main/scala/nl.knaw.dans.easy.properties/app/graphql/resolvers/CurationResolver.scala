@@ -18,13 +18,14 @@ package nl.knaw.dans.easy.properties.app.graphql.resolvers
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.curator.Curator
-import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, DepositId, IsNewVersionEvent }
+import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, CurationRequiredEvent, Deposit, DepositId, IsNewVersionEvent }
 import sangria.schema.DeferredValue
 
 object CurationResolver {
 
   lazy val currentCurationsFetcher: CurrentFetcher[Curation] = fetchCurrent(_.repo.curation.getCurrent)
   lazy val allCurationsFetcher: AllFetcher[Curation] = fetchAll(_.repo.curation.getAll)
+  lazy val depositByCurationIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.curation.getDepositsById)
 
   def currentCuratorsById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Curator]] = {
     DeferredValue(allCurationsFetcher.defer(depositId))
@@ -42,7 +43,12 @@ object CurationResolver {
         .distinctUntilChanged(curator => (curator.userId, curator.email))
       }
   }
-  
+
+  def depositByCurationId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
+    DeferredValue(depositByCurationIdFetcher.defer(id))
+      .map { case (_, optDeposit) => optDeposit }
+  }
+
   def isNewVersion(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Boolean]] = {
     DeferredValue(currentCurationsFetcher.defer(depositId))
       .map { case (_, optCuration) => optCuration.map(_.getIsNewVersionEvent.isNewVersion) }

@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ DepositResolver, StateResolver }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
@@ -30,7 +30,6 @@ import sangria.relay._
 import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Try
 
 trait StateType {
   this: DepositType
@@ -88,7 +87,7 @@ trait StateType {
     name = "deposit",
     description = Some("Returns the deposit that is associated with this particular state"),
     fieldType = OptionType(DepositType),
-    resolve = getDepositByState,
+    resolve = getDepositByState(_),
   )
   private val depositsField: Field[DataContext, State] = Field(
     name = "deposits",
@@ -101,10 +100,8 @@ trait StateType {
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDepositByState(context: Context[DataContext, State]): Try[Option[Deposit]] = {
-    context.ctx.repo.states
-      .getDepositById(context.value.id)
-      .toTry
+  private def getDepositByState(implicit context: Context[DataContext, State]): DeferredValue[DataContext, Option[Deposit]] = {
+    StateResolver.depositByStateId(context.value.id)
   }
 
   private def getDeposits(implicit context: Context[DataContext, State]): DeferredValue[DataContext, Seq[Deposit]] = {

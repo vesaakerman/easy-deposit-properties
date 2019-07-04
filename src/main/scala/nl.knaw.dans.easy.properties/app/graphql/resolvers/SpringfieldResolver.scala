@@ -16,14 +16,15 @@
 package nl.knaw.dans.easy.properties.app.graphql.resolvers
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.DepositId
 import nl.knaw.dans.easy.properties.app.model.springfield.Springfield
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import sangria.schema.DeferredValue
 
 object SpringfieldResolver {
 
-  val currentSpringfieldsFetcher: CurrentFetcher[Springfield] = fetchCurrent(_.repo.springfield.getCurrent)
-  val allSpringfieldsFetcher: AllFetcher[Springfield] = fetchAll(_.repo.springfield.getAll)
+  lazy val currentSpringfieldsFetcher: CurrentFetcher[Springfield] = fetchCurrent(_.repo.springfield.getCurrent)
+  lazy val allSpringfieldsFetcher: AllFetcher[Springfield] = fetchAll(_.repo.springfield.getAll)
+  lazy val depositBySpringfieldIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.springfield.getDepositsById)
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Springfield]] = {
     DeferredValue(currentSpringfieldsFetcher.defer(depositId))
@@ -33,5 +34,10 @@ object SpringfieldResolver {
   def allById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[Springfield]] = {
     DeferredValue(allSpringfieldsFetcher.defer(depositId))
       .map { case (_, springfields) => springfields }
+  }
+
+  def depositBySpringfieldId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
+    DeferredValue(depositBySpringfieldIdFetcher.defer(id))
+      .map { case (_, optDeposit) => optDeposit }
   }
 }

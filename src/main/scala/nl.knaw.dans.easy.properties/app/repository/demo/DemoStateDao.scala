@@ -44,8 +44,8 @@ class DemoStateDao(implicit repo: StateRepo, depositRepo: DepositRepo) extends S
     }
   }
 
-  override def getDepositById(id: String): QueryErrorOr[Option[Deposit]] = {
-    trace(id)
-    getDepositByObjectId(id)
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+    trace(ids)
+    getDepositsByObjectId(ids)
   }
 }

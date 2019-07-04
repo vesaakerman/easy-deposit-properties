@@ -16,9 +16,9 @@
 package nl.knaw.dans.easy.properties.app.graphql.resolvers
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.DepositId
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import sangria.execution.deferred.Fetcher
 import sangria.schema.DeferredValue
 
@@ -28,6 +28,7 @@ object IdentifierResolver {
 
   lazy val identifiersByTypeFetcher: IdentifiersByType = Fetcher(_.repo.identifiers.getByType(_).toFuture)
   lazy val identifiersByDepositIdFetcher: AllFetcher[Identifier] = fetchAll(_.repo.identifiers.getAll)
+  lazy val depositByIdentifierIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.identifiers.getDepositsById)
 
   def identifierByType(depositId: DepositId, idType: IdentifierType.Value)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Identifier]] = {
     DeferredValue(identifiersByTypeFetcher.defer(depositId -> idType))
@@ -37,5 +38,10 @@ object IdentifierResolver {
   def allById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[Identifier]] = {
     DeferredValue(identifiersByDepositIdFetcher.defer(depositId))
       .map { case (_, identifiers) => identifiers }
+  }
+
+  def depositByIdentifierId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
+    DeferredValue(depositByIdentifierIdFetcher.defer(id))
+      .map { case (_, optDeposit) => optDeposit }
   }
 }

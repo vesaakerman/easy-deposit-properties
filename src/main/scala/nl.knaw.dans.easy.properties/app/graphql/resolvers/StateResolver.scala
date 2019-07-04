@@ -16,14 +16,15 @@
 package nl.knaw.dans.easy.properties.app.graphql.resolvers
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.model.DepositId
 import nl.knaw.dans.easy.properties.app.model.state.State
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import sangria.schema.DeferredValue
 
 object StateResolver {
 
   lazy val currentStatesFetcher: CurrentFetcher[State] = fetchCurrent(_.repo.states.getCurrent)
   lazy val allStatesFetcher: AllFetcher[State] = fetchAll(_.repo.states.getAll)
+  lazy val depositByStateIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.states.getDepositsById)
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[State]] = {
     DeferredValue(currentStatesFetcher.defer(depositId))
@@ -33,5 +34,10 @@ object StateResolver {
   def allById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[State]] = {
     DeferredValue(allStatesFetcher.defer(depositId))
       .map { case (_, states) => states }
+  }
+
+  def depositByStateId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
+    DeferredValue(depositByStateIdFetcher.defer(id))
+      .map { case (_, optDeposit) => optDeposit }
   }
 }

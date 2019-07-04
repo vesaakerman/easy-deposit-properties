@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, DepositResolver }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.contentType.ContentTypeValue.ContentTypeValue
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter }
@@ -30,7 +30,6 @@ import sangria.relay._
 import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType, StringType }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Try
 
 trait ContentTypeGraphQLType {
   this: DepositType
@@ -80,7 +79,7 @@ trait ContentTypeGraphQLType {
     name = "deposit",
     description = Some("Returns the deposit that is associated with this particular content type."),
     fieldType = OptionType(DepositType),
-    resolve = getDepositByContentType,
+    resolve = getDepositByContentType(_),
   )
   private val depositsField: Field[DataContext, ContentType] = Field(
     name = "deposits",
@@ -93,10 +92,8 @@ trait ContentTypeGraphQLType {
     resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
   )
 
-  private def getDepositByContentType(context: Context[DataContext, ContentType]): Try[Option[Deposit]] = {
-    context.ctx.repo.contentType
-      .getDepositById(context.value.id)
-      .toTry
+  private def getDepositByContentType(implicit context: Context[DataContext, ContentType]): DeferredValue[DataContext, Option[Deposit]] = {
+    ContentTypeResolver.depositByContentTypeId(context.value.id)
   }
 
   private def getDeposits(implicit context: Context[DataContext, ContentType]): DeferredValue[DataContext, Seq[Deposit]] = {

@@ -15,7 +15,11 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.demo
 
+import cats.instances.either._
+import cats.instances.list._
 import cats.syntax.either._
+import cats.syntax.functor._
+import cats.syntax.traverse._
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
@@ -70,11 +74,15 @@ class DemoIdentifierDao(implicit repo: IdentifierRepo, depositRepo: DepositRepo)
     else NoSuchDepositError(id).asLeft
   }
 
-  override def getDepositById(id: String): QueryErrorOr[Option[Deposit]] = {
-    trace(id)
+  private def getDepositById(id: String): QueryErrorOr[Option[Deposit]] = {
     repo
       .collectFirst { case ((depositId, _), identifier) if identifier.id == id => depositId }
       .flatMap(depositRepo.get)
       .asRight
+  }
+
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+    trace(ids)
+    ids.toList.traverse(id => getDepositById(id).tupleLeft(id))
   }
 }
