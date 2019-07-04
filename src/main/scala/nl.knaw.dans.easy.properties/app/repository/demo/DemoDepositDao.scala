@@ -50,7 +50,7 @@ class DemoDepositDao(implicit depositRepo: DepositRepo,
       .getOrElse(DepositDoesNotExistError(id).asLeft)
   }
 
-  override def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
+  private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
     trace(filters)
 
     def filter[T <: Timestamped, F <: DepositFilter, V](collection: FilterMonadic[Deposit, Seq[Deposit]])
@@ -132,11 +132,6 @@ class DemoDepositDao(implicit depositRepo: DepositRepo,
 
   private def getLatestTimestamp(id: DepositId): QueryErrorOr[Option[Timestamp]] = {
     getTimestamps(id).map(_.maxByOption(identity))
-  }
-
-  override def lastModified(id: DepositId): QueryErrorOr[Option[Timestamp]] = {
-    trace(id)
-    getLatestTimestamp(id)
   }
 
   override def lastModified(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]] = {

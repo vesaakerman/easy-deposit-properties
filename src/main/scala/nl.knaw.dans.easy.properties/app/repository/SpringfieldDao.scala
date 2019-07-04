@@ -22,11 +22,7 @@ trait SpringfieldDao {
 
   def getById(id: String): QueryErrorOr[Option[Springfield]]
 
-  def getCurrent(id: DepositId): QueryErrorOr[Option[Springfield]]
-
   def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Springfield])]]
-
-  def getAll(id: DepositId): QueryErrorOr[Seq[Springfield]]
 
   def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Springfield])]]
 

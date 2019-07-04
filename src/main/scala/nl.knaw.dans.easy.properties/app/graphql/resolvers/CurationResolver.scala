@@ -23,8 +23,8 @@ import sangria.schema.DeferredValue
 
 object CurationResolver {
 
-  lazy val currentCurationsFetcher: CurrentFetcher[Curation] = fetchCurrent(_.repo.curation.getCurrent, _.repo.curation.getCurrent)
-  lazy val allCurationsFetcher: AllFetcher[Curation] = fetchAll(_.repo.curation.getAll, _.repo.curation.getAll)
+  lazy val currentCurationsFetcher: CurrentFetcher[Curation] = fetchCurrent(_.repo.curation.getCurrent)
+  lazy val allCurationsFetcher: AllFetcher[Curation] = fetchAll(_.repo.curation.getAll)
 
   def currentCuratorsById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Curator]] = {
     DeferredValue(allCurationsFetcher.defer(depositId))

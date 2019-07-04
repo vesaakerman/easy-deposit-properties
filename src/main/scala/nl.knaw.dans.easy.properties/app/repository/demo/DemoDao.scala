@@ -32,7 +32,7 @@ trait DemoDao {
     repo.values.toStream.flatten.find(_.id == id).asRight
   }
 
-  def getCurrentObject[T <: Timestamped](id: DepositId)(implicit repo: Repo[Seq[T]]): QueryErrorOr[Option[T]] = {
+  private def getCurrentObject[T <: Timestamped](id: DepositId)(implicit repo: Repo[Seq[T]]): QueryErrorOr[Option[T]] = {
     repo.get(id).flatMap(_.maxByOption(_.timestamp)).asRight
   }
 
@@ -40,7 +40,7 @@ trait DemoDao {
     ids.toList.traverse(id => getCurrentObject(id).tupleLeft(id))
   }
 
-  def getAllObjects[T](id: DepositId)(implicit repo: Repo[Seq[T]]): QueryErrorOr[Seq[T]] = {
+  private def getAllObjects[T](id: DepositId)(implicit repo: Repo[Seq[T]]): QueryErrorOr[Seq[T]] = {
     repo.getOrElse(id, Seq.empty).asRight
   }
 

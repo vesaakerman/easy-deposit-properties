@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql
 
 import cats.syntax.either._
-import nl.knaw.dans.easy.properties.app.model.DepositId
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.repository.{ QueryError, QueryErrorOr }
 import sangria.execution.deferred.{ Fetcher, HasId }
 
@@ -30,24 +30,20 @@ package object resolvers {
 
   type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, Option[T]), (DepositId, Option[T]), DepositId]
 
-  private[resolvers] def fetchCurrent[T](currentOne: DataContext => DepositId => QueryErrorOr[Option[T]],
-                                         currentMany: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Option[T])]]): CurrentFetcher[T] = {
-    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => ids match {
-      case Seq() => Seq.empty.asRight[QueryError].toFuture
-      case Seq(id) => currentOne(ctx)(id).map(optT => Seq(id -> optT)).toFuture
-      case _ => currentMany(ctx)(ids).toFuture
-    })
+  private[resolvers] def fetchCurrent[T](f: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Option[T])]]): CurrentFetcher[T] = {
+    Fetcher(f(_)(_).toFuture)
   }
 
   type AllFetcher[T] = Fetcher[DataContext, (DepositId, Seq[T]), (DepositId, Seq[T]), DepositId]
 
-  private[resolvers] def fetchAll[T](currentOne: DataContext => DepositId => QueryErrorOr[Seq[T]],
-                                     currentMany: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Seq[T])]]): AllFetcher[T] = {
-    Fetcher((ctx: DataContext, ids: Seq[DepositId]) => ids match {
-      case Seq() => Seq.empty.asRight[QueryError].toFuture
-      case Seq(id) => currentOne(ctx)(id).map(seqT => Seq(id -> seqT)).toFuture
-      case _ => currentMany(ctx)(ids).toFuture
-    })
+  private[resolvers] def fetchAll[T](f: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Seq[T])]]): AllFetcher[T] = {
+    Fetcher(f(_)(_).toFuture)
+  }
+
+  type DepositByIdFetcher = Fetcher[DataContext, (String, Option[Deposit]), (String, Option[Deposit]), String]
+  
+  private[resolvers] def fetchDepositsById(f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Option[Deposit])]]): DepositByIdFetcher = {
+    Fetcher(f(_)(_).toFuture)
   }
 
   private[resolvers] implicit class CollectionExtensions[T](val xs: Seq[T]) extends AnyVal {

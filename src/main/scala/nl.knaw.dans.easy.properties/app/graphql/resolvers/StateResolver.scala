@@ -22,8 +22,8 @@ import sangria.schema.DeferredValue
 
 object StateResolver {
 
-  lazy val currentStatesFetcher: CurrentFetcher[State] = fetchCurrent(_.repo.states.getCurrent, _.repo.states.getCurrent)
-  lazy val allStatesFetcher: AllFetcher[State] = fetchAll(_.repo.states.getAll, _.repo.states.getAll)
+  lazy val currentStatesFetcher: CurrentFetcher[State] = fetchCurrent(_.repo.states.getCurrent)
+  lazy val allStatesFetcher: AllFetcher[State] = fetchAll(_.repo.states.getAll)
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[State]] = {
     DeferredValue(currentStatesFetcher.defer(depositId))

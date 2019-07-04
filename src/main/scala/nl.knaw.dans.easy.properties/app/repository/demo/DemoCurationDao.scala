@@ -27,19 +27,9 @@ class DemoCurationDao(implicit repo: CurationRepo, depositRepo: DepositRepo) ext
     getObjectById(id)
   }
 
-  override def getCurrent(id: DepositId): QueryErrorOr[Option[Curation]] = {
-    trace(id)
-    getCurrentObject(id)
-  }
-
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curation])]] = {
     trace(ids)
     getCurrentObjects(ids)
-  }
-
-  override def getAll(id: DepositId): QueryErrorOr[Seq[Curation]] = {
-    trace(id)
-    getAllObjects(id)
   }
 
   override def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Curation])]] = {

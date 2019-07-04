@@ -27,19 +27,9 @@ class DemoSpringfieldDao(implicit repo: SpringfieldRepo, depositRepo: DepositRep
     getObjectById(id)
   }
 
-  override def getCurrent(id: DepositId): QueryErrorOr[Option[Springfield]] = {
-    trace(id)
-    getCurrentObject(id)
-  }
-
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Springfield])]] = {
     trace(ids)
     getCurrentObjects(ids)
-  }
-
-  override def getAll(id: DepositId): QueryErrorOr[Seq[Springfield]] = {
-    trace(id)
-    getAllObjects(id)
   }
 
   override def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Springfield])]] = {

@@ -27,19 +27,9 @@ class DemoIngestStepDao(implicit repo: IngestStepRepo, depositRepo: DepositRepo)
     getObjectById(id)
   }
 
-  override def getCurrent(id: DepositId): QueryErrorOr[Option[IngestStep]] = {
-    trace(id)
-    getCurrentObject(id)
-  }
-
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IngestStep])]] = {
     trace(ids)
     getCurrentObjects(ids)
-  }
-
-  override def getAll(id: DepositId): QueryErrorOr[Seq[IngestStep]] = {
-    trace(id)
-    getAllObjects(id)
   }
 
   override def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[IngestStep])]] = {
