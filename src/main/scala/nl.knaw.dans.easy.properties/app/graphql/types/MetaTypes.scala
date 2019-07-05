@@ -15,8 +15,9 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql.types
 
+import nl.knaw.dans.easy.properties.app.graphql.ordering.{ DepositOrder, DepositOrderField, OrderDirection }
+import nl.knaw.dans.easy.properties.app.model.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, SeriesFilter, Timestamp, timestampOrdering }
 import sangria.execution.deferred.HasId
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
@@ -50,59 +51,9 @@ trait MetaTypes {
   )
   implicit val SeriesFilterToInput: ToInput[SeriesFilter, _] = new ScalarToInput
 
-  @GraphQLDescription("Possible directions in which to order a list of items when provided an orderBy argument")
-  object OrderDirection extends Enumeration {
-    type OrderDirection = Value
-
-    // @formatter:off
-    @GraphQLDescription("Specifies an ascending order for a given orderBy argumen.")
-    val ASC : OrderDirection = Value("ASC")
-    @GraphQLDescription("Specifies a descending order for a given orderBy argument")
-    val DESC: OrderDirection = Value("DESC")
-    // @formatter:on
-
-    case class OrderDirectionValue(value: OrderDirection) {
-      def withOrder[T](ordering: Ordering[T]): Ordering[T] = {
-        value match {
-          case ASC => ordering
-          case DESC => ordering.reverse
-        }
-      }
-    }
-    implicit def value2OrderDirectionValue(value: OrderDirection): OrderDirectionValue = OrderDirectionValue(value)
-  }
   implicit val OrderDirectionType: EnumType[OrderDirection.Value] = deriveEnumType()
 
-  @GraphQLDescription("Properties by which deposits can be ordered")
-  object DepositOrderField extends Enumeration {
-    type DepositOrderField = Value
-
-    // @formatter:off
-    @GraphQLDescription("Order deposits by depositId")
-    val DEPOSIT_ID        : DepositOrderField = Value("DEPOSIT_ID")
-    @GraphQLDescription("Order deposits by bag name")
-    val BAG_NAME          : DepositOrderField = Value("BAG_NAME")
-    @GraphQLDescription("Order deposits by creation timestamp")
-    val CREATION_TIMESTAMP: DepositOrderField = Value("CREATION_TIMESTAMP")
-    // @formatter:on
-  }
   implicit val DepositOrderFieldType: EnumType[DepositOrderField.Value] = deriveEnumType()
-
-  case class DepositOrder(field: DepositOrderField.DepositOrderField,
-                          direction: OrderDirection.OrderDirection) extends Ordering[Deposit] {
-    def compare(x: Deposit, y: Deposit): Int = {
-      val orderByField: Ordering[Deposit] = field match {
-        case DepositOrderField.DEPOSIT_ID =>
-          Ordering[DepositId].on(_.id)
-        case DepositOrderField.BAG_NAME =>
-          Ordering[Option[String]].on(_.bagName)
-        case DepositOrderField.CREATION_TIMESTAMP =>
-          Ordering[Timestamp].on(_.creationTimestamp)
-      }
-
-      direction.withOrder(orderByField).compare(x, y)
-    }
-  }
   implicit val DepositOrderInputType: InputObjectType[DepositOrder] = deriveInputObjectType(
     InputObjectTypeDescription("Ordering options for deposits"),
     DocumentInputField("field", "The field to order deposit by"),

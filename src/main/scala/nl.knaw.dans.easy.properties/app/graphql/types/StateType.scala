@@ -16,12 +16,13 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.ordering.{ OrderDirection, StateOrder, StateOrderField }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ DepositResolver, StateResolver }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
@@ -128,32 +129,7 @@ trait StateType {
     nodeType = StateType,
   )
 
-  @GraphQLDescription("Properties by which states can be ordered")
-  object StateOrderField extends Enumeration {
-    type StateOrderField = Value
-
-    // @formatter:off
-    @GraphQLDescription("Order states by label")
-    val LABEL    : StateOrderField = Value("LABEL")
-    @GraphQLDescription("Order states by timestamp")
-    val TIMESTAMP: StateOrderField = Value("TIMESTAMP")
-    // @formatter:on
-  }
   implicit val StateOrderFieldType: EnumType[StateOrderField.Value] = deriveEnumType()
-
-  case class StateOrder(field: StateOrderField.StateOrderField,
-                        direction: OrderDirection.OrderDirection) extends Ordering[State] {
-    def compare(x: State, y: State): Int = {
-      val orderByField: Ordering[State] = field match {
-        case StateOrderField.LABEL =>
-          Ordering[StateLabel].on(_.label)
-        case StateOrderField.TIMESTAMP =>
-          Ordering[Timestamp].on(_.timestamp)
-      }
-
-      direction.withOrder(orderByField).compare(x, y)
-    }
-  }
   implicit val StateOrderInputType: InputObjectType[StateOrder] = deriveInputObjectType(
     InputObjectTypeDescription("Ordering options for states"),
     DocumentInputField("field", "The field to order state by"),

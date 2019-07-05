@@ -16,12 +16,13 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.ordering.{ IngestStepOrder, IngestStepOrderField, OrderDirection }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ DepositResolver, IngestStepResolver }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.ingestStep.IngestStepLabel.IngestStepLabel
 import nl.knaw.dans.easy.properties.app.model.ingestStep._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
@@ -129,32 +130,7 @@ trait IngestStepType {
     nodeType = IngestStepType,
   )
 
-  @GraphQLDescription("Properties by which ingest steps can be ordered")
-  object IngestStepOrderField extends Enumeration {
-    type IngestStepOrderField = Value
-
-    // @formatter:off
-    @GraphQLDescription("Order ingest steps by step")
-    val STEP    : IngestStepOrderField = Value("STEP")
-    @GraphQLDescription("Order ingest steps by timestamp")
-    val TIMESTAMP: IngestStepOrderField = Value("TIMESTAMP")
-    // @formatter:on
-  }
   implicit val IngestStepOrderFieldType: EnumType[IngestStepOrderField.Value] = deriveEnumType()
-
-  case class IngestStepOrder(field: IngestStepOrderField.IngestStepOrderField,
-                             direction: OrderDirection.OrderDirection) extends Ordering[IngestStep] {
-    def compare(x: IngestStep, y: IngestStep): Int = {
-      val orderByField: Ordering[IngestStep] = field match {
-        case IngestStepOrderField.STEP =>
-          Ordering[IngestStepLabel].on(_.step)
-        case IngestStepOrderField.TIMESTAMP =>
-          Ordering[Timestamp].on(_.timestamp)
-      }
-
-      direction.withOrder(orderByField).compare(x, y)
-    }
-  }
   implicit val IngestStepOrderInputType: InputObjectType[IngestStepOrder] = deriveInputObjectType(
     InputObjectTypeDescription("Ordering options for ingest steps"),
     DocumentInputField("field", "The field to order ingest steps by"),

@@ -16,11 +16,12 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.ordering.{ CuratorOrder, CuratorOrderField, OrderDirection }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ CurationResolver, DepositResolver }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
@@ -140,32 +141,7 @@ trait CuratorType {
     nodeType = CuratorType,
   )
 
-  @GraphQLDescription("Properties by which curators can be ordered")
-  object CuratorOrderField extends Enumeration {
-    type CuratorOrderField = Value
-
-    // @formatter:off
-    @GraphQLDescription("Order curators by step")
-    val USERID   : CuratorOrderField = Value("USERID")
-    @GraphQLDescription("Order curators by timestamp")
-    val TIMESTAMP: CuratorOrderField = Value("TIMESTAMP")
-    // @formatter:on
-  }
   implicit val CuratorOrderFieldType: EnumType[CuratorOrderField.Value] = deriveEnumType()
-
-  case class CuratorOrder(field: CuratorOrderField.CuratorOrderField,
-                          direction: OrderDirection.OrderDirection) extends Ordering[Curator] {
-    def compare(x: Curator, y: Curator): Int = {
-      val orderByField: Ordering[Curator] = field match {
-        case CuratorOrderField.USERID =>
-          Ordering[String].on(_.userId)
-        case CuratorOrderField.TIMESTAMP =>
-          Ordering[Timestamp].on(_.timestamp)
-      }
-
-      direction.withOrder(orderByField).compare(x, y)
-    }
-  }
   implicit val CuratorOrderInputType: InputObjectType[CuratorOrder] = deriveInputObjectType(
     InputObjectTypeDescription("Ordering options for curators"),
     DocumentInputField("field", "The field to order curators by"),

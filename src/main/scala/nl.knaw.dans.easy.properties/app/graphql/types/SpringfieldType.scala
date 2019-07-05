@@ -16,9 +16,10 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.ordering.{ OrderDirection, SpringfieldOrder, SpringfieldOrderField }
 import nl.knaw.dans.easy.properties.app.graphql.resolvers.SpringfieldResolver
+import nl.knaw.dans.easy.properties.app.model.Deposit
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, Timestamp, timestampOrdering }
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
@@ -62,28 +63,7 @@ trait SpringfieldType {
     ReplaceField("id", Node.globalIdField[DataContext, Springfield]),
   )
 
-  @GraphQLDescription("Properties by which springfields can be ordered")
-  object SpringfieldOrderField extends Enumeration {
-    type SpringfieldOrderField = Value
-
-    // @formatter:off
-    @GraphQLDescription("Order springfields by timestamp")
-    val TIMESTAMP: SpringfieldOrderField = Value("TIMESTAMP")
-    // @formatter:on
-  }
   implicit val SpringfieldOrderFieldType: EnumType[SpringfieldOrderField.Value] = deriveEnumType()
-
-  case class SpringfieldOrder(field: SpringfieldOrderField.SpringfieldOrderField,
-                              direction: OrderDirection.OrderDirection) extends Ordering[Springfield] {
-    def compare(x: Springfield, y: Springfield): Int = {
-      val orderByField: Ordering[Springfield] = field match {
-        case SpringfieldOrderField.TIMESTAMP =>
-          Ordering[Timestamp].on(_.timestamp)
-      }
-
-      direction.withOrder(orderByField).compare(x, y)
-    }
-  }
   implicit val SpringfieldOrderInputType: InputObjectType[SpringfieldOrder] = deriveInputObjectType(
     InputObjectTypeDescription("Ordering options for springfields"),
     DocumentInputField("field", "The field to order springfields by"),

@@ -16,12 +16,13 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.ordering.{ ContentTypeOrder, ContentTypeOrderField, OrderDirection }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
 import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, DepositResolver }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.contentType.ContentTypeValue.ContentTypeValue
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter, Timestamp, timestampOrdering }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.macros.derive._
 import sangria.marshalling.FromInput
@@ -127,32 +128,7 @@ trait ContentTypeGraphQLType {
     nodeType = ContentTypeType,
   )
 
-  @GraphQLDescription("Properties by which content types can be ordered")
-  object ContentTypeOrderField extends Enumeration {
-    type ContentTypeOrderField = Value
-
-    // @formatter:off
-    @GraphQLDescription("Order content types by value")
-    val VALUE:     ContentTypeOrderField = Value("VALUE")
-    @GraphQLDescription("Order content types by timestamp")
-    val TIMESTAMP: ContentTypeOrderField = Value("TIMESTAMP")
-    // @formatter:on
-  }
   implicit val ContentTypeOrderFieldType: EnumType[ContentTypeOrderField.Value] = deriveEnumType()
-
-  case class ContentTypeOrder(field: ContentTypeOrderField.ContentTypeOrderField,
-                              direction: OrderDirection.OrderDirection) extends Ordering[ContentType] {
-    def compare(x: ContentType, y: ContentType): Int = {
-      val orderByField: Ordering[ContentType] = field match {
-        case ContentTypeOrderField.VALUE =>
-          Ordering[ContentTypeValue].on(_.value)
-        case ContentTypeOrderField.TIMESTAMP =>
-          Ordering[Timestamp].on(_.timestamp)
-      }
-
-      direction.withOrder(orderByField).compare(x, y)
-    }
-  }
   implicit val ContentTypeOrderInputType: InputObjectType[ContentTypeOrder] = deriveInputObjectType(
     InputObjectTypeDescription("Ordering options for content types"),
     DocumentInputField("field", "The field to order content types by"),

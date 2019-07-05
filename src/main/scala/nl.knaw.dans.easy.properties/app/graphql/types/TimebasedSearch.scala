@@ -16,14 +16,13 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.model.{ Timestamp, Timestamped, timestampOrdering }
-import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.schema.{ Argument, OptionInputType, WithArguments }
 
 import scala.Ordering.Implicits._
 import scala.language.postfixOps
 
-trait TimebasedSearch extends DebugEnhancedLogging {
+trait TimebasedSearch {
   this: Scalars =>
 
   case class TimebasedSearchArguments(earlierThan: Option[Timestamp],

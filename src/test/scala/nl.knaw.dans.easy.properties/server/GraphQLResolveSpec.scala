@@ -667,6 +667,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     depositDao.search _ expects Seq(filters3, filters1, filters2) once() returning Seq(
       filters1 -> Seq(deposit1, deposit2, deposit3),
       filters2 -> Seq(deposit1, deposit2, deposit3),
+      filters3 -> Seq(deposit1, deposit2, deposit3),
     ).asRight
 
     runQuery(input)
