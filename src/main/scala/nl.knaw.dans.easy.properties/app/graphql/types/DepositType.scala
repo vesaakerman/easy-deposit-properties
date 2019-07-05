@@ -56,6 +56,7 @@ trait DepositType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
+  // lazy because we need it before being declared
   lazy val depositBagNameFilterArgument: Argument[Option[String]] = Argument(
     name = "bagName",
     argumentType = OptionInputType(StringType),
@@ -330,7 +331,7 @@ trait DepositType {
 
   implicit val depositIdentifiable: Identifiable[Deposit] = _.id.toString
 
-  // lazy because we need it before being declared (in StateType)
+  // lazy because we need it before being declared
   implicit lazy val DepositType: ObjectType[DataContext, Deposit] = deriveObjectType(
     ObjectTypeDescription("Contains all technical metadata about this deposit."),
     Interfaces[DataContext, Deposit](nodeInterface),
@@ -368,6 +369,7 @@ trait DepositType {
     ReplaceField("depositorId", depositorField),
   )
 
+  // lazy because we need it before being declared
   lazy val ConnectionDefinition(_, depositConnectionType) = ExtendedConnection.definition[DataContext, ExtendedConnection, Deposit](
     name = "Deposit",
     nodeType = DepositType,

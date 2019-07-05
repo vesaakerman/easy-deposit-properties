@@ -122,7 +122,7 @@ trait CuratorType {
       .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
-  implicit lazy val CuratorType: ObjectType[DataContext, Curator] = deriveObjectType(
+  implicit val CuratorType: ObjectType[DataContext, Curator] = deriveObjectType(
     ObjectTypeDescription("Data manager responsible for curating this deposit."),
     Interfaces[DataContext, Curator](nodeInterface),
     DocumentField("userId", "The data manager's username in EASY."),

@@ -109,7 +109,7 @@ trait IngestStepType {
       .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
-  implicit lazy val IngestStepType: ObjectType[DataContext, IngestStep] = deriveObjectType(
+  implicit val IngestStepType: ObjectType[DataContext, IngestStep] = deriveObjectType(
     ObjectTypeDescription("The ingest step of the deposit."),
     Interfaces[DataContext, IngestStep](nodeInterface),
     DocumentField("step", "The label of the ingest step."),
