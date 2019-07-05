@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import java.util.UUID
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, DepositResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
 import sangria.relay.{ GlobalId, Node, NodeDefinition }
 import sangria.schema.Context
 
@@ -33,7 +33,7 @@ trait NodeType {
     with ContentTypeGraphQLType =>
 
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[DataContext, Unit]) => {
-    if (id.typeName == "Deposit") ctx.ctx.repo.deposits.find(UUID.fromString(id.id)).map(Option(_)).toTry
+    if (id.typeName == "Deposit") DepositResolver.depositById(UUID.fromString(id.id))(ctx.ctx)
     else if (id.typeName == "State") StateResolver.stateById(id.id)(ctx.ctx)
     else if (id.typeName == "IngestStep") IngestStepResolver.ingestStepById(id.id)(ctx.ctx)
     else if (id.typeName == "Identifier") IdentifierResolver.identifierById(id.id)(ctx.ctx)

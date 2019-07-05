@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, DepositResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentTypeValue, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curation.InputCuration
 import nl.knaw.dans.easy.properties.app.model.identifier.{ IdentifierType, InputIdentifier }
@@ -284,7 +284,7 @@ trait MutationType {
   private val depositField: Field[DataContext, AddDepositPayload] = Field(
     name = "deposit",
     fieldType = OptionType(DepositType),
-    resolve = ctx => ctx.ctx.repo.deposits.find(ctx.value.depositId).toTry,
+    resolve = ctx => DepositResolver.depositById(ctx.value.depositId)(ctx.ctx),
   )
   private val stateField: Field[DataContext, UpdateStatePayload] = Field(
     name = "state",

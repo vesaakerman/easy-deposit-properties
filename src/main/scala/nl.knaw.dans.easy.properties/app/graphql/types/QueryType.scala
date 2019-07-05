@@ -85,7 +85,7 @@ trait QueryType {
     description = Some("Get the technical metadata of the deposit identified by 'id'."),
     arguments = List(depositIdArgument),
     fieldType = OptionType(DepositType),
-    resolve = getDeposit,
+    resolve = getDeposit(_),
   )
   private val depositsField: Field[DataContext, Unit] = Field(
     name = "deposits",
@@ -126,10 +126,8 @@ trait QueryType {
     resolve = getIdentifier,
   )
 
-  private def getDeposit(context: Context[DataContext, Unit]): Try[Deposit] = {
-    context.ctx.repo.deposits
-      .find(context.arg(depositIdArgument))
-      .toTry
+  private def getDeposit(implicit context: Context[DataContext, Unit]): DeferredValue[DataContext, Option[Deposit]] = {
+    DepositResolver.depositById(context.arg(depositIdArgument))
   }
 
   private def getDeposits(implicit context: Context[DataContext, Unit]): DeferredValue[DataContext, Seq[Deposit]] = {

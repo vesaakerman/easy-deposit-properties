@@ -1,0 +1,20 @@
+query {
+    nodes(ids: [
+        "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDI=",
+        "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDU=",
+        "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDQ=",
+        "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDE=",
+        "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDM="
+    ]){
+        ... on Deposit {
+            id
+            depositId
+            creationTimestamp
+            state {
+                label
+                description
+                timestamp
+            }
+        }
+    }
+}

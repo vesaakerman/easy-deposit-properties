@@ -40,11 +40,13 @@ class DemoDepositDao(implicit depositRepo: DepositRepo,
     depositRepo.values.toSeq.asRight
   }
 
-  override def find(id: DepositId): QueryErrorOr[Deposit] = {
-    trace(id)
-    depositRepo.get(id)
-      .map(_.asRight)
-      .getOrElse(DepositDoesNotExistError(id).asLeft)
+  private def find(id: DepositId): QueryErrorOr[Option[Deposit]] = {
+    depositRepo.get(id).asRight
+  }
+  
+  override def find(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Deposit])]] = {
+    trace(ids)
+    ids.toList.traverse(id => find(id).tupleLeft(id))
   }
 
   private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
