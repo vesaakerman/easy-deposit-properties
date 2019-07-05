@@ -23,8 +23,6 @@ import sangria.macros.derive._
 import sangria.relay.Node
 import sangria.schema.{ Context, DeferredValue, EnumType, Field, ObjectType, OptionType }
 
-import scala.util.Try
-
 trait IdentifierGraphQLType {
   this: DepositType with NodeType with MetaTypes with Scalars =>
 

@@ -24,11 +24,9 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamped,
 import nl.knaw.dans.easy.properties.app.repository.{ MaxByOption, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
 import sangria.relay.Node
 
-import scala.collection.mutable
-
 trait DemoDao {
 
-  def getObjectById[T <: Node](id: String)(implicit repo: mutable.Map[_, Seq[T]]): QueryErrorOr[Option[T]] = {
+  def getObjectById[T <: Node](id: String)(implicit repo: Repo[Seq[T]]): QueryErrorOr[Option[T]] = {
     repo.values.toStream.flatten.find(_.id == id).asRight
   }
 
@@ -88,7 +86,7 @@ trait DemoDao {
       .flatMap(depositRepo.get)
       .asRight
   }
-  
+
   def getDepositsByObjectId[T <: Node](ids: Seq[String])(implicit repo: Repo[Seq[T]], depositRepo: DepositRepo): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
     ids.toList.traverse(id => getDepositByObjectId(id).tupleLeft(id))
   }
