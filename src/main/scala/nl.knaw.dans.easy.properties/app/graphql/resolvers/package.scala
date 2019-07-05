@@ -30,25 +30,25 @@ package object resolvers {
   type ByIdFetcher[T] = Fetcher[DataContext, (String, Option[T]), (String, Option[T]), String]
 
   private[resolvers] def fetchById[T](f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Option[T])]]): ByIdFetcher[T] = {
-    Fetcher(f(_)(_).toFuture)
+    Fetcher.caching(f(_)(_).toFuture)
   }
 
   type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, Option[T]), (DepositId, Option[T]), DepositId]
 
   private[resolvers] def fetchCurrent[T](f: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Option[T])]]): CurrentFetcher[T] = {
-    Fetcher(f(_)(_).toFuture)
+    Fetcher.caching(f(_)(_).toFuture)
   }
 
   type AllFetcher[T] = Fetcher[DataContext, (DepositId, Seq[T]), (DepositId, Seq[T]), DepositId]
 
   private[resolvers] def fetchAll[T](f: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Seq[T])]]): AllFetcher[T] = {
-    Fetcher(f(_)(_).toFuture)
+    Fetcher.caching(f(_)(_).toFuture)
   }
 
   type DepositByIdFetcher = Fetcher[DataContext, (String, Option[Deposit]), (String, Option[Deposit]), String]
 
   private[resolvers] def fetchDepositsById(f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Option[Deposit])]]): DepositByIdFetcher = {
-    Fetcher(f(_)(_).toFuture)
+    Fetcher.caching(f(_)(_).toFuture)
   }
 
   private[resolvers] implicit class CollectionExtensions[T](val xs: Seq[T]) extends AnyVal {

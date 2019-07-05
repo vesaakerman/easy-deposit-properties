@@ -24,6 +24,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object DepositPropertiesGraphQLServlet {
 
   def apply(repository: () => Repository): GraphQLServlet[DataContext] = {
-    new GraphQLServlet(DepositSchema, () => DataContext(repository()), deferredResolver)
+    val repo = repository()
+    new GraphQLServlet(DepositSchema, () => DataContext(repo), deferredResolver)
   }
 }

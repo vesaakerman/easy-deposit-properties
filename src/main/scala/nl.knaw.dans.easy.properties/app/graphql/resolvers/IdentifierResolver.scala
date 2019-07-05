@@ -24,13 +24,12 @@ import sangria.schema.DeferredValue
 
 object IdentifierResolver {
 
-  type IdentifiersByType = Fetcher[DataContext, ((DepositId, IdentifierType), Option[Identifier]), ((DepositId, IdentifierType), Option[Identifier]), (DepositId, IdentifierType.Value)]
+  type IdentifiersByTypeFetcher = Fetcher[DataContext, ((DepositId, IdentifierType), Option[Identifier]), ((DepositId, IdentifierType), Option[Identifier]), (DepositId, IdentifierType.Value)]
+  type IdentifiersByTypeAndValueFetcher = Fetcher[DataContext, ((IdentifierType, String), Option[Identifier]), ((IdentifierType, String), Option[Identifier]), (IdentifierType, String)]
 
   lazy val byIdFetcher: ByIdFetcher[Identifier] = fetchById(_.repo.identifiers.getById)
-  lazy val identifiersByTypeFetcher: IdentifiersByType = Fetcher(_.repo.identifiers.getByType(_).toFuture)
-  lazy val identifierTypesAndValuesFetcher = Fetcher((ctx: DataContext, ids: Seq[(IdentifierType, String)]) => {
-    ctx.repo.identifiers.getByTypesAndValues(ids).toFuture
-  })
+  lazy val identifiersByTypeFetcher: IdentifiersByTypeFetcher = Fetcher.caching(_.repo.identifiers.getByType(_).toFuture)
+  lazy val identifierTypesAndValuesFetcher: IdentifiersByTypeAndValueFetcher = Fetcher.caching(_.repo.identifiers.getByTypesAndValues(_).toFuture)
   lazy val identifiersByDepositIdFetcher: AllFetcher[Identifier] = fetchAll(_.repo.identifiers.getAll)
   lazy val depositByIdentifierIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.identifiers.getDepositsById)
 

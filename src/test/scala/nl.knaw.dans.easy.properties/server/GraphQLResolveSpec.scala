@@ -647,9 +647,7 @@ class GraphQLResolveSpec extends TestSupportFixture
     runQuery(input)
   }
 
-  // Currently 'once()' fails, because it is 'repeated 4'.
-  // However, once we got caching working, we should see 'once()' working properly.
-  it should "resolve 'deposit/nested.graphql' with n calls to the repository" in pendingUntilFixed {
+  it should "resolve 'deposit/nested.graphql' with n calls to the repository" in {
     val input = graphqlExamplesDir / "deposit" / "nested.graphql"
 
     val filters = DepositFilters()
