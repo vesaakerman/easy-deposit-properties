@@ -15,9 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
-import cats.syntax.either._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import nl.knaw.dans.easy.properties.app.repository.{ QueryError, QueryErrorOr }
+import nl.knaw.dans.easy.properties.app.repository.QueryErrorOr
 import sangria.execution.deferred.{ Fetcher, HasId }
 
 import scala.concurrent.ExecutionContext
@@ -27,6 +26,12 @@ package object resolvers {
   private[resolvers] implicit def executionContext(implicit ctx: DataContext): ExecutionContext = ctx.executionContext
 
   private[resolvers] implicit def keyBasedHasId[K, V]: HasId[(K, V), K] = HasId { case (id, _) => id }
+
+  type ByIdFetcher[T] = Fetcher[DataContext, (String, Option[T]), (String, Option[T]), String]
+  
+  private[resolvers] def fetchById[T](f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Option[T])]]): ByIdFetcher[T] = {
+    Fetcher(f(_)(_).toFuture)
+  }
 
   type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, Option[T]), (DepositId, Option[T]), DepositId]
 

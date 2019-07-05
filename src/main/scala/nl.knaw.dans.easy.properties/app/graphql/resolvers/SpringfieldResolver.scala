@@ -22,9 +22,15 @@ import sangria.schema.DeferredValue
 
 object SpringfieldResolver {
 
+  lazy val byIdFetcher: ByIdFetcher[Springfield] = fetchById(_.repo.springfield.getById)
   lazy val currentSpringfieldsFetcher: CurrentFetcher[Springfield] = fetchCurrent(_.repo.springfield.getCurrent)
   lazy val allSpringfieldsFetcher: AllFetcher[Springfield] = fetchAll(_.repo.springfield.getAll)
   lazy val depositBySpringfieldIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.springfield.getDepositsById)
+
+  def springfieldById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Springfield]] = {
+    DeferredValue(byIdFetcher.defer(id))
+      .map { case (_, optSpringfield) => optSpringfield }
+  }
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Springfield]] = {
     DeferredValue(currentSpringfieldsFetcher.defer(depositId))

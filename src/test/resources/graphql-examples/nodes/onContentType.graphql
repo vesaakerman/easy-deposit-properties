@@ -1,0 +1,8 @@
+query {
+    nodes(ids: ["Q29udGVudFR5cGU6MTA=", "Q29udGVudFR5cGU6MTE="]) {
+        ... on ContentType {
+            value
+            timestamp
+        }
+    }
+}

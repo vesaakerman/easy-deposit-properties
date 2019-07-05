@@ -1,0 +1,8 @@
+query {
+    nodes(ids: ["SW5nZXN0U3RlcDoxMA==", "SW5nZXN0U3RlcDoxMQ==", "SW5nZXN0U3RlcDoxMg==", "SW5nZXN0U3RlcDoxMw==", "SW5nZXN0U3RlcDoxNA==", "SW5nZXN0U3RlcDoxNQ==", "SW5nZXN0U3RlcDoxNg=="]) {
+        ... on IngestStep {
+            step
+            timestamp
+        }
+    }
+}

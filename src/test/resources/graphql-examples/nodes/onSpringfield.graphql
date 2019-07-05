@@ -1,0 +1,11 @@
+query {
+    nodes(ids: ["U3ByaW5nZmllbGQ6MjA=", "U3ByaW5nZmllbGQ6MjE=", "U3ByaW5nZmllbGQ6MTA="]) {
+        ... on Springfield {
+            domain
+            user
+            collection
+            playmode
+            timestamp
+        }
+    }
+}

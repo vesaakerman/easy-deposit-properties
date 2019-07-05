@@ -41,13 +41,13 @@ object GraphQLSchema extends Scalars
   val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
   lazy val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(
     DepositResolver.depositsFetcher, DepositResolver.lastModifiedFetcher,
-    StateResolver.currentStatesFetcher, StateResolver.allStatesFetcher, StateResolver.depositByStateIdFetcher,
-    IngestStepResolver.currentIngestStepsFetcher, IngestStepResolver.allIngestStepsFetcher, IngestStepResolver.depositByIngestStepIdFetcher,
-    IdentifierResolver.identifiersByDepositIdFetcher, IdentifierResolver.identifiersByTypeFetcher, IdentifierResolver.depositByIdentifierIdFetcher,
+    StateResolver.byIdFetcher, StateResolver.currentStatesFetcher, StateResolver.allStatesFetcher, StateResolver.depositByStateIdFetcher,
+    IngestStepResolver.byIdFetcher, IngestStepResolver.currentIngestStepsFetcher, IngestStepResolver.allIngestStepsFetcher, IngestStepResolver.depositByIngestStepIdFetcher,
+    IdentifierResolver.byIdFetcher, IdentifierResolver.identifiersByDepositIdFetcher, IdentifierResolver.identifiersByTypeFetcher, IdentifierResolver.depositByIdentifierIdFetcher,
     DoiEventResolver.currentDoisRegisteredFetcher, DoiEventResolver.allDoisRegisteredFetcher,
     DoiEventResolver.currentDoisActionFetcher, DoiEventResolver.allDoisActionFetcher,
-    CurationResolver.currentCurationsFetcher, CurationResolver.allCurationsFetcher, CurationResolver.depositByCurationIdFetcher,
-    SpringfieldResolver.currentSpringfieldsFetcher, SpringfieldResolver.allSpringfieldsFetcher, SpringfieldResolver.depositBySpringfieldIdFetcher,
-    ContentTypeResolver.currentContentTypesFetcher, ContentTypeResolver.allContentTypesFetcher, ContentTypeResolver.depositByContentTypeIdFetcher,
+    CurationResolver.byIdFetcher, CurationResolver.currentCurationsFetcher, CurationResolver.allCurationsFetcher, CurationResolver.depositByCurationIdFetcher,
+    SpringfieldResolver.byIdFetcher, SpringfieldResolver.currentSpringfieldsFetcher, SpringfieldResolver.allSpringfieldsFetcher, SpringfieldResolver.depositBySpringfieldIdFetcher,
+    ContentTypeResolver.byIdFetcher, ContentTypeResolver.currentContentTypesFetcher, ContentTypeResolver.allContentTypesFetcher, ContentTypeResolver.depositByContentTypeIdFetcher,
   )
 }

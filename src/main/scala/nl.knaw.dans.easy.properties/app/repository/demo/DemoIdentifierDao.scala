@@ -28,9 +28,14 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 class DemoIdentifierDao(implicit repo: IdentifierRepo, depositRepo: DepositRepo) extends IdentifierDao with DemoDao with DebugEnhancedLogging {
 
-  override def getById(id: String): QueryErrorOr[Option[Identifier]] = {
+  private def getById(id: String): QueryErrorOr[Option[Identifier]] = {
     trace(id)
     repo.values.toStream.find(_.id == id).asRight
+  }
+  
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Identifier])]] = {
+    trace(ids)
+    ids.toList.traverse(id => getById(id).tupleLeft(id))
   }
 
   override def getByType(ids: Seq[(DepositId, IdentifierType)]): QueryErrorOr[Seq[((DepositId, IdentifierType), Option[Identifier])]] = {

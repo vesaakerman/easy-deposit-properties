@@ -1,0 +1,9 @@
+query {
+    nodes(ids: ["Q3VyYXRvcjoxMA==", "Q3VyYXRvcjoxMQ=="]) {
+        ... on Curator {
+            userId
+            email
+            timestamp
+        }
+    }
+}

@@ -22,9 +22,9 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 class DemoIngestStepDao(implicit repo: IngestStepRepo, depositRepo: DepositRepo) extends IngestStepDao with DemoDao with DebugEnhancedLogging {
 
-  override def getById(id: String): QueryErrorOr[Option[IngestStep]] = {
-    trace(id)
-    getObjectById(id)
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[IngestStep])]] = {
+    trace(ids)
+    getObjectsById(ids)
   }
 
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IngestStep])]] = {

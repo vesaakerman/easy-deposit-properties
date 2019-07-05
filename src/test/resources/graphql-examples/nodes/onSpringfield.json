@@ -1,0 +1,27 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "domain": "domain1",
+        "user": "user1",
+        "collection": "collection1",
+        "playmode": "CONTINUOUS",
+        "timestamp": "2019-02-02T00:00:00.000+01:00"
+      },
+      {
+        "domain": "domain2",
+        "user": "user2",
+        "collection": "collection2",
+        "playmode": "CONTINUOUS",
+        "timestamp": "2019-02-02T02:02:00.000+01:00"
+      },
+      {
+        "domain": "domain1",
+        "user": "user1",
+        "collection": "collection1",
+        "playmode": "CONTINUOUS",
+        "timestamp": "2019-01-01T00:00:00.000+01:00"
+      }
+    ]
+  }
+}

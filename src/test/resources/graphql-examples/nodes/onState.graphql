@@ -1,0 +1,10 @@
+query {
+    nodes(ids: ["U3RhdGU6MTA=", "U3RhdGU6MTE=", "U3RhdGU6MTI=", "U3RhdGU6MTM=", "U3RhdGU6MTQ=", "U3RhdGU6MTU="]) {
+        ... on State {
+            id
+            label
+            description
+            timestamp
+        }
+    }
+}

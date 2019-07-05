@@ -22,9 +22,9 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 class DemoCurationDao(implicit repo: CurationRepo, depositRepo: DepositRepo) extends CurationDao with DemoDao with DebugEnhancedLogging {
 
-  override def getById(id: String): QueryErrorOr[Option[Curation]] = {
-    trace(id)
-    getObjectById(id)
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Curation])]] = {
+    trace(ids)
+    getObjectsById(ids)
   }
 
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curation])]] = {

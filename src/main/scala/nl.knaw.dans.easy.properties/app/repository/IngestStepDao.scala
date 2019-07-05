@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputInge
 
 trait IngestStepDao {
 
-  def getById(id: String): QueryErrorOr[Option[IngestStep]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[IngestStep])]]
 
   def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IngestStep])]]
 

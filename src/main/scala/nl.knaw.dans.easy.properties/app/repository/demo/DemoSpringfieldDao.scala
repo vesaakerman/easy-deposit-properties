@@ -22,9 +22,9 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 class DemoSpringfieldDao(implicit repo: SpringfieldRepo, depositRepo: DepositRepo) extends SpringfieldDao with DemoDao with DebugEnhancedLogging {
 
-  override def getById(id: String): QueryErrorOr[Option[Springfield]] = {
-    trace(id)
-    getObjectById(id)
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Springfield])]] = {
+    trace(ids)
+    getObjectsById(ids)
   }
 
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Springfield])]] = {

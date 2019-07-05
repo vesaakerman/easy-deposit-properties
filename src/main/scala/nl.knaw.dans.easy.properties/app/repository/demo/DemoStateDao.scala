@@ -15,16 +15,16 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.demo
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.repository.{ MutationErrorOr, QueryErrorOr, StateDao }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 class DemoStateDao(implicit repo: StateRepo, depositRepo: DepositRepo) extends StateDao with DemoDao with DebugEnhancedLogging {
 
-  override def getById(id: String): QueryErrorOr[Option[State]] = {
-    trace(id)
-    getObjectById(id)
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[State])]] = {
+    trace(ids)
+    getObjectsById(ids)
   }
 
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[State])]] = {

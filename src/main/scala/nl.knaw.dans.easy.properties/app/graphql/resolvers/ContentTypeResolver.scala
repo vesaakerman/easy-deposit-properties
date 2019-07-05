@@ -22,9 +22,15 @@ import sangria.schema.DeferredValue
 
 object ContentTypeResolver {
 
+  lazy val byIdFetcher: ByIdFetcher[ContentType] = fetchById(_.repo.contentType.getById)
   lazy val currentContentTypesFetcher: CurrentFetcher[ContentType] = fetchCurrent(_.repo.contentType.getCurrent)
   lazy val allContentTypesFetcher: AllFetcher[ContentType] = fetchAll(_.repo.contentType.getAll)
   lazy val depositByContentTypeIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.contentType.getDepositsById)
+
+  def contentTypeById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[ContentType]] = {
+    DeferredValue(byIdFetcher.defer(id))
+      .map { case (_, optContentType) => optContentType }
+  }
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[ContentType]] = {
     DeferredValue(currentContentTypesFetcher.defer(depositId))

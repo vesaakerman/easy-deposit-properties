@@ -1,0 +1,10 @@
+query {
+    nodes(ids: ["SWRlbnRpZmllcjoxMg==", "SWRlbnRpZmllcjoxMQ==", "SWRlbnRpZmllcjoxMw==", "SWRlbnRpZmllcjoxNA=="]) {
+        ... on Identifier {
+            id
+            type
+            value
+            timestamp
+        }
+    }
+}

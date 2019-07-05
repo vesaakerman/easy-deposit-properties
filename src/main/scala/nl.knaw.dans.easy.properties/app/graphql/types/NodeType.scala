@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import java.util.UUID
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
 import sangria.relay.{ GlobalId, Node, NodeDefinition }
 import sangria.schema.Context
 
@@ -33,12 +34,12 @@ trait NodeType {
 
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[DataContext, Unit]) => {
     if (id.typeName == "Deposit") ctx.ctx.repo.deposits.find(UUID.fromString(id.id)).map(Option(_)).toTry
-    else if (id.typeName == "State") ctx.ctx.repo.states.getById(id.id).toTry
-    else if (id.typeName == "IngestStep") ctx.ctx.repo.ingestSteps.getById(id.id).toTry
-    else if (id.typeName == "Identifier") ctx.ctx.repo.identifiers.getById(id.id).toTry
-    else if (id.typeName == "Curator") ctx.ctx.repo.curation.getById(id.id).map(_.map(_.getCurator)).toTry
-    else if (id.typeName == "Springfield") ctx.ctx.repo.springfield.getById(id.id).toTry
-    else if (id.typeName == "ContentType") ctx.ctx.repo.contentType.getById(id.id).toTry
+    else if (id.typeName == "State") StateResolver.stateById(id.id)(ctx.ctx)
+    else if (id.typeName == "IngestStep") IngestStepResolver.ingestStepById(id.id)(ctx.ctx)
+    else if (id.typeName == "Identifier") IdentifierResolver.identifierById(id.id)(ctx.ctx)
+    else if (id.typeName == "Curator") CurationResolver.curationById(id.id)(ctx.ctx).map(_.map(_.getCurator))(ctx.ctx.executionContext)
+    else if (id.typeName == "Springfield") SpringfieldResolver.springfieldById(id.id)(ctx.ctx)
+    else if (id.typeName == "ContentType") ContentTypeResolver.contentTypeById(id.id)(ctx.ctx)
     else None
   }, Node.possibleNodeTypes[DataContext, Node](DepositType, StateType, IngestStepType, IdentifierObjectType, CurationType, SpringfieldType, ContentTypeType))
 }

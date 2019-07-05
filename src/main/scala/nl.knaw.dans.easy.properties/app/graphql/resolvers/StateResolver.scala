@@ -22,10 +22,16 @@ import sangria.schema.DeferredValue
 
 object StateResolver {
 
+  lazy val byIdFetcher: ByIdFetcher[State] = fetchById(_.repo.states.getById)
   lazy val currentStatesFetcher: CurrentFetcher[State] = fetchCurrent(_.repo.states.getCurrent)
   lazy val allStatesFetcher: AllFetcher[State] = fetchAll(_.repo.states.getAll)
   lazy val depositByStateIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.states.getDepositsById)
 
+  def stateById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[State]] = {
+    DeferredValue(byIdFetcher.defer(id))
+      .map { case (_, optState) => optState }
+  }
+  
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[State]] = {
     DeferredValue(currentStatesFetcher.defer(depositId))
       .map { case (_, optState) => optState }

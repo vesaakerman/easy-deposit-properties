@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputCo
 
 trait ContentTypeDao {
 
-  def getById(id: String): QueryErrorOr[Option[ContentType]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[ContentType])]]
 
   def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[ContentType])]]
 

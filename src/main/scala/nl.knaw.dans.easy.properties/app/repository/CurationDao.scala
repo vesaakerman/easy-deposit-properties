@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration
 
 trait CurationDao {
 
-  def getById(id: String): QueryErrorOr[Option[Curation]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Curation])]]
 
   def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curation])]]
 

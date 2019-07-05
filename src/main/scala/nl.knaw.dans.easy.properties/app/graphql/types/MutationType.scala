@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentTypeValue, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curation.InputCuration
 import nl.knaw.dans.easy.properties.app.model.identifier.{ IdentifierType, InputIdentifier }
@@ -288,17 +289,17 @@ trait MutationType {
   private val stateField: Field[DataContext, UpdateStatePayload] = Field(
     name = "state",
     fieldType = OptionType(StateType),
-    resolve = ctx => ctx.ctx.repo.states.getById(ctx.value.objectId).toTry,
+    resolve = ctx => StateResolver.stateById(ctx.value.objectId)(ctx.ctx),
   )
   private val ingestStepField: Field[DataContext, UpdateIngestStepPayload] = Field(
     name = "ingestStep",
     fieldType = OptionType(IngestStepType),
-    resolve = ctx => ctx.ctx.repo.ingestSteps.getById(ctx.value.objectId).toTry,
+    resolve = ctx => IngestStepResolver.ingestStepById(ctx.value.objectId)(ctx.ctx),
   )
   private val identifierField: Field[DataContext, AddIdentifierPayload] = Field(
     name = "identifier",
     fieldType = OptionType(IdentifierObjectType),
-    resolve = ctx => ctx.ctx.repo.identifiers.getById(ctx.value.objectId).toTry,
+    resolve = ctx => IdentifierResolver.identifierById(ctx.value.objectId)(ctx.ctx),
   )
   private val doiRegisteredField: Field[DataContext, SetDoiRegisteredPayload] = Field(
     name = "doiRegistered",
@@ -313,17 +314,17 @@ trait MutationType {
   private val curationField: Field[DataContext, SetCurationPayload] = Field(
     name = "curation",
     fieldType = OptionType(CurationType),
-    resolve = ctx => ctx.ctx.repo.curation.getById(ctx.value.objectId).toTry
+    resolve = ctx => CurationResolver.curationById(ctx.value.objectId)(ctx.ctx)
   )
   private val springfieldField: Field[DataContext, SetSpringfieldPayload] = Field(
     name = "springfield",
     fieldType = OptionType(SpringfieldType),
-    resolve = ctx => ctx.ctx.repo.springfield.getById(ctx.value.objectId).toTry,
+    resolve = ctx => SpringfieldResolver.springfieldById(ctx.value.objectId)(ctx.ctx),
   )
   private val contentTypeField: Field[DataContext, SetContentTypePayload] = Field(
     name = "contentType",
     fieldType = OptionType(ContentTypeType),
-    resolve = ctx => ctx.ctx.repo.contentType.getById(ctx.value.objectId).toTry,
+    resolve = ctx => ContentTypeResolver.contentTypeById(ctx.value.objectId)(ctx.ctx),
   )
 
   private val addDepositField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, AddDepositPayload, InputObjectType.DefaultInput](

@@ -21,7 +21,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIden
 
 trait IdentifierDao {
 
-  def getById(id: String): QueryErrorOr[Option[Identifier]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Identifier])]]
 
   def getByType(ids: Seq[(DepositId, IdentifierType)]): QueryErrorOr[Seq[((DepositId, IdentifierType), Option[Identifier])]]
 
