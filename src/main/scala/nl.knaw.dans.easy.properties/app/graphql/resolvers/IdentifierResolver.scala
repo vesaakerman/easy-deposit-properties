@@ -27,11 +27,11 @@ object IdentifierResolver {
   type IdentifiersByTypeFetcher = Fetcher[DataContext, ((DepositId, IdentifierType), Option[Identifier]), ((DepositId, IdentifierType), Option[Identifier]), (DepositId, IdentifierType.Value)]
   type IdentifiersByTypeAndValueFetcher = Fetcher[DataContext, ((IdentifierType, String), Option[Identifier]), ((IdentifierType, String), Option[Identifier]), (IdentifierType, String)]
 
-  lazy val byIdFetcher: ByIdFetcher[Identifier] = fetchById(_.repo.identifiers.getById)
-  lazy val identifiersByTypeFetcher: IdentifiersByTypeFetcher = Fetcher.caching(_.repo.identifiers.getByType(_).toFuture)
-  lazy val identifierTypesAndValuesFetcher: IdentifiersByTypeAndValueFetcher = Fetcher.caching(_.repo.identifiers.getByTypesAndValues(_).toFuture)
-  lazy val identifiersByDepositIdFetcher: AllFetcher[Identifier] = fetchAll(_.repo.identifiers.getAll)
-  lazy val depositByIdentifierIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.identifiers.getDepositsById)
+  val byIdFetcher: ByIdFetcher[Identifier] = fetchById(_.repo.identifiers.getById)
+  val identifiersByTypeFetcher: IdentifiersByTypeFetcher = Fetcher.caching(_.repo.identifiers.getByType(_).toFuture)
+  val identifierTypesAndValuesFetcher: IdentifiersByTypeAndValueFetcher = Fetcher.caching(_.repo.identifiers.getByTypesAndValues(_).toFuture)
+  val identifiersByDepositIdFetcher: AllFetcher[Identifier] = fetchAll(_.repo.identifiers.getAll)
+  val depositByIdentifierIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.identifiers.getDepositsById)
 
   def identifierById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Identifier]] = {
     DeferredValue(byIdFetcher.defer(id))

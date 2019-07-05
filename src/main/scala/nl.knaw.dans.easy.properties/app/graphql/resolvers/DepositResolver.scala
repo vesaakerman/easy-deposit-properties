@@ -26,9 +26,9 @@ object DepositResolver {
   type DepositByIdFetcher = Fetcher[DataContext, (DepositId, Option[Deposit]), (DepositId, Option[Deposit]), DepositId]
   type DepositFetcher = Fetcher[DataContext, (DepositFilters, Seq[Deposit]), (DepositFilters, Seq[Deposit]), DepositFilters]
 
-  lazy val byIdFetcher: DepositByIdFetcher = Fetcher.caching(_.repo.deposits.find(_).toFuture)
-  lazy val depositsFetcher: DepositFetcher = Fetcher.caching(_.repo.deposits.search(_).toFuture)
-  lazy val lastModifiedFetcher: CurrentFetcher[Timestamp] = fetchCurrent(_.repo.deposits.lastModified)
+  val byIdFetcher: DepositByIdFetcher = Fetcher.caching(_.repo.deposits.find(_).toFuture)
+  val depositsFetcher: DepositFetcher = Fetcher.caching(_.repo.deposits.search(_).toFuture)
+  val lastModifiedFetcher: CurrentFetcher[Timestamp] = fetchCurrent(_.repo.deposits.lastModified)
 
   def depositById(id: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
     DeferredValue(byIdFetcher.defer(id))

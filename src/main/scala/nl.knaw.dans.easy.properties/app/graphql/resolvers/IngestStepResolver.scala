@@ -22,10 +22,10 @@ import sangria.schema.DeferredValue
 
 object IngestStepResolver {
 
-  lazy val byIdFetcher: ByIdFetcher[IngestStep] = fetchById(_.repo.ingestSteps.getById)
-  lazy val currentIngestStepsFetcher: CurrentFetcher[IngestStep] = fetchCurrent(_.repo.ingestSteps.getCurrent)
-  lazy val allIngestStepsFetcher: AllFetcher[IngestStep] = fetchAll(_.repo.ingestSteps.getAll)
-  lazy val depositByIngestStepIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.ingestSteps.getDepositsById)
+  val byIdFetcher: ByIdFetcher[IngestStep] = fetchById(_.repo.ingestSteps.getById)
+  val currentIngestStepsFetcher: CurrentFetcher[IngestStep] = fetchCurrent(_.repo.ingestSteps.getCurrent)
+  val allIngestStepsFetcher: AllFetcher[IngestStep] = fetchAll(_.repo.ingestSteps.getAll)
+  val depositByIngestStepIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.ingestSteps.getDepositsById)
 
   def ingestStepById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[IngestStep]] = {
     DeferredValue(byIdFetcher.defer(id))

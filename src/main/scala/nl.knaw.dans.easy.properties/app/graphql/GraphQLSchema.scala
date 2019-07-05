@@ -39,7 +39,7 @@ object GraphQLSchema extends Scalars
   with MutationType {
 
   val DepositSchema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
-  lazy val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(
+  val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(
     DepositResolver.byIdFetcher, DepositResolver.depositsFetcher, DepositResolver.lastModifiedFetcher,
     StateResolver.byIdFetcher, StateResolver.currentStatesFetcher, StateResolver.allStatesFetcher, StateResolver.depositByStateIdFetcher,
     IngestStepResolver.byIdFetcher, IngestStepResolver.currentIngestStepsFetcher, IngestStepResolver.allIngestStepsFetcher, IngestStepResolver.depositByIngestStepIdFetcher,

@@ -22,10 +22,10 @@ import sangria.schema.DeferredValue
 
 object DoiEventResolver {
 
-  lazy val currentDoisRegisteredFetcher: CurrentFetcher[DoiRegisteredEvent] = fetchCurrent(_.repo.doiRegistered.getCurrent)
-  lazy val allDoisRegisteredFetcher: AllFetcher[DoiRegisteredEvent] = fetchAll(_.repo.doiRegistered.getAll)
-  lazy val currentDoisActionFetcher: CurrentFetcher[DoiActionEvent] = fetchCurrent(_.repo.doiAction.getCurrent)
-  lazy val allDoisActionFetcher: AllFetcher[DoiActionEvent] = fetchAll(_.repo.doiAction.getAll)
+  val currentDoisRegisteredFetcher: CurrentFetcher[DoiRegisteredEvent] = fetchCurrent(_.repo.doiRegistered.getCurrent)
+  val allDoisRegisteredFetcher: AllFetcher[DoiRegisteredEvent] = fetchAll(_.repo.doiRegistered.getAll)
+  val currentDoisActionFetcher: CurrentFetcher[DoiActionEvent] = fetchCurrent(_.repo.doiAction.getCurrent)
+  val allDoisActionFetcher: AllFetcher[DoiActionEvent] = fetchAll(_.repo.doiAction.getAll)
 
   def isDoiRegistered(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Boolean]] = {
     DeferredValue(currentDoisRegisteredFetcher.defer(depositId))
