@@ -45,9 +45,13 @@ class DemoIdentifierDao(implicit repo: IdentifierRepo, depositRepo: DepositRepo)
     }.asRight
   }
 
-  override def getByTypeAndValue(idType: IdentifierType, idValue: String): QueryErrorOr[Option[Identifier]] = {
-    trace(idType, idValue)
+  private def getByTypeAndValue(idType: IdentifierType, idValue: String): QueryErrorOr[Option[Identifier]] = {
     repo.values.toStream.find(identifier => identifier.idType == idType && identifier.idValue == idValue).asRight
+  }
+  
+  override def getByTypesAndValues(ids: Seq[(IdentifierType, String)]): QueryErrorOr[Seq[((IdentifierType, String), Option[Identifier])]] = {
+    trace(ids)
+    ids.toList.traverse { case id@(idType, idValue) => getByTypeAndValue(idType, idValue).tupleLeft(id) }
   }
 
   override def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Identifier])]] = {

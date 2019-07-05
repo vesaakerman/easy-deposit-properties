@@ -25,8 +25,6 @@ import sangria.marshalling.FromInput.coercedScalaInput
 import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Argument, Context, DeferredValue, Field, ObjectType, OptionInputType, OptionType, StringType, fields }
 
-import scala.util.Try
-
 trait QueryType {
   this: DepositType
     with DepositorType
@@ -112,7 +110,7 @@ trait QueryType {
       depositorIdArgument,
     ),
     fieldType = OptionType(DepositorType),
-    resolve = getDepositor,
+    resolve = getDepositor(_),
   )
   private val identifierField: Field[DataContext, Unit] = Field(
     name = "identifier",
@@ -122,7 +120,7 @@ trait QueryType {
       identifierValueArgument,
     ),
     fieldType = OptionType(IdentifierObjectType),
-    resolve = getIdentifier,
+    resolve = getIdentifier(_),
   )
 
   private def getDeposit(implicit context: Context[DataContext, Unit]): DeferredValue[DataContext, Option[Deposit]] = {
@@ -145,17 +143,15 @@ trait QueryType {
       .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
-  private def getDepositor(context: Context[DataContext, Unit]): Option[DepositorId] = {
+  private def getDepositor(implicit context: Context[DataContext, Unit]): Option[DepositorId] = {
     context.arg(depositorIdArgument)
   }
 
-  private def getIdentifier(context: Context[DataContext, Unit]): Try[Option[Identifier]] = {
-    context.ctx.repo.identifiers
-      .getByTypeAndValue(
-        idType = context.arg(identifierTypeArgument),
-        idValue = context.arg(identifierValueArgument),
-      )
-      .toTry
+  private def getIdentifier(implicit context: Context[DataContext, Unit]): DeferredValue[DataContext, Option[Identifier]] = {
+    IdentifierResolver.identifierByTypeAndValue(
+      idType = context.arg(identifierTypeArgument),
+      idValue = context.arg(identifierValueArgument),
+    )
   }
 
   implicit val QueryType: ObjectType[DataContext, Unit] = ObjectType(

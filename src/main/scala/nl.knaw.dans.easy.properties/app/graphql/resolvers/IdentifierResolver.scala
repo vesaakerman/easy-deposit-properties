@@ -28,6 +28,9 @@ object IdentifierResolver {
 
   lazy val byIdFetcher: ByIdFetcher[Identifier] = fetchById(_.repo.identifiers.getById)
   lazy val identifiersByTypeFetcher: IdentifiersByType = Fetcher(_.repo.identifiers.getByType(_).toFuture)
+  lazy val identifierTypesAndValuesFetcher = Fetcher((ctx: DataContext, ids: Seq[(IdentifierType, String)]) => {
+    ctx.repo.identifiers.getByTypesAndValues(ids).toFuture
+  })
   lazy val identifiersByDepositIdFetcher: AllFetcher[Identifier] = fetchAll(_.repo.identifiers.getAll)
   lazy val depositByIdentifierIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.identifiers.getDepositsById)
 
@@ -38,7 +41,12 @@ object IdentifierResolver {
 
   def identifierByType(depositId: DepositId, idType: IdentifierType.Value)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Identifier]] = {
     DeferredValue(identifiersByTypeFetcher.defer(depositId -> idType))
-      .map { case (_, identifier) => identifier }
+      .map { case (_, optIdentifier) => optIdentifier }
+  }
+  
+  def identifierByTypeAndValue(idType: IdentifierType, idValue: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Identifier]] = {
+    DeferredValue(identifierTypesAndValuesFetcher.defer(idType -> idValue))
+      .map { case (_, optIdentifier) => optIdentifier }
   }
 
   def allById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[Identifier]] = {

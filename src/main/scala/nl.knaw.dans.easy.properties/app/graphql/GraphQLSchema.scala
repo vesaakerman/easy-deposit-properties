@@ -43,7 +43,7 @@ object GraphQLSchema extends Scalars
     DepositResolver.byIdFetcher, DepositResolver.depositsFetcher, DepositResolver.lastModifiedFetcher,
     StateResolver.byIdFetcher, StateResolver.currentStatesFetcher, StateResolver.allStatesFetcher, StateResolver.depositByStateIdFetcher,
     IngestStepResolver.byIdFetcher, IngestStepResolver.currentIngestStepsFetcher, IngestStepResolver.allIngestStepsFetcher, IngestStepResolver.depositByIngestStepIdFetcher,
-    IdentifierResolver.byIdFetcher, IdentifierResolver.identifiersByDepositIdFetcher, IdentifierResolver.identifiersByTypeFetcher, IdentifierResolver.depositByIdentifierIdFetcher,
+    IdentifierResolver.byIdFetcher, IdentifierResolver.identifiersByTypeFetcher, IdentifierResolver.identifierTypesAndValuesFetcher, IdentifierResolver.identifiersByDepositIdFetcher, IdentifierResolver.depositByIdentifierIdFetcher,
     DoiEventResolver.currentDoisRegisteredFetcher, DoiEventResolver.allDoisRegisteredFetcher,
     DoiEventResolver.currentDoisActionFetcher, DoiEventResolver.allDoisActionFetcher,
     CurationResolver.byIdFetcher, CurationResolver.currentCurationsFetcher, CurationResolver.allCurationsFetcher, CurationResolver.depositByCurationIdFetcher,

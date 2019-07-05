@@ -25,7 +25,7 @@ trait IdentifierDao {
 
   def getByType(ids: Seq[(DepositId, IdentifierType)]): QueryErrorOr[Seq[((DepositId, IdentifierType), Option[Identifier])]]
 
-  def getByTypeAndValue(idType: IdentifierType, idValue: String): QueryErrorOr[Option[Identifier]]
+  def getByTypesAndValues(ids: Seq[(IdentifierType, String)]): QueryErrorOr[Seq[((IdentifierType, String), Option[Identifier])]]
 
   def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Identifier])]]
 

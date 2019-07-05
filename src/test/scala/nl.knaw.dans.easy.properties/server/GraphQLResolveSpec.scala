@@ -1670,7 +1670,11 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "identifier" / "findWithTypeAndValue" / "plain.graphql"
 
     inSequence {
-      identifierDao.getByTypeAndValue _ expects(IdentifierType.DOI, "10.5072/dans-a1b-cde2") once() returning Some(identifier2).asRight
+      identifierDao.getByTypesAndValues _ expects Seq(
+        IdentifierType.DOI -> "10.5072/dans-a1b-cde2",
+      ) once() returning Seq(
+        (IdentifierType.DOI -> "10.5072/dans-a1b-cde2") -> Some(identifier2),
+      ).asRight
       identifierDao.getDepositsById _ expects Seq(identifier2.id) once() returning Seq(
         identifier2.id -> Some(deposit1),
       ).asRight
