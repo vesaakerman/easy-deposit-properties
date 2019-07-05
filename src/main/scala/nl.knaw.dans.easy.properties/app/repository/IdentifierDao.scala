@@ -15,9 +15,9 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, InputIdentifier }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 
 trait IdentifierDao {
 

@@ -25,17 +25,17 @@ package object server extends DebugEnhancedLogging {
   val defaultExceptionHandler = ExceptionHandler(
     onException = {
       case (_, e) =>
-        logger.error(s"Exception: ${e.getMessage}", e)
+        logger.error(s"Exception: ${ e.getMessage }", e)
         HandledException(e.getMessage)
     },
     onViolation = {
       case (_, e) =>
-        logger.error(s"Violation: ${e.errorMessage}", e)
+        logger.error(s"Violation: ${ e.errorMessage }", e)
         HandledException(e.errorMessage)
     },
     onUserFacingError = {
       case (_, e) =>
-        logger.error(s"User facing error: ${e.getMessage}", e)
+        logger.error(s"User facing error: ${ e.getMessage }", e)
         HandledException(e.getMessage)
     },
   )

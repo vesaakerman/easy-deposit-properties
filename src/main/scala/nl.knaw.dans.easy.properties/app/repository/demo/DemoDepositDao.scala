@@ -43,7 +43,7 @@ class DemoDepositDao(implicit depositRepo: DepositRepo,
   private def find(id: DepositId): QueryErrorOr[Option[Deposit]] = {
     depositRepo.get(id).asRight
   }
-  
+
   override def find(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Deposit])]] = {
     trace(ids)
     ids.toList.traverse(id => find(id).tupleLeft(id))

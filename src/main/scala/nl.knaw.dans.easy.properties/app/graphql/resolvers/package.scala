@@ -28,7 +28,7 @@ package object resolvers {
   private[resolvers] implicit def keyBasedHasId[K, V]: HasId[(K, V), K] = HasId { case (id, _) => id }
 
   type ByIdFetcher[T] = Fetcher[DataContext, (String, Option[T]), (String, Option[T]), String]
-  
+
   private[resolvers] def fetchById[T](f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Option[T])]]): ByIdFetcher[T] = {
     Fetcher(f(_)(_).toFuture)
   }
@@ -46,7 +46,7 @@ package object resolvers {
   }
 
   type DepositByIdFetcher = Fetcher[DataContext, (String, Option[Deposit]), (String, Option[Deposit]), String]
-  
+
   private[resolvers] def fetchDepositsById(f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Option[Deposit])]]): DepositByIdFetcher = {
     Fetcher(f(_)(_).toFuture)
   }

@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, InputContentType }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 
 trait ContentTypeDao {
 

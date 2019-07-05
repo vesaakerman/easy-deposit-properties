@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.demo
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.repository.{ IngestStepDao, MutationErrorOr, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 

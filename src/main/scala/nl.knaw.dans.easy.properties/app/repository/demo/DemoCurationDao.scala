@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.demo
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.repository.{ CurationDao, MutationErrorOr, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 

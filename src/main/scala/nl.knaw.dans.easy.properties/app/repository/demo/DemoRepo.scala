@@ -17,14 +17,14 @@ package nl.knaw.dans.easy.properties.app.repository.demo
 
 import java.util.{ TimeZone, UUID }
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue }
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
-import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent }
 import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, CurationDao, DepositDao, DoiActionDao, DoiRegisteredDao, IdentifierDao, IngestStepDao, Repository, SpringfieldDao, StateDao }
 import org.joda.time.{ DateTime, DateTimeZone }
 
@@ -168,7 +168,7 @@ class DemoRepo {
   val curationDao: CurationDao = new DemoCurationDao
   val springfieldDao: SpringfieldDao = new DemoSpringfieldDao
   val contentTypeDao: ContentTypeDao = new DemoContentTypeDao
-  
+
   def repository: Repository = Repository(
     depositDao,
     stateDao,

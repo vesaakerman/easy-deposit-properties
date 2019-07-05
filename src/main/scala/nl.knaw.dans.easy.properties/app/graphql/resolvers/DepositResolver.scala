@@ -39,7 +39,7 @@ object DepositResolver {
     DeferredValue(depositsFetcher.defer(depositFilters))
       .map { case (_, deposits) => deposits }
   }
-  
+
   def lastModified(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Timestamp]] = {
     DeferredValue(lastModifiedFetcher.defer(depositId))
       .map { case (_, lastModified) => lastModified }

@@ -32,7 +32,7 @@ class DemoIdentifierDao(implicit repo: IdentifierRepo, depositRepo: DepositRepo)
     trace(id)
     repo.values.toStream.find(_.id == id).asRight
   }
-  
+
   override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Identifier])]] = {
     trace(ids)
     ids.toList.traverse(id => getById(id).tupleLeft(id))

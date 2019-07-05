@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 
 trait CurationDao {
 
