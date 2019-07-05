@@ -72,7 +72,7 @@ trait DepositType {
     name = "bagName",
     fieldType = OptionType(StringType),
     description = Option("The name of the deposited bag."),
-    resolve = ctx => ctx.value.bagName,
+    resolve = _.value.bagName,
   )
   private val lastModifiedField: Field[DataContext, Deposit] = Field(
     name = "lastModified",
@@ -91,7 +91,7 @@ trait DepositType {
     description = Option("List all states of the deposit."),
     arguments = optStateOrderArgument :: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(stateConnectionType),
-    resolve = ctx => getAllStates(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getAllStates(_),
   )
   private val ingestStepField: Field[DataContext, Deposit] = Field(
     name = "ingestStep",
@@ -104,7 +104,7 @@ trait DepositType {
     description = Option("List all ingest steps of the deposit."),
     arguments = optIngestStepOrderArgument :: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(ingestStepConnectionType),
-    resolve = ctx => getAllIngestSteps(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getAllIngestSteps(_),
   )
   private val depositorField: Field[DataContext, Deposit] = Field(
     name = "depositor",
@@ -160,7 +160,7 @@ trait DepositType {
     description = Some("List all data manager that were ever assigned to this deposit."),
     arguments = optCuratorOrderArgument :: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(curatorConnectionType),
-    resolve = ctx => getAllCurators(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getAllCurators(_),
   )
   private val isNewVersionField: Field[DataContext, Deposit] = Field(
     name = "isNewVersion",
@@ -233,17 +233,20 @@ trait DepositType {
     StateResolver.currentById(context.value.id)
   }
 
-  private def getAllStates(implicit context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[State]] = {
-    StateResolver.allById(context.value.id)(context.ctx).map(timebasedFilterAndSort(optStateOrderArgument))
+  private def getAllStates(implicit context: Context[DataContext, Deposit]): DeferredValue[DataContext, ExtendedConnection[State]] = {
+    StateResolver.allById(context.value.id)(context.ctx)
+      .map(timebasedFilterAndSort(optStateOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   private def getCurrentIngestStep(implicit context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[IngestStep]] = {
     IngestStepResolver.currentById(context.value.id)
   }
 
-  private def getAllIngestSteps(implicit context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[IngestStep]] = {
+  private def getAllIngestSteps(implicit context: Context[DataContext, Deposit]): DeferredValue[DataContext, ExtendedConnection[IngestStep]] = {
     IngestStepResolver.allById(context.value.id)
       .map(timebasedFilterAndSort(optIngestStepOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   private def getDepositor(context: Context[DataContext, Deposit]): DepositorId = {
@@ -280,9 +283,10 @@ trait DepositType {
     CurationResolver.currentCuratorsById(context.value.id)
   }
 
-  private def getAllCurators(implicit context: Context[DataContext, Deposit]): DeferredValue[DataContext, Seq[Curator]] = {
+  private def getAllCurators(implicit context: Context[DataContext, Deposit]): DeferredValue[DataContext, ExtendedConnection[Curator]] = {
     CurationResolver.allCuratorsById(context.value.id)
       .map(timebasedFilterAndSort(optCuratorOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   private def getIsNewVersion(implicit context: Context[DataContext, Deposit]): DeferredValue[DataContext, Option[Boolean]] = {

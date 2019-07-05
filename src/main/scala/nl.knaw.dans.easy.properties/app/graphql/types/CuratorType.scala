@@ -98,14 +98,14 @@ trait CuratorType {
       optDepositOrderArgument,
     ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getDeposits(_),
   )
 
   private def getDepositByCurator(implicit context: Context[DataContext, Curator]): DeferredValue[DataContext, Option[Deposit]] = {
     CurationResolver.depositByCurationId(context.value.id)
   }
 
-  private def getDeposits(implicit context: Context[DataContext, Curator]): DeferredValue[DataContext, Seq[Deposit]] = {
+  private def getDeposits(implicit context: Context[DataContext, Curator]): DeferredValue[DataContext, ExtendedConnection[Deposit]] = {
     val label = context.value.userId
     val curatorFilter = context.arg(seriesFilterArgument)
 
@@ -121,6 +121,7 @@ trait CuratorType {
       curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
       contentTypeFilter = context.arg(depositContentTypeFilterArgument),
     )).map(timebasedFilterAndSort(optDepositOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   implicit lazy val CuratorType: ObjectType[DataContext, Curator] = deriveObjectType(

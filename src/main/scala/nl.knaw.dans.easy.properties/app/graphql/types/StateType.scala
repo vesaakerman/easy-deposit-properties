@@ -98,17 +98,18 @@ trait StateType {
       optDepositOrderArgument,
     ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getDeposits(_),
   )
 
   private def getDepositByState(implicit context: Context[DataContext, State]): DeferredValue[DataContext, Option[Deposit]] = {
     StateResolver.depositByStateId(context.value.id)
   }
 
-  private def getDeposits(implicit context: Context[DataContext, State]): DeferredValue[DataContext, Seq[Deposit]] = {
+  private def getDeposits(implicit context: Context[DataContext, State]): DeferredValue[DataContext, ExtendedConnection[Deposit]] = {
     DepositResolver.findDeposit(DepositFilters(
       stateFilter = Some(DepositStateFilter(context.value.label, context.arg(seriesFilterArgument)))
     )).map(timebasedFilterAndSort(optDepositOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   implicit val StateType: ObjectType[DataContext, State] = deriveObjectType(

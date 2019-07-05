@@ -90,20 +90,18 @@ trait ContentTypeGraphQLType {
       optDepositOrderArgument,
     ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getDeposits(_),
   )
 
   private def getDepositByContentType(implicit context: Context[DataContext, ContentType]): DeferredValue[DataContext, Option[Deposit]] = {
     ContentTypeResolver.depositByContentTypeId(context.value.id)
   }
 
-  private def getDeposits(implicit context: Context[DataContext, ContentType]): DeferredValue[DataContext, Seq[Deposit]] = {
-    val contentType = context.value.value
-    val contentTypeFilter = context.arg(seriesFilterArgument)
-
+  private def getDeposits(implicit context: Context[DataContext, ContentType]): DeferredValue[DataContext, ExtendedConnection[Deposit]] = {
     DepositResolver.findDeposit(DepositFilters(
-      contentTypeFilter = Some(DepositContentTypeFilter(contentType, contentTypeFilter))
+      contentTypeFilter = Some(DepositContentTypeFilter(context.value.value, context.arg(seriesFilterArgument)))
     )).map(timebasedFilterAndSort(optDepositOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   implicit val ContentTypeType: ObjectType[DataContext, ContentType] = deriveObjectType(

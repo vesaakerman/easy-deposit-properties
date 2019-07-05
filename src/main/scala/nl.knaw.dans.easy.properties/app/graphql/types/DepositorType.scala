@@ -59,10 +59,10 @@ trait DepositorType {
       optDepositOrderArgument,
     ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getDeposits(_),
   )
 
-  private def getDeposits(implicit context: Context[DataContext, DepositorId]): DeferredValue[DataContext, Seq[Deposit]] = {
+  private def getDeposits(implicit context: Context[DataContext, DepositorId]): DeferredValue[DataContext, ExtendedConnection[Deposit]] = {
     DepositResolver.findDeposit(DepositFilters(
       depositorId = Some(context.value),
       bagName = context.arg(depositBagNameFilterArgument),
@@ -76,6 +76,7 @@ trait DepositorType {
       curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
       contentTypeFilter = context.arg(depositContentTypeFilterArgument),
     )).map(timebasedFilterAndSort(optDepositOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   implicit val DepositorType: ObjectType[DataContext, DepositorId] = ObjectType(

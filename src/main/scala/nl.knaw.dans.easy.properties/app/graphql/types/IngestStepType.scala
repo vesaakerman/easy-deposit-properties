@@ -97,20 +97,18 @@ trait IngestStepType {
       optDepositOrderArgument,
     ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getDeposits(_),
   )
 
   private def getDepositByIngestStep(implicit context: Context[DataContext, IngestStep]): DeferredValue[DataContext, Option[Deposit]] = {
     IngestStepResolver.depositByIngestStepId(context.value.id)
   }
 
-  private def getDeposits(implicit context: Context[DataContext, IngestStep]): DeferredValue[DataContext, Seq[Deposit]] = {
-    val step = context.value.step
-    val stepFilter = context.arg(seriesFilterArgument)
-
+  private def getDeposits(implicit context: Context[DataContext, IngestStep]): DeferredValue[DataContext, ExtendedConnection[Deposit]] = {
     DepositResolver.findDeposit(DepositFilters(
-      ingestStepFilter = Some(DepositIngestStepFilter(step, stepFilter))
+      ingestStepFilter = Some(DepositIngestStepFilter(context.value.step, context.arg(seriesFilterArgument)))
     )).map(timebasedFilterAndSort(optDepositOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   implicit lazy val IngestStepType: ObjectType[DataContext, IngestStep] = deriveObjectType(

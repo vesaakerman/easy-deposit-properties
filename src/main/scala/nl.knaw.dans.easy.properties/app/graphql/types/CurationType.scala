@@ -75,29 +75,27 @@ trait CurationType {
       optDepositOrderArgument,
     ) ::: timebasedSearchArguments ::: Connection.Args.All,
     fieldType = OptionType(depositConnectionType),
-    resolve = ctx => getDeposits(ctx).map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(ctx))),
+    resolve = getDeposits(_),
   )
 
   private def getDepositByCuration(implicit context: Context[DataContext, Curation]): DeferredValue[DataContext, Option[Deposit]] = {
     CurationResolver.depositByCurationId(context.value.id)
   }
 
-  private def getDeposits(implicit context: Context[DataContext, Curation]): DeferredValue[DataContext, Seq[Deposit]] = {
-    val label = context.value.datamanagerUserId
-    val curatorFilter = context.arg(seriesFilterArgument)
-
+  private def getDeposits(implicit context: Context[DataContext, Curation]): DeferredValue[DataContext, ExtendedConnection[Deposit]] = {
     DepositResolver.findDeposit(DepositFilters(
       bagName = context.arg(depositBagNameFilterArgument),
       stateFilter = context.arg(depositStateFilterArgument),
       ingestStepFilter = context.arg(depositIngestStepFilterArgument),
       doiRegisteredFilter = context.arg(depositDoiRegisteredFilterArgument),
       doiActionFilter = context.arg(depositDoiActionFilterArgument),
-      curatorFilter = Some(DepositCuratorFilter(label, curatorFilter)),
+      curatorFilter = Some(DepositCuratorFilter(context.value.datamanagerUserId, context.arg(seriesFilterArgument))),
       isNewVersionFilter = context.arg(depositIsNewVersionFilterArgument),
       curationRequiredFilter = context.arg(depositCurationRequiredFilterArgument),
       curationPerformedFilter = context.arg(depositCurationPerformedFilterArgument),
       contentTypeFilter = context.arg(depositContentTypeFilterArgument),
     )).map(timebasedFilterAndSort(optDepositOrderArgument))
+      .map(ExtendedConnection.connectionFromSeq(_, ConnectionArgs(context)))
   }
 
   implicit val CurationType: ObjectType[DataContext, Curation] = deriveObjectType(
