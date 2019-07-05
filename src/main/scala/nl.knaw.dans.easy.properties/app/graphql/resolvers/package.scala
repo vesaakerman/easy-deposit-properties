@@ -23,7 +23,7 @@ import scala.concurrent.ExecutionContext
 
 package object resolvers {
 
-  private[resolvers] implicit def executionContext(implicit ctx: DataContext): ExecutionContext = ctx.executionContext
+  implicit def executionContext(implicit ctx: DataContext): ExecutionContext = ctx.executionContext
 
   private[resolvers] implicit def keyBasedHasId[K, V]: HasId[(K, V), K] = HasId { case (id, _) => id }
 

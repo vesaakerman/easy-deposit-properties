@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.ordering.{ CuratorOrder, CuratorOrderField, OrderDirection }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ CurationResolver, DepositResolver }
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ CurationResolver, DepositResolver, executionContext }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.curator.{ Curator, DepositCuratorFilter }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter }
@@ -28,8 +28,6 @@ import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
 import sangria.relay._
 import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait CuratorType {
   this: DepositType

@@ -17,13 +17,11 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.DepositResolver
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ DepositResolver, executionContext }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositorId }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import sangria.relay.{ Connection, ConnectionArgs }
 import sangria.schema.{ Context, DeferredValue, Field, ObjectType, OptionType, StringType, fields }
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DepositorType {
   this: DepositType

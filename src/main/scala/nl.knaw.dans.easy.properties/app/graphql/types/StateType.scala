@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.ordering.{ OrderDirection, StateOrder, StateOrderField }
 import nl.knaw.dans.easy.properties.app.graphql.relay.ExtendedConnection
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ DepositResolver, StateResolver }
+import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ DepositResolver, StateResolver, executionContext }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 import nl.knaw.dans.easy.properties.app.model.state._
@@ -29,8 +29,6 @@ import sangria.marshalling.FromInput
 import sangria.marshalling.FromInput._
 import sangria.relay._
 import sangria.schema.{ Argument, Context, DeferredValue, EnumType, Field, InputObjectType, ObjectType, OptionInputType, OptionType }
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait StateType {
   this: DepositType
