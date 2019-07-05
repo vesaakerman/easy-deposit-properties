@@ -17,20 +17,20 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 
 import java.util.UUID
 
+import cats.syntax.either._
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import sangria.ast.StringValue
 import sangria.schema.ScalarType
 import sangria.validation.{ StringCoercionViolation, ValueCoercionViolation, Violation }
 
-import scala.util.Try
-
 trait Scalars {
 
   case object UUIDCoercionViolation extends ValueCoercionViolation("UUID value expected")
 
   private def parseUUID(s: String): Either[Violation, UUID] = {
-    Try { UUID.fromString(s) }.fold(_ => Left(UUIDCoercionViolation), Right(_))
+    Either.catchNonFatal { UUID.fromString(s) }
+      .fold(_ => Left(UUIDCoercionViolation), Right(_))
   }
 
   implicit val UUIDType: ScalarType[UUID] = ScalarType("UUID",
@@ -50,7 +50,8 @@ trait Scalars {
   case object DateCoercionViolation extends ValueCoercionViolation("Date value expected")
 
   private def parseDate(s: String): Either[Violation, DateTime] = {
-    Try { DateTime.parse(s) }.fold(_ => Left(DateCoercionViolation), Right(_))
+    Either.catchNonFatal { DateTime.parse(s) }
+      .fold(_ => Left(DateCoercionViolation), Right(_))
   }
 
   implicit val DateTimeType: ScalarType[DateTime] = ScalarType("DateTime",
