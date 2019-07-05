@@ -18,31 +18,13 @@ package nl.knaw.dans.easy.properties.app.graphql.types
 import nl.knaw.dans.easy.properties.app.graphql.ordering.{ DepositOrder, DepositOrderField, OrderDirection }
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
-import sangria.execution.deferred.HasId
 import sangria.macros.derive._
 import sangria.marshalling.FromInput._
 import sangria.marshalling.ToInput.ScalarToInput
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller, ToInput }
-import sangria.relay.{ Identifiable, Node }
+import sangria.marshalling.{ FromInput, ToInput }
 import sangria.schema.{ Argument, EnumType, InputObjectType, OptionInputType }
 
-import scala.language.implicitConversions
-
 trait MetaTypes {
-
-  implicit def keyBasedHasId[K, V]: HasId[(K, V), K] = HasId { case (id, _) => id }
-
-  implicit def nodeIdentifiable[T <: Node]: Identifiable[T] = _.id
-
-  implicit def fromInput[T](create: Map[String, Any] => T): FromInput[T] = new FromInput[T] {
-    val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    def fromResult(node: marshaller.Node): T = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      create(ad)
-    }
-  }
 
   implicit val SeriesFilterType: EnumType[SeriesFilter.Value] = deriveEnumType(
     EnumTypeDescription("Mark a query to only search through current states, or also to include past states."),
@@ -59,18 +41,10 @@ trait MetaTypes {
     DocumentInputField("field", "The field to order deposit by"),
     DocumentInputField("direction", "The ordering direction"),
   )
-  implicit val DepositOrderFromInput: FromInput[DepositOrder] = new FromInput[DepositOrder] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): DepositOrder = {
-      val ad = node.asInstanceOf[Map[String, Any]]
-
-      DepositOrder(
-        field = ad("field").asInstanceOf[DepositOrderField.Value],
-        direction = ad("direction").asInstanceOf[OrderDirection.Value],
-      )
-    }
-  }
+  implicit val DepositOrderFromInput: FromInput[DepositOrder] = fromInput(ad => DepositOrder(
+    field = ad("field").asInstanceOf[DepositOrderField.Value],
+    direction = ad("direction").asInstanceOf[OrderDirection.Value],
+  ))
   val optDepositOrderArgument: Argument[Option[DepositOrder]] = {
     Argument(
       name = "orderBy",

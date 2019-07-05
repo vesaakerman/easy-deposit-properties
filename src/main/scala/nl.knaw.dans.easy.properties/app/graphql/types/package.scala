@@ -15,9 +15,24 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
+import sangria.execution.deferred.HasId
+import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
+import sangria.relay.{ Identifiable, Node }
 import sangria.schema.Context
+
+import scala.language.implicitConversions
 
 package object types {
 
   private[types] implicit def dataContextFromContext(implicit ctx: Context[DataContext, _]): DataContext = ctx.ctx
+
+  implicit def keyBasedHasId[K, V]: HasId[(K, V), K] = HasId { case (id, _) => id }
+
+  implicit def nodeIdentifiable[T <: Node]: Identifiable[T] = _.id
+
+  implicit def fromInput[T](create: Map[String, Any] => T): FromInput[T] = new FromInput[T] {
+    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
+
+    override def fromResult(node: marshaller.Node): T = create(node.asInstanceOf[Map[String, Any]])
+  }
 }
