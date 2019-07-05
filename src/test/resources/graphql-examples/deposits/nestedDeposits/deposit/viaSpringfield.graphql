@@ -1,0 +1,15 @@
+query {
+    deposits {
+        edges {
+            node {
+                depositId
+                springfield {
+                    id
+                    deposit {
+                        depositId
+                    }
+                }
+            }
+        }
+    }
+}

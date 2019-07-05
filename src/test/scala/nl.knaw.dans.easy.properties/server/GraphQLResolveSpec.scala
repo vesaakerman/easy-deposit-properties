@@ -67,7 +67,7 @@ trait GraphQLResolveSpecTestObjects {
   val state1 = State(
     id = "1",
     label = StateLabel.ARCHIVED,
-    description = "your deposit is submitted",
+    description = "your deposit is archived",
     timestamp = DateTime.now(),
   )
   val state2 = State(
@@ -78,7 +78,7 @@ trait GraphQLResolveSpecTestObjects {
   )
   val state3 = State(
     id = "3",
-    label = StateLabel.ARCHIVED,
+    label = StateLabel.SUBMITTED,
     description = "your deposit is submitted",
     timestamp = DateTime.now(),
   )
@@ -615,9 +615,10 @@ class GraphQLResolveSpec extends TestSupportFixture
       depositId2 -> Seq(state2, state3),
       depositId3 -> Seq.empty,
     ).asRight
-    val filters1 = DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.ARCHIVED)))
-    val filters2 = DepositFilters(stateFilter = Some(DepositStateFilter(StateLabel.DRAFT)))
-    depositDao.search _ expects Seq(filters1, filters2) once() returning Seq(
+    val filters1 = DepositFilters(stateFilter = Some(DepositStateFilter(state1.label)))
+    val filters2 = DepositFilters(stateFilter = Some(DepositStateFilter(state2.label)))
+    val filters3 = DepositFilters(stateFilter = Some(DepositStateFilter(state3.label)))
+    depositDao.search _ expects Seq(filters3, filters1, filters2) once() returning Seq(
       filters1 -> Seq(deposit1, deposit2, deposit3),
       filters2 -> Seq(deposit1, deposit2, deposit3),
     ).asRight
@@ -1105,6 +1106,480 @@ class GraphQLResolveSpec extends TestSupportFixture
         depositId1 -> Some(state1),
         depositId2 -> Some(state2),
         depositId3 -> Some(state3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaContentType.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaContentType.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      contentTypeDao.getCurrent _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(contentType1),
+        depositId2 -> Some(contentType2),
+        depositId3 -> Some(contentType1),
+      ).asRight
+      contentTypeDao.getDepositsById _ expects Seq(contentType1.id, contentType2.id) once() returning Seq(
+        contentType1.id -> Some(deposit1),
+        contentType2.id -> Some(deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaContentTypes.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaContentTypes.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      contentTypeDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(contentType1, contentType2),
+        depositId2 -> Seq(contentType2, contentType1),
+        depositId3 -> Seq.empty,
+      ).asRight
+      contentTypeDao.getDepositsById _ expects Seq(contentType1.id, contentType2.id) once() returning Seq(
+        contentType1.id -> Some(deposit1),
+        contentType2.id -> Some(deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaCurator.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaCurator.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      curationDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(curation1),
+        depositId2 -> Seq(curation2),
+        depositId3 -> Seq(curation1),
+      ).asRight
+      curationDao.getDepositsById _ expects Seq(curation1.id, curation2.id) once() returning Seq(
+        curation1.id -> Some(deposit1),
+        curation2.id -> Some(deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaCurators.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaCurators.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      curationDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(curation1, curation2),
+        depositId2 -> Seq(curation2, curation1),
+        depositId3 -> Seq.empty,
+      ).asRight
+      curationDao.getDepositsById _ expects Seq(curation1.id, curation2.id) once() returning Seq(
+        curation1.id -> Some(deposit1),
+        curation2.id -> Some(deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaIdentifier.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaIdentifier.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      identifierDao.getByType _ expects Seq(
+        (depositId3, IdentifierType.DOI),
+        (depositId2, IdentifierType.DOI),
+        (depositId1, IdentifierType.DOI),
+      ) once() returning Seq(
+        (depositId1, IdentifierType.DOI) -> Some(identifier1),
+        (depositId2, IdentifierType.DOI) -> Some(identifier2),
+        (depositId3, IdentifierType.DOI) -> Some(identifier3),
+      ).asRight
+      identifierDao.getDepositsById _ expects Seq(identifier3.id, identifier1.id, identifier2.id) once() returning Seq(
+        identifier1.id -> Some(deposit1),
+        identifier2.id -> Some(deposit2),
+        identifier3.id -> Some(deposit3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaIdentifiers.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaIdentifiers.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      identifierDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(identifier1, identifier2),
+        depositId2 -> Seq(identifier2, identifier3),
+        depositId3 -> Seq.empty,
+      ).asRight
+      identifierDao.getDepositsById _ expects Seq(identifier3.id, identifier1.id, identifier2.id) once() returning Seq(
+        identifier1.id -> Some(deposit1),
+        identifier2.id -> Some(deposit2),
+        identifier3.id -> Some(deposit3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaIngestStep.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaIngestStep.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      ingestStepDao.getCurrent _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(step1),
+        depositId2 -> Some(step2),
+        depositId3 -> Some(step3),
+      ).asRight
+      ingestStepDao.getDepositsById _ expects Seq(step3.id, step1.id, step2.id) once() returning Seq(
+        step1.id -> Some(deposit1),
+        step2.id -> Some(deposit2),
+        step3.id -> Some(deposit3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaIngestSteps.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaIngestSteps.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      ingestStepDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(step1, step2),
+        depositId2 -> Seq(step2, step3),
+        depositId3 -> Seq.empty,
+      ).asRight
+      ingestStepDao.getDepositsById _ expects Seq(step3.id, step1.id, step2.id) once() returning Seq(
+        step1.id -> Some(deposit1),
+        step2.id -> Some(deposit2),
+        step3.id -> Some(deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaSpringfield.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaSpringfield.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      springfieldDao.getCurrent _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(springfield1),
+        depositId2 -> Some(springfield2),
+        depositId3 -> Some(springfield1),
+      ).asRight
+      springfieldDao.getDepositsById _ expects Seq(springfield1.id, springfield2.id) once() returning Seq(
+        springfield1.id -> Some(deposit1),
+        springfield2.id -> Some(deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaSpringfields.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaSpringfields.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      springfieldDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(springfield1, springfield2),
+        depositId2 -> Seq(springfield2, springfield1),
+        depositId3 -> Seq.empty,
+      ).asRight
+      springfieldDao.getDepositsById _ expects Seq(springfield1.id, springfield2.id) once() returning Seq(
+        springfield1.id -> Some(deposit1),
+        springfield2.id -> Some(deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaState.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaState.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      stateDao.getCurrent _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(state1),
+        depositId2 -> Some(state2),
+        depositId3 -> Some(state3),
+      ).asRight
+      stateDao.getDepositsById _ expects Seq(state3.id, state1.id, state2.id) once() returning Seq(
+        state1.id -> Some(deposit1),
+        state2.id -> Some(deposit2),
+        state3.id -> Some(deposit3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposit/viaStates.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposit" / "viaStates.graphql"
+
+    inSequence {
+      val filters = DepositFilters()
+      depositDao.search _ expects Seq(filters) once() returning Seq(
+        filters -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      stateDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(state1, state2),
+        depositId2 -> Seq(state2, state3),
+        depositId3 -> Seq.empty,
+      ).asRight
+      stateDao.getDepositsById _ expects Seq(state3.id, state1.id, state2.id) once() returning Seq(
+        state1.id -> Some(deposit1),
+        state2.id -> Some(deposit2),
+        state3.id -> Some(deposit3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposits/viaContentType.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposits" / "viaContentType.graphql"
+
+    inSequence {
+      val filters1 = DepositFilters()
+      val filters2 = DepositFilters(contentTypeFilter = Some(DepositContentTypeFilter(contentType1.value, SeriesFilter.LATEST)))
+      val filters3 = DepositFilters(contentTypeFilter = Some(DepositContentTypeFilter(contentType2.value, SeriesFilter.LATEST)))
+      depositDao.search _ expects Seq(filters1) once() returning Seq(
+        filters1 -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      contentTypeDao.getCurrent _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(contentType1),
+        depositId2 -> Some(contentType2),
+        depositId3 -> Some(contentType1),
+      ).asRight
+      depositDao.search _ expects Seq(filters3, filters2) once() returning Seq(
+        filters2 -> Seq(deposit2, deposit3),
+        filters3 -> Seq(deposit1, deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposits/viaContentTypes.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposits" / "viaContentTypes.graphql"
+
+    inSequence {
+      val filters1 = DepositFilters()
+      val filters2 = DepositFilters(contentTypeFilter = Some(DepositContentTypeFilter(contentType1.value, SeriesFilter.LATEST)))
+      val filters3 = DepositFilters(contentTypeFilter = Some(DepositContentTypeFilter(contentType2.value, SeriesFilter.LATEST)))
+      depositDao.search _ expects Seq(filters1) once() returning Seq(
+        filters1 -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      contentTypeDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(contentType1, contentType2),
+        depositId2 -> Seq(contentType2, contentType1),
+        depositId3 -> Seq.empty,
+      ).asRight
+      depositDao.search _ expects Seq(filters3, filters2) once() returning Seq(
+        filters2 -> Seq(deposit2, deposit3),
+        filters3 -> Seq(deposit1, deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposits/viaCurator.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposits" / "viaCurator.graphql"
+
+    inSequence {
+      val filters1 = DepositFilters()
+      val filters2 = DepositFilters(curatorFilter = Some(DepositCuratorFilter(curation1.datamanagerUserId, SeriesFilter.LATEST)))
+      val filters3 = DepositFilters(curatorFilter = Some(DepositCuratorFilter(curation2.datamanagerUserId, SeriesFilter.LATEST)))
+      depositDao.search _ expects Seq(filters1) once() returning Seq(
+        filters1 -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      curationDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(curation1, curation2),
+        depositId2 -> Seq(curation2, curation1),
+        depositId3 -> Seq.empty,
+      ).asRight
+      depositDao.search _ expects Seq(filters3, filters2) once() returning Seq(
+        filters2 -> Seq(deposit2, deposit3),
+        filters3 -> Seq(deposit1, deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposits/viaCurators.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposits" / "viaCurators.graphql"
+
+    inSequence {
+      val filters1 = DepositFilters()
+      val filters2 = DepositFilters(curatorFilter = Some(DepositCuratorFilter(curation1.datamanagerUserId, SeriesFilter.LATEST)))
+      val filters3 = DepositFilters(curatorFilter = Some(DepositCuratorFilter(curation2.datamanagerUserId, SeriesFilter.LATEST)))
+      depositDao.search _ expects Seq(filters1) once() returning Seq(
+        filters1 -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      curationDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(curation1, curation2),
+        depositId2 -> Seq(curation2, curation1),
+        depositId3 -> Seq.empty,
+      ).asRight
+      depositDao.search _ expects Seq(filters3, filters2) once() returning Seq(
+        filters2 -> Seq(deposit2, deposit3),
+        filters3 -> Seq(deposit1, deposit2),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposits/viaIngestStep.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposits" / "viaIngestStep.graphql"
+
+    inSequence {
+      val filters1 = DepositFilters()
+      val filters2 = DepositFilters(ingestStepFilter = Some(DepositIngestStepFilter(step1.step, SeriesFilter.LATEST)))
+      val filters3 = DepositFilters(ingestStepFilter = Some(DepositIngestStepFilter(step2.step, SeriesFilter.LATEST)))
+      val filters4 = DepositFilters(ingestStepFilter = Some(DepositIngestStepFilter(step3.step, SeriesFilter.LATEST)))
+      depositDao.search _ expects Seq(filters1) once() returning Seq(
+        filters1 -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      ingestStepDao.getCurrent _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(step1),
+        depositId2 -> Some(step2),
+        depositId3 -> Some(step3),
+      ).asRight
+      depositDao.search _ expects Seq(filters2, filters3, filters4) once() returning Seq(
+        filters2 -> Seq(deposit2, deposit3),
+        filters3 -> Seq(deposit1, deposit2),
+        filters4 -> Seq(deposit1, deposit3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposits/viaIngestSteps.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposits" / "viaIngestSteps.graphql"
+
+    inSequence {
+      val filters1 = DepositFilters()
+      val filters2 = DepositFilters(ingestStepFilter = Some(DepositIngestStepFilter(step1.step, SeriesFilter.LATEST)))
+      val filters3 = DepositFilters(ingestStepFilter = Some(DepositIngestStepFilter(step2.step, SeriesFilter.LATEST)))
+      val filters4 = DepositFilters(ingestStepFilter = Some(DepositIngestStepFilter(step3.step, SeriesFilter.LATEST)))
+      depositDao.search _ expects Seq(filters1) once() returning Seq(
+        filters1 -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      ingestStepDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(step1, step2),
+        depositId2 -> Seq(step3, step1),
+        depositId3 -> Seq.empty,
+      ).asRight
+      depositDao.search _ expects Seq(filters2, filters3, filters4) once() returning Seq(
+        filters2 -> Seq(deposit2, deposit3),
+        filters3 -> Seq(deposit1, deposit2),
+        filters4 -> Seq(deposit1, deposit3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposits/viaState.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposits" / "viaState.graphql"
+
+    inSequence {
+      val filters1 = DepositFilters()
+      val filters2 = DepositFilters(stateFilter = Some(DepositStateFilter(state1.label, SeriesFilter.LATEST)))
+      val filters3 = DepositFilters(stateFilter = Some(DepositStateFilter(state2.label, SeriesFilter.LATEST)))
+      val filters4 = DepositFilters(stateFilter = Some(DepositStateFilter(state3.label, SeriesFilter.LATEST)))
+      depositDao.search _ expects Seq(filters1) once() returning Seq(
+        filters1 -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      stateDao.getCurrent _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Some(state1),
+        depositId2 -> Some(state2),
+        depositId3 -> Some(state3),
+      ).asRight
+      depositDao.search _ expects Seq(filters4, filters2, filters3) once() returning Seq(
+        filters2 -> Seq(deposit2, deposit3),
+        filters3 -> Seq(deposit1, deposit2),
+        filters4 -> Seq(deposit1, deposit3),
+      ).asRight
+    }
+
+    runQuery(input)
+  }
+
+  it should "resolve 'deposits/nestedDeposits/deposits/viaStates.graphql' with 3 calls to the repository" in {
+    val input = graphqlExamplesDir / "deposits" / "nestedDeposits" / "deposits" / "viaStates.graphql"
+
+    inSequence {
+      val filters1 = DepositFilters()
+      val filters2 = DepositFilters(stateFilter = Some(DepositStateFilter(state1.label, SeriesFilter.LATEST)))
+      val filters3 = DepositFilters(stateFilter = Some(DepositStateFilter(state2.label, SeriesFilter.LATEST)))
+      val filters4 = DepositFilters(stateFilter = Some(DepositStateFilter(state3.label, SeriesFilter.LATEST)))
+      depositDao.search _ expects Seq(filters1) once() returning Seq(
+        filters1 -> Seq(deposit1, deposit2, deposit3),
+      ).asRight
+      stateDao.getAll _ expects Seq(depositId1, depositId2, depositId3) once() returning Seq(
+        depositId1 -> Seq(state1, state2),
+        depositId2 -> Seq(state3, state1),
+        depositId3 -> Seq.empty,
+      ).asRight
+      depositDao.search _ expects Seq(filters4, filters2, filters3) once() returning Seq(
+        filters2 -> Seq(deposit2, deposit3),
+        filters3 -> Seq(deposit1, deposit2),
+        filters4 -> Seq(deposit1, deposit3),
       ).asRight
     }
 

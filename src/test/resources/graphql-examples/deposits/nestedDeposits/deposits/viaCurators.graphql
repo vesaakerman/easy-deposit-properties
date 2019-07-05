@@ -1,0 +1,23 @@
+query {
+    deposits {
+        edges {
+            node {
+                depositId
+                curators {
+                    edges {
+                        node {
+                            id
+                            deposits {
+                                edges {
+                                    node {
+                                        depositId
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

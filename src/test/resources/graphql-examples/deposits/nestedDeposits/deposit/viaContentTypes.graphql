@@ -1,0 +1,15 @@
+query {
+    deposits {
+        edges {
+            node {
+                depositId
+                contentTypes {
+                    id
+                    deposit {
+                        depositId
+                    }
+                }
+            }
+        }
+    }
+}

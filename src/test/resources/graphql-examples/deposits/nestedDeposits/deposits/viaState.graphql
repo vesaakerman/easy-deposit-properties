@@ -1,0 +1,19 @@
+query {
+    deposits {
+        edges {
+            node {
+                depositId
+                state {
+                    id
+                    deposits {
+                        edges {
+                            node {
+                                depositId
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,101 @@
+{
+  "data": {
+    "deposits": {
+      "edges": [
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "curators": {
+              "edges": [
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000005",
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "Q3VyYXRvcjo1MA==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000005"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000004",
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "Q3VyYXRvcjo0MA==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000004"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "Q3VyYXRvcjoxMA==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000001"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "Q3VyYXRvcjoxMQ==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000001"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000003",
+            "curators": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "Q3VyYXRvcjozMA==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000003"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "Q3VyYXRvcjozMQ==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000003"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

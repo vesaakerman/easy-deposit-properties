@@ -1,0 +1,61 @@
+{
+  "data": {
+    "deposits": {
+      "edges": [
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "springfields": [
+              {
+                "id": "U3ByaW5nZmllbGQ6MjA=",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000002"
+                }
+              },
+              {
+                "id": "U3ByaW5nZmllbGQ6MjE=",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000002"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000005",
+            "springfields": [
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000004",
+            "springfields": [
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "springfields": [
+              {
+                "id": "U3ByaW5nZmllbGQ6MTA=",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000001"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000003",
+            "springfields": [
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "data": {
+    "deposits": {
+      "edges": [
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "identifiers": [
+              {
+                "id": "SWRlbnRpZmllcjoyMw==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000002"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjoyMQ==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000002"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjoyMg==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000002"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjoyNA==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000002"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000005",
+            "identifiers": [
+              {
+                "id": "SWRlbnRpZmllcjo1MQ==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000005"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000004",
+            "identifiers": [
+              {
+                "id": "SWRlbnRpZmllcjo0NA==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000004"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjo0Mg==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000004"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjo0MQ==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000004"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjo0Mw==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000004"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "identifiers": [
+              {
+                "id": "SWRlbnRpZmllcjoxMg==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000001"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjoxMQ==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000001"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjoxMw==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000001"
+                }
+              },
+              {
+                "id": "SWRlbnRpZmllcjoxNA==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000001"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000003",
+            "identifiers": [
+              {
+                "id": "SWRlbnRpZmllcjozMQ==",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000003"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

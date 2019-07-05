@@ -1,0 +1,48 @@
+{
+  "data": {
+    "deposits": {
+      "edges": [
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "springfield": {
+              "id": "U3ByaW5nZmllbGQ6MjE=",
+              "deposit": {
+                "depositId": "00000000-0000-0000-0000-000000000002"
+              }
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000005",
+            "springfield": null
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000004",
+            "springfield": null
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "springfield": {
+              "id": "U3ByaW5nZmllbGQ6MTA=",
+              "deposit": {
+                "depositId": "00000000-0000-0000-0000-000000000001"
+              }
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000003",
+            "springfield": null
+          }
+        }
+      ]
+    }
+  }
+}
