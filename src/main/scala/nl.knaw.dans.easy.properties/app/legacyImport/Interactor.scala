@@ -18,7 +18,6 @@ package nl.knaw.dans.easy.properties.app.legacyImport
 import cats.syntax.either._
 
 import scala.io.StdIn
-import scala.util.Try
 
 class Interactor {
 
@@ -36,6 +35,6 @@ class Interactor {
   def ask[T](f: String => T)(msg: String): T = {
     val input = ask(msg)
 
-    Try { f(input) }.getOrElse(ask(f)(msg))
+    Either.catchNonFatal { f(input) }.getOrElse(ask(f)(msg))
   }
 }
