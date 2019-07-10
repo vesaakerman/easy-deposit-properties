@@ -36,7 +36,7 @@ trait IdentifierGraphQLType {
 
   private val depositField: Field[DataContext, Identifier] = Field(
     name = "deposit",
-    description = Some("Returns the deposit that is associated with this particular ingest step"),
+    description = Some("Returns the deposit that is associated with this particular identifier."),
     fieldType = OptionType(DepositType),
     resolve = getDepositByIdentifier(_),
   )

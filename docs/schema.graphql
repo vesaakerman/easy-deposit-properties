@@ -852,7 +852,7 @@ type Identifier implements Node {
   timestamp: DateTime!
 
   """
-  Returns the deposit that is associated with this particular ingest step
+  Returns the deposit that is associated with this particular identifier.
   """
   deposit: Deposit
 
