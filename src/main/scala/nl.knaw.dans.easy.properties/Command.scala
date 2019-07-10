@@ -65,7 +65,7 @@ object Command extends App with DebugEnhancedLogging {
   private def runAsService(): Try[FeedBackMessage] = Try {
     val service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepo().repository),
+      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepo().repository, configuration.profilingConfig),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     Runtime.getRuntime.addShutdownHook(new Thread("service-shutdown") {

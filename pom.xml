@@ -144,6 +144,11 @@
             <artifactId>sangria-json4s-native_2.12</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.sangria-graphql</groupId>
+            <artifactId>sangria-slowlog_2.12</artifactId>
+            <version>0.1.8</version>
+        </dependency>
 
         <!-- json -->
         <dependency>

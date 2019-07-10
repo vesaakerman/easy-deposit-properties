@@ -33,7 +33,7 @@ class ServiceStarter extends Daemon with DebugEnhancedLogging {
     database = new DatabaseAccess(configuration.databaseConfig)
     service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepo().repository),
+      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepo().repository, configuration.profilingConfig),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     logger.info("Service initialized.")

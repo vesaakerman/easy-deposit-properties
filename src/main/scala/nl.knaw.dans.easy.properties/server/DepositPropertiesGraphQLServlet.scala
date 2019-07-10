@@ -19,6 +19,7 @@ import java.util.concurrent.Executors
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
+import nl.knaw.dans.easy.properties.app.graphql.middleware.{ Middlewares, ProfilingConfiguration }
 import nl.knaw.dans.easy.properties.app.repository.Repository
 
 import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
@@ -28,8 +29,13 @@ object DepositPropertiesGraphQLServlet {
   private implicit val executionContext: ExecutionContextExecutorService =
     ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(16))
 
-  def apply(repository: () => Repository): GraphQLServlet[DataContext] = {
+  def apply(repository: () => Repository, profilingConfig: Option[ProfilingConfiguration] = Option.empty): GraphQLServlet[DataContext] = {
     val repo = repository()
-    new GraphQLServlet(DepositSchema, () => DataContext(repo), deferredResolver)
+    new GraphQLServlet(
+      schema = DepositSchema,
+      ctxProvider = () => DataContext(repo),
+      deferredResolver = deferredResolver,
+      middlewares = new Middlewares(profilingConfig).values,
+    )
   }
 }

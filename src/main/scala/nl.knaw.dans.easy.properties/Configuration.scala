@@ -21,12 +21,17 @@ import better.files.File
 import better.files.File.root
 import nl.knaw.dans.easy.DataciteServiceConfiguration
 import nl.knaw.dans.easy.properties.app.database.DatabaseConfiguration
+import nl.knaw.dans.easy.properties.app.graphql.middleware.ProfilingConfiguration
 import org.apache.commons.configuration.PropertiesConfiguration
+
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 case class Configuration(version: String,
                          serverPort: Int,
                          databaseConfig: DatabaseConfiguration,
                          dataciteConfig: DataciteServiceConfiguration,
+                         profilingConfig: Option[ProfilingConfiguration] = Option.empty,
                         )
 
 object Configuration {
@@ -58,7 +63,11 @@ object Configuration {
         setPassword(properties.getString("deposit-properties.datacite.password"))
         setDoiRegistrationUri(properties.getString("deposit-properties.datacite.registration.doi.uri"))
         setDatasetResolver(new URL(properties.getString("deposit-properties.datacite.resolver")))
-      }
+      },
+      profilingConfig = for {
+        threshold <- Option(properties.getLong("deposit-properties.graphql.profiling.threshold"))
+        addExtensions = Option(properties.getBoolean("deposit-properties.graphql.profiling.addExtensions")).getOrElse(false)
+      } yield ProfilingConfiguration(threshold milliseconds, addExtensions),
     )
   }
 }
