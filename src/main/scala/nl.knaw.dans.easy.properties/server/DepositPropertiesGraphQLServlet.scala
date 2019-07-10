@@ -15,13 +15,18 @@
  */
 package nl.knaw.dans.easy.properties.server
 
+import java.util.concurrent.Executors
+
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
 import nl.knaw.dans.easy.properties.app.repository.Repository
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
 
 object DepositPropertiesGraphQLServlet {
+
+  private implicit val executionContext: ExecutionContextExecutorService =
+    ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(16))
 
   def apply(repository: () => Repository): GraphQLServlet[DataContext] = {
     val repo = repository()
