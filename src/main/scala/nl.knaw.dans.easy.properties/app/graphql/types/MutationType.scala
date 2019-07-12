@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.properties.app.graphql.types
 
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
+import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.RequiresAuthentication
 import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, DepositResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentTypeValue, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.curation.InputCuration
@@ -330,6 +331,9 @@ trait MutationType {
   private val addDepositField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, AddDepositPayload, InputObjectType.DefaultInput](
     fieldName = "addDeposit",
     typeName = "AddDeposit",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."),
     inputFields = List(
       depositIdInputField,
@@ -345,6 +349,9 @@ trait MutationType {
   private val updateStateField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, UpdateStatePayload, InputObjectType.DefaultInput](
     fieldName = "updateState",
     typeName = "UpdateState",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Update the state of the deposit identified by 'id'."),
     inputFields = List(
       depositIdInputField,
@@ -360,6 +367,9 @@ trait MutationType {
   private val updateIngestStepField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, UpdateIngestStepPayload, InputObjectType.DefaultInput](
     fieldName = "updateIngestStep",
     typeName = "UpdateIngestStep",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Update the ingest step of the deposit identified by 'id'."),
     inputFields = List(
       depositIdInputField,
@@ -374,6 +384,9 @@ trait MutationType {
   private val addIdentifierField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, AddIdentifierPayload, InputObjectType.DefaultInput](
     fieldName = "addIdentifier",
     typeName = "AddIdentifier",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Add an identifier to the deposit identified by 'id'."),
     inputFields = List(
       depositIdInputField,
@@ -389,6 +402,9 @@ trait MutationType {
   private val setDoiRegisteredField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetDoiRegisteredPayload, InputObjectType.DefaultInput](
     fieldName = "setDoiRegistered",
     typeName = "SetDoiRegistered",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Set whether the DOI has been registered in DataCite."),
     inputFields = List(
       depositIdInputField,
@@ -403,6 +419,9 @@ trait MutationType {
   private val setDoiActionField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetDoiActionPayload, InputObjectType.DefaultInput](
     fieldName = "setDoiAction",
     typeName = "SetDoiAction",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Set whether the DOI should be 'created' or 'updated' on registration in DataCite."),
     inputFields = List(
       depositIdInputField,
@@ -417,6 +436,9 @@ trait MutationType {
   private val setCurationField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetCurationPayload, InputObjectType.DefaultInput](
     fieldName = "setCuration",
     typeName = "SetCuration",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Assign a curation event to the deposit identified by 'id'."),
     inputFields = List(
       depositIdInputField,
@@ -435,6 +457,9 @@ trait MutationType {
   private val setSpringfieldField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetSpringfieldPayload, InputObjectType.DefaultInput](
     fieldName = "setSpringfield",
     typeName = "SetSpringfield",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Set the springfield configuration for this deposit."),
     inputFields = List(
       depositIdInputField,
@@ -452,6 +477,9 @@ trait MutationType {
   private val setContentTypeField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, SetContentTypePayload, InputObjectType.DefaultInput](
     fieldName = "setContentType",
     typeName = "SetContentType",
+    tags = List(
+      RequiresAuthentication,
+    ),
     fieldDescription = Some("Set the content type for this deposit."),
     inputFields = List(
       depositIdInputField,

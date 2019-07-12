@@ -17,8 +17,10 @@ package nl.knaw.dans.easy.properties.server
 
 import better.files.File
 import better.files.File.currentWorkingDirectory
+import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.app.repository.demo.DemoRepo
 import nl.knaw.dans.easy.properties.fixture.TestSupportFixture
+import org.json4s.JsonAST.JNull
 import org.json4s.JsonDSL._
 import org.json4s.ext.UUIDSerializer
 import org.json4s.native.JsonMethods._
@@ -34,7 +36,9 @@ class GraphQLExamplesSpec extends TestSupportFixture
   with ScalatraSuite {
 
   private val repo = new DemoRepo()
-  private val servlet = DepositPropertiesGraphQLServlet(() => repo.repository)
+  private val auth = Auth("my-username", "my-password")
+  private val authHeader = "Authorization" -> "Basic bXktdXNlcm5hbWU6bXktcGFzc3dvcmQ="
+  private val servlet = DepositPropertiesGraphQLServlet(() => repo.repository, auth)
   implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
   addServlet(servlet, "/*")
@@ -70,7 +74,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
         val inputBody = compact(render("query" -> graphQLExample.contentAsString))
         val expectedOutput = writePretty(parse(expectedJsonOutput.contentAsString))
 
-        post(uri = "/", body = inputBody.getBytes) {
+        post(uri = "/", body = inputBody.getBytes, headers = Seq(authHeader)) {
           body shouldBe expectedOutput
           status shouldBe 200
         }
@@ -138,19 +142,58 @@ class GraphQLExamplesSpec extends TestSupportFixture
         }
       }
     }
-    
+
     post(uri = "/", body = queryBody.getBytes) {
       body shouldBe expectedQueryOutput1
       status shouldBe 200
     }
 
-    post(uri = "/", body = mutationBody.getBytes) {
+    post(uri = "/", body = mutationBody.getBytes, headers = Seq(authHeader)) {
       body shouldBe expectedMutationOutput
       status shouldBe 200
     }
-    
+
     post(uri = "/", body = queryBody.getBytes) {
       body shouldBe expectedQueryOutput2
+      status shouldBe 200
+    }
+  }
+
+  it should "return an error in the body when no authentication is given for a mutation" in {
+    val mutation =
+      """mutation {
+        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000+02:00"}) {
+        |    clientMutationId
+        |    state {
+        |      label
+        |      description
+        |      timestamp
+        |    }
+        |  }
+        |}""".stripMargin
+    val mutationBody = compact(render("query" -> mutation))
+
+    val expectedMutationOutput = writePretty {
+      ("data" -> ("updateState" -> JNull)) ~
+        ("errors" -> Seq(
+          ("message" -> "you must be logged in!") ~
+            ("path" -> Seq(
+              "updateState",
+            )) ~
+            ("locations" -> Seq(
+              ("line" -> 2) ~
+                ("column" -> 3)
+            )),
+        ))
+    }
+
+    post(uri = "/", body = mutationBody.getBytes /* no authentication header */) {
+      body shouldBe expectedMutationOutput
+      
+      // Yes, we don't provide authentication, but in GraphQL we still return a 200. See:
+      //   * https://github.com/rmosolgo/graphql-ruby/issues/1130#issuecomment-347373937
+      //   * https://www.graph.cool/docs/faq/api-eep0ugh1wa/#how-does-error-handling-work-with-graphcool
+      //   * https://medium.com/@mczachurski/graphql-error-handling-17979dc571da
       status shouldBe 200
     }
   }

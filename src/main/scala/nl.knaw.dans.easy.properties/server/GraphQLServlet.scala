@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.server
 
+import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet._
 import org.json4s.JsonDSL._
@@ -22,6 +23,7 @@ import org.json4s.ext.UUIDSerializer
 import org.json4s.native.{ JsonMethods, Serialization }
 import org.json4s.{ DefaultFormats, Formats, JValue }
 import org.scalatra._
+import org.scalatra.auth.strategy.BasicAuthStrategy.BasicAuthRequest
 import sangria.ast.Document
 import sangria.execution._
 import sangria.execution.deferred.DeferredResolver
@@ -33,7 +35,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.postfixOps
 
 class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
-                          ctxProvider: () => Ctx,
+                          ctxProvider: Option[Auth] => Ctx,
                           deferredResolver: DeferredResolver[Ctx] = DeferredResolver.empty,
                           exceptionHandler: ExceptionHandler = defaultExceptionHandler,
                           middlewares: List[Middleware[Ctx]] = List.empty)
@@ -56,14 +58,22 @@ class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
       .fold({
         case e: SyntaxError => Future.successful(BadRequest(syntaxError(e)))
         case e => Future.failed(e)
-      }, execute(variables, operation))
+      }, execute(variables, operation, getAuthentication))
   }
 
-  private def execute(variables: Option[String], operation: Option[String])(queryAst: Document): Future[ActionResult] = {
+  private def getAuthentication: Option[Auth] = {
+    val baReq = new BasicAuthRequest(request)
+    if (baReq.providesAuth && baReq.isBasicAuth)
+      Option(Auth(baReq.username, baReq.password))
+    else
+      Option.empty
+  }
+
+  private def execute(variables: Option[String], operation: Option[String], auth: Option[Auth])(queryAst: Document): Future[ActionResult] = {
     Executor.execute(
       schema = schema,
       queryAst = queryAst,
-      userContext = ctxProvider(),
+      userContext = ctxProvider(auth),
       operationName = operation,
       variables = parseVariables(variables),
       deferredResolver = deferredResolver,

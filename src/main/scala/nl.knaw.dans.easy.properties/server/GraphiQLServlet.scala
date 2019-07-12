@@ -61,9 +61,35 @@ class GraphiQLServlet(backendPath: String) extends ScalatraServlet {
           |      #graphiql {
           |        height: 100vh;
           |      }
+          |      .authentication {
+          |        background: linear-gradient(#f7f7f7, #e2e2e2);
+          |        border-bottom: 1px solid #d0d0d0;
+          |        padding: 7px 14px 6px;
+          |        font-size: 24px;
+          |      }
+          |      .authentication label {
+          |        display: inline-block;
+          |        width: 100px;
+          |      }
+          |      .authentication input {
+          |        padding-left: 3px;
+          |        font-size: 20px;
+          |        width: 50%;
+          |      }
           |    </style>
           |</head>
           |<body>
+          |    <div class="authentication">
+          |      <div>
+          |        <label for="username">Username</label>
+          |        <input type="text" id="username" placeholder="Username">
+          |      </div>
+          |      <div>
+          |        <label for="password">Password</label>
+          |        <input type="password" id="password" placeholder="Password">
+          |      </div>
+          |    </div>
+          |    
           |    <div id="graphiql">Loading...</div>
           |
           |    <script type="text/javascript">
@@ -111,11 +137,17 @@ class GraphiQLServlet(backendPath: String) extends ScalatraServlet {
           |        history.replaceState(null, null, newSearch);
           |      }
           |      function graphQLFetcher(graphQLParams) {
+          |        var username = document.getElementById("username").value;
+          |        var password = document.getElementById("password").value;
+          |        var encoded = window.btoa(username + ":" + password);
+          |        var auth = "Basic " + encoded;
+          |        
           |        return fetch('$backendPath', {
           |          method: 'post',
           |          headers: {
           |            'Accept': 'application/json',
           |            'Content-Type': 'application/json',
+          |            'Authorization': auth,
           |          },
           |          body: JSON.stringify(graphQLParams),
           |          credentials: 'include',

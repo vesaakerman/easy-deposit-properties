@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream
 import better.files.File
 import nl.knaw.dans.easy.DataciteServiceConfiguration
 import nl.knaw.dans.easy.properties.app.database.DatabaseConfiguration
+import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.fixture.CustomMatchers
 import org.scalatest._
 
@@ -28,6 +29,7 @@ class ReadmeSpec extends FlatSpec with Matchers with CustomMatchers {
   private val configuration = Configuration(
     version = "my-version",
     serverPort = 12345,
+    auth = Auth("", ""),
     databaseConfig = DatabaseConfiguration("", ""),
     dataciteConfig = new DataciteServiceConfiguration,
   )

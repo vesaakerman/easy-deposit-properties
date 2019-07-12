@@ -21,6 +21,7 @@ import better.files.File
 import better.files.File.root
 import nl.knaw.dans.easy.DataciteServiceConfiguration
 import nl.knaw.dans.easy.properties.app.database.DatabaseConfiguration
+import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.app.graphql.middleware.ProfilingConfiguration
 import org.apache.commons.configuration.PropertiesConfiguration
 
@@ -29,6 +30,7 @@ import scala.language.postfixOps
 
 case class Configuration(version: String,
                          serverPort: Int,
+                         auth: Auth,
                          databaseConfig: DatabaseConfiguration,
                          dataciteConfig: DataciteServiceConfiguration,
                          profilingConfig: Option[ProfilingConfiguration] = Option.empty,
@@ -50,6 +52,10 @@ object Configuration {
     new Configuration(
       version = (home / "bin" / "version").contentAsString.stripLineEnd,
       serverPort = properties.getInt("deposit-properties.daemon.http.port"),
+      auth = Auth(
+        username = properties.getString("deposit-properties.auth.username"),
+        password = properties.getString("deposit-properties.auth.password"),
+      ),
       databaseConfig = DatabaseConfiguration(
         properties.getString("deposit-properties.database.driver-class"),
         properties.getString("deposit-properties.database.url"),

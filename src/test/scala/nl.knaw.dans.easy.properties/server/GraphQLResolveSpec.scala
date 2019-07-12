@@ -19,6 +19,7 @@ import java.util.UUID
 
 import better.files.File
 import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter }
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.curator.DepositCuratorFilter
@@ -195,7 +196,7 @@ class GraphQLResolveSpec extends TestSupportFixture
   private val springfieldDao = mock[SpringfieldDao]
   private val contentTypeDao = mock[ContentTypeDao]
   private val repository = Repository(depositDao, stateDao, ingestStepDao, identifierDao, doiRegisteredDao, doiActionDao, curationDao, springfieldDao, contentTypeDao)
-  private val servlet = DepositPropertiesGraphQLServlet(() => repository)
+  private val servlet = DepositPropertiesGraphQLServlet(() => repository, Auth("", ""))
   private implicit val jsonFormats: Formats = new DefaultFormats {}
 
   addServlet(servlet, "/*")

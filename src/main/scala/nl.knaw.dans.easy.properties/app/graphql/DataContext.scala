@@ -15,8 +15,15 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
+import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.app.repository.Repository
 
 import scala.concurrent.ExecutionContext
 
-case class DataContext(repo: Repository)(implicit val executionContext: ExecutionContext)
+case class DataContext(repo: Repository,
+                       private val auth: Option[Auth],
+                       private val expectedAuth: Auth,
+                      )(implicit val executionContext: ExecutionContext) {
+
+  def isLoggedIn: Boolean = auth contains expectedAuth
+}
