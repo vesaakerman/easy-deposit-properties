@@ -169,15 +169,16 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Deb
 
   def lastModified(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]] = {
     /*
-     * SELECT MAX(max)
+     * SELECT depositId, MAX(max)
      * FROM (
-     *   ( SELECT MAX(creationTimestamp) FROM Deposit WHERE depositId = ? ) UNION ALL
-     *   ( SELECT MAX(timestamp) FROM State WHERE depositId = ? ) UNION ALL
-     *   ( SELECT MAX(timestamp) FROM Identifier WHERE depositId = ? ) UNION ALL
-     *   ( SELECT MAX(timestamp) FROM Curation WHERE depositId = ? ) UNION ALL
-     *   ( SELECT MAX(timestamp) FROM Springfield WHERE depositId = ? ) UNION ALL
-     *   ( SELECT MAX(timestamp) FROM SimpleProperties WHERE depositId = ? )
-     * ) AS max_timestamps;
+     *   ( SELECT depositId, MAX(creationTimestamp) FROM Deposit WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
+     *   ( SELECT depositId, MAX(timestamp) FROM State WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
+     *   ( SELECT depositId, MAX(timestamp) FROM Identifier WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
+     *   ( SELECT depositId, MAX(timestamp) FROM Curation WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
+     *   ( SELECT depositId, MAX(timestamp) FROM Springfield WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
+     *   ( SELECT depositId, MAX(timestamp) FROM SimpleProperties WHERE depositId IN (?*) GROUP BY depositId )
+     * ) AS max_timestamps
+     * GROUP BY depositId;
      */
 
     ???
