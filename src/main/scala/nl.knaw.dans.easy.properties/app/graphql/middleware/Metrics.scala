@@ -22,11 +22,11 @@ class Metrics(logger: Logger) extends Middleware[Any] {
 
   override type QueryVal = Long
 
-  def beforeQuery(context: MiddlewareQueryContext[Any, _, _]): QueryVal = {
+  override def beforeQuery(context: MiddlewareQueryContext[Any, _, _]): QueryVal = {
     System.currentTimeMillis()
   }
 
-  def afterQuery(startTimeMs: QueryVal, context: MiddlewareQueryContext[Any, _, _]): Unit = {
+  override def afterQuery(startTimeMs: QueryVal, context: MiddlewareQueryContext[Any, _, _]): Unit = {
     val duration = System.currentTimeMillis() - startTimeMs
     logger.info(s"Query execution time ${ duration }ms")
   }
