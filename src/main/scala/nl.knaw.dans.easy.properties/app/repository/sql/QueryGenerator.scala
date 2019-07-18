@@ -8,10 +8,8 @@ object QueryGenerator {
 
   def getAllDeposits: String = "SELECT * FROM Deposit;"
 
-  def findDeposits(ids: Seq[DepositId]): String = {
-    val whereClause = if (ids.isEmpty) ""
-                      else s" WHERE depositId IN (${ ids.map(_ => "?").mkString(", ") })"
-    s"SELECT * FROM Deposit$whereClause;"
+  def findDeposits(ids: NonEmptyList[DepositId]): String = {
+    s"SELECT * FROM Deposit WHERE depositId IN (${ ids.toList.map(_ => "?").mkString(", ") });"
   }
 
   def searchDeposits(filters: DepositFilters): (String, Seq[String]) = {

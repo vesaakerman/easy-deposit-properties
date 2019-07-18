@@ -54,30 +54,34 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
 
   def find(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Deposit])]] = {
     trace(ids)
-    val query = QueryGenerator.findDeposits(ids)
+    NonEmptyList.fromList(ids.toList)
+      .map(nelIds => {
+        val query = QueryGenerator.findDeposits(nelIds)
 
-    val resultSet = for {
-      prepStatement <- managed(connection.prepareStatement(query))
-      _ = ids.zipWithIndex.foreach { case (id, index) => prepStatement.setString(index + 1, id.toString) }
-      resultSet <- managed(prepStatement.executeQuery())
-    } yield resultSet
+        val resultSet = for {
+          prepStatement <- managed(connection.prepareStatement(query))
+          _ = ids.zipWithIndex.foreach { case (id, index) => prepStatement.setString(index + 1, id.toString) }
+          resultSet <- managed(prepStatement.executeQuery())
+        } yield resultSet
 
-    resultSet.map(result =>
-      Stream.continually(result.next())
-        .takeWhile(b => b)
-        .traverse[Either[InvalidValueError, ?], Deposit](_ => parseDeposit(result))
-        .map(stream => {
-          val results = stream.toList
-            .groupBy(_.id)
-            .flatMap {
-              case (id, ds) => ds.headOption.tupleLeft(id)
-            }
-          ids.map(id => id -> results.get(id))
-        }))
-      .either
-      .either
-      .leftMap(InvalidValueError(_))
-      .flatMap(identity)
+        resultSet.map(result =>
+          Stream.continually(result.next())
+            .takeWhile(b => b)
+            .traverse[Either[InvalidValueError, ?], Deposit](_ => parseDeposit(result))
+            .map(stream => {
+              val results = stream.toList
+                .groupBy(_.id)
+                .flatMap {
+                  case (id, ds) => ds.headOption.tupleLeft(id)
+                }
+              ids.map(id => id -> results.get(id))
+            }))
+          .either
+          .either
+          .leftMap(InvalidValueError(_))
+          .flatMap(identity)
+      })
+      .getOrElse(Seq.empty.asRight)
   }
 
   private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {

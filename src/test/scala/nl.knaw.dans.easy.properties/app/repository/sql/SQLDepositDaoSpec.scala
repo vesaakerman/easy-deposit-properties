@@ -63,6 +63,12 @@ class SQLDepositDaoSpec extends TestSupportFixture
 
     deposits.find(Seq(depositId6)).value should contain only (depositId6 -> Option.empty)
   }
+  
+  it should "return an empty collection when the input collection is empty" in {
+    val deposits = new SQLDepositDao
+    
+    deposits.find(Seq.empty).value shouldBe empty
+  }
 
   "search" should "find all deposits when no filters are given" in {
     val deposits = new SQLDepositDao

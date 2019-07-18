@@ -30,7 +30,7 @@ class QueryGeneratorSpec extends TestSupportFixture {
   }
 
   "findDeposits" should "render the depositIds as comma separated question marks" in {
-    val depositIds = (1 to 5).map(_ => UUID.randomUUID())
+    val depositIds = NonEmptyList.fromListUnsafe((1 to 5).map(_ => UUID.randomUUID()).toList)
 
     val expectedQuery =
       """SELECT *
@@ -38,10 +38,6 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE depositId IN (?, ?, ?, ?, ?);""".stripMargin
 
     QueryGenerator.findDeposits(depositIds) should equal(expectedQuery)(after being whiteSpaceNormalised)
-  }
-
-  it should "not render the WHERE clause when the input list is empty" in {
-    QueryGenerator.findDeposits(Seq.empty) shouldBe "SELECT * FROM Deposit;"
   }
 
   "searchDeposits" should "render a query that selects all deposits when no filters are set" in {
