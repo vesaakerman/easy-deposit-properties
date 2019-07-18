@@ -1,11 +1,11 @@
 -- differences with src/main/assembly/dist/install/db-tables.sql in order to support HSQLDB syntax
 -- * SERIAL --> INTEGER IDENTITY
--- * TEXT --> CLOB
+-- * TEXT --> VARCHAR(10000)
 -- * IdentifierSchema ENUM --> table with foreign key constraint
 
 CREATE TABLE Deposit (
     depositId CHAR(36) NOT NULL PRIMARY KEY,
-    bagName CLOB,
+    bagName VARCHAR(10000),
     creationTimestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     depositorId VARCHAR(64) NOT NULL
 );
@@ -14,20 +14,11 @@ CREATE TABLE State (
     stateId INTEGER IDENTITY NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     label VARCHAR(64) NOT NULL,
-    description CLOB NOT NULL,
+    description VARCHAR(10000) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    UNIQUE (depositId, timestamp)
 );
-
-CREATE TABLE IdentifierSchema (
-    value VARCHAR(64) NOT NULL PRIMARY KEY
-);
-
-INSERT INTO IdentifierSchema (value)
-VALUES ('doi'),
-       ('urn'),
-       ('fedora'),
-       ('bag-store');
 
 CREATE TABLE Identifier (
     identifierId INTEGER IDENTITY NOT NULL PRIMARY KEY,
@@ -36,8 +27,9 @@ CREATE TABLE Identifier (
     identifierValue VARCHAR(64) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    FOREIGN KEY (identifierSchema) REFERENCES IdentifierSchema (value),
-    UNIQUE (depositId, identifierSchema)
+    CHECK (identifierSchema in ('doi', 'urn', 'fedora', 'bag-store')),
+    UNIQUE (depositId, identifierSchema),
+    UNIQUE (depositId, timestamp)
 );
 
 CREATE TABLE Curation (
@@ -47,12 +39,13 @@ CREATE TABLE Curation (
     isRequired BOOLEAN NOT NULL,
     isPerformed BOOLEAN NOT NULL,
     datamanagerUserId VARCHAR(64) NOT NULL,
-    datamanagerEmail CLOB NOT NULL,
+    datamanagerEmail VARCHAR(10000) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    UNIQUE (depositId, timestamp)
 );
 
-CREATE TABLE DepositSpringfield (
+CREATE TABLE Springfield (
     springfieldId INTEGER IDENTITY NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     domain VARCHAR(32) NOT NULL,
@@ -60,7 +53,8 @@ CREATE TABLE DepositSpringfield (
     collection VARCHAR(32) NOT NULL,
     playmode VARCHAR(32) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    UNIQUE (depositId, timestamp)
 );
 
 CREATE TABLE SimpleProperties (
@@ -69,5 +63,6 @@ CREATE TABLE SimpleProperties (
     key VARCHAR(64) NOT NULL,
     value VARCHAR(64) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    UNIQUE (depositId, key, timestamp)
 );
