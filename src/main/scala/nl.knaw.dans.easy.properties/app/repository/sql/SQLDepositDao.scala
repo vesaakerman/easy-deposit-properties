@@ -20,7 +20,8 @@ import java.sql.{ Connection, ResultSet }
 import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.option._
-import cats.instances.stream._
+import cats.instances.string._
+import cats.instances.uuid._
 import cats.instances.vector._
 import cats.syntax.either._
 import cats.syntax.functor._
@@ -32,79 +33,43 @@ import resource.managed
 
 class SQLDepositDao(implicit connection: Connection) extends DepositDao with CommonResultSetParsers with DebugEnhancedLogging {
 
-  def getAll: QueryErrorOr[Seq[Deposit]] = {
-    trace(())
-    val query = QueryGenerator.getAllDeposits
-
-    val resultSet = for {
-      prepStatement <- managed(connection.prepareStatement(query))
-      resultSet <- managed(prepStatement.executeQuery())
-    } yield resultSet
-
-    resultSet.map(result =>
-      Stream.continually(result.next())
-        .takeWhile(b => b)
-        .traverse[Either[InvalidValueError, ?], Deposit](_ => parseDeposit(result))
-        .map(_.toList))
-      .either
-      .either
-      .leftMap(InvalidValueError(_))
-      .flatMap(identity)
+  private def parseLastModifiedResponse(resultSet: ResultSet): Either[InvalidValueError, (DepositId, Timestamp)] = {
+    for {
+      depositId <- parseDepositId(resultSet.getString("depositId"))
+      maxTimestamp <- parseDateTime(resultSet.getTimestamp("max_timestamp", timeZone), timeZone)
+    } yield depositId -> maxTimestamp
   }
 
-  def find(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Deposit])]] = {
+  override def getAll: QueryErrorOr[Seq[Deposit]] = {
+    trace(())
+    val query = QueryGenerator.getAllDeposits
+    executeQuery(extractResults(parseDeposit)(_.toList))(Seq.empty[DepositId])(query)
+  }
+
+  override def find(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Deposit])]] = {
     trace(ids)
+
+    def collectResults(stream: Stream[Deposit]): Seq[(DepositId, Option[Deposit])] = {
+      val results = stream.toList
+        .groupBy(_.id)
+        .flatMap {
+          case (id, ds) => ds.headOption.tupleLeft(id)
+        }
+      ids.map(id => id -> results.get(id))
+    }
+
     NonEmptyList.fromList(ids.toList)
-      .map(nelIds => {
-        val query = QueryGenerator.findDeposits(nelIds)
-
-        val resultSet = for {
-          prepStatement <- managed(connection.prepareStatement(query))
-          _ = ids.zipWithIndex.foreach { case (id, index) => prepStatement.setString(index + 1, id.toString) }
-          resultSet <- managed(prepStatement.executeQuery())
-        } yield resultSet
-
-        resultSet.map(result =>
-          Stream.continually(result.next())
-            .takeWhile(b => b)
-            .traverse[Either[InvalidValueError, ?], Deposit](_ => parseDeposit(result))
-            .map(stream => {
-              val results = stream.toList
-                .groupBy(_.id)
-                .flatMap {
-                  case (id, ds) => ds.headOption.tupleLeft(id)
-                }
-              ids.map(id => id -> results.get(id))
-            }))
-          .either
-          .either
-          .leftMap(InvalidValueError(_))
-          .flatMap(identity)
-      })
+      .map(QueryGenerator.findDeposits)
+      .map(executeQuery(extractResults(parseDeposit)(collectResults))(ids))
       .getOrElse(Seq.empty.asRight)
   }
 
   private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
     val (query, values) = QueryGenerator.searchDeposits(filters)
-
-    val resultSet = for {
-      prepStatement <- managed(connection.prepareStatement(query))
-      _ = values.zipWithIndex.foreach { case (v, i) => prepStatement.setString(i + 1, v) } // 'i + 1' because these indices start at 1
-      resultSet <- managed(prepStatement.executeQuery())
-    } yield resultSet
-
-    resultSet.map(result =>
-      Stream.continually(result.next())
-        .takeWhile(b => b)
-        .traverse[Either[InvalidValueError, ?], Deposit](_ => parseDeposit(result))
-        .map(_.toList))
-      .either
-      .either
-      .leftMap(InvalidValueError(_))
-      .flatMap(identity)
+    executeQuery(extractResults(parseDeposit)(_.toList))(values)(query)
   }
 
-  def search(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]] = {
+  override def search(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]] = {
     trace(filters)
     // ideally this would be implemented with one query,
     // but that would be quite difficult (if not impossible) to do.
@@ -112,7 +77,7 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
     filters.toVector.traverse(fs => search(fs).tupleLeft(fs))
   }
 
-  def store(deposit: Deposit): MutationErrorOr[Deposit] = {
+  override def store(deposit: Deposit): MutationErrorOr[Deposit] = {
     trace(deposit)
     val query = QueryGenerator.storeDeposit()
 
@@ -130,43 +95,21 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
       .map(_ => deposit)
   }
 
-  private def parseLastModifiedResponse(resultSet: ResultSet): Either[InvalidValueError, (DepositId, Timestamp)] = {
-    for {
-      depositId <- parseDepositId(resultSet.getString("depositId"))
-      maxTimestamp <- parseDateTime(resultSet.getTimestamp("max_timestamp", timeZone), timeZone)
-    } yield depositId -> maxTimestamp
-  }
-
-  def lastModified(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]] = {
+  override def lastModified(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]] = {
     trace(ids)
+
+    def collectResults(stream: Stream[(DepositId, Timestamp)]): Seq[(DepositId, Option[Timestamp])] = {
+      val results = stream.toList
+        .groupBy { case (depositId, _) => depositId }
+        .flatMap {
+          case (id, rs) => rs.headOption.map { case (_, timestamp) => timestamp }.tupleLeft(id)
+        }
+      ids.map(id => id -> results.get(id))
+    }
+
     NonEmptyList.fromList(ids.toList)
-      .map(nelIds => {
-        val (query, values) = QueryGenerator.getLastModifiedDate(nelIds)
-
-        val resultSet = for {
-          prepStatement <- managed(connection.prepareStatement(query))
-          _ = values.toList.zipWithIndex.foreach { case (v, i) => prepStatement.setString(i + 1, v) } // 'i + 1' because these indices start at 1
-          resultSet <- managed(prepStatement.executeQuery())
-        } yield resultSet
-
-        resultSet.map(result =>
-          Stream.continually(result.next())
-            .takeWhile(b => b)
-            .traverse[Either[InvalidValueError, ?], (DepositId, Timestamp)](_ => parseLastModifiedResponse(result))
-            .map(stream => {
-              val results = stream.toList
-                .groupBy { case (depositId, _) => depositId }
-                .flatMap {
-                  case (id, rs) => rs.headOption.map { case (_, timestamp) => timestamp }.tupleLeft(id)
-                }
-              ids.map(id => id -> results.get(id))
-            })
-            .map(_.toList))
-          .either
-          .either
-          .leftMap(InvalidValueError(_))
-          .flatMap(identity)
-      })
+      .map(QueryGenerator.getLastModifiedDate)
+      .map { case (query, values) => executeQuery(extractResults(parseLastModifiedResponse)(collectResults))(values.toList)(query) }
       .getOrElse(Seq.empty.asRight)
   }
 }

@@ -2,6 +2,7 @@ package nl.knaw.dans.easy.properties.fixture
 
 import java.util.UUID
 
+import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.scalatest.{ BeforeAndAfterEach, Suite }
@@ -10,7 +11,7 @@ import resource.managed
 trait DatabaseDataFixture extends BeforeAndAfterEach {
   this: DatabaseFixture with Suite =>
 
-  val timeZone = DateTimeZone.UTC
+  val timeZone: DateTimeZone = DateTimeZone.UTC
 
   val depositId1: DepositId = UUID.fromString("00000000-0000-0000-0000-000000000001")
   val depositId2: DepositId = UUID.fromString("00000000-0000-0000-0000-000000000002")
@@ -34,6 +35,31 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
           |       ('$depositId5', 'bag5', '2019-05-05 00:00:00.000000+0:00', 'user002');""".stripMargin
     }
   }
+
+  val state10 = State("0", StateLabel.DRAFT, "draft with continued deposit", new DateTime(2019, 1, 1, 0, 0, timeZone))
+  val state11 = State("1", StateLabel.DRAFT, "draft with continued deposit", new DateTime(2019, 1, 1, 1, 1, timeZone))
+  val state12 = State("2", StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 1, 1, 2, 2, timeZone))
+  val state13 = State("3", StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 1, 1, 3, 3, timeZone))
+  val state14 = State("4", StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 1, 1, 4, 4, timeZone))
+  val state15 = State("5", StateLabel.ARCHIVED, "deposit is archived", new DateTime(2019, 1, 1, 5, 5, timeZone))
+
+  val state20 = State("6", StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 2, 2, 0, 0, timeZone))
+  val state21 = State("7", StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 2, 2, 1, 1, timeZone))
+  val state22 = State("8", StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 2, 2, 2, 2, timeZone))
+  val state23 = State("9", StateLabel.ARCHIVED, "deposit is archived", new DateTime(2019, 2, 2, 3, 3, timeZone))
+
+  val state30 = State("10", StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 3, 3, 0, 0, timeZone))
+  val state31 = State("11", StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 3, 3, 1, 1, timeZone))
+  val state32 = State("12", StateLabel.INVALID, "deposit is invalid", new DateTime(2019, 3, 3, 2, 2, timeZone))
+
+  val state40 = State("13", StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 4, 4, 0, 0, timeZone))
+  val state41 = State("14", StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 4, 4, 1, 1, timeZone))
+  val state42 = State("15", StateLabel.ARCHIVED, "deposit is archived", new DateTime(2019, 4, 4, 2, 2, timeZone))
+
+  val state50 = State("16", StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 5, 5, 0, 0, timeZone))
+  val state51 = State("17", StateLabel.FINALIZING, "deposit is finalizing", new DateTime(2019, 5, 5, 1, 1, timeZone))
+  val state52 = State("18", StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 5, 5, 2, 2, timeZone))
+  val state53 = State("19", StateLabel.REJECTED, "deposit is rejected", new DateTime(2019, 5, 5, 3, 3, timeZone))
 
   def fillStateTable(): Unit = {
     prepareTest {

@@ -1,0 +1,143 @@
+package nl.knaw.dans.easy.properties.app.repository.sql
+
+import java.util.UUID
+
+import cats.scalatest.EitherValues
+import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State, StateLabel }
+import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, NoSuchDepositError }
+import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
+import org.joda.time.DateTime
+
+class SQLStateDaoSpec extends TestSupportFixture
+  with FileSystemSupport
+  with DatabaseFixture
+  with DatabaseDataFixture
+  with EitherValues {
+
+  "getById" should "find states identified by their stateId" in {
+    val states = new SQLStateDao
+
+    states.getById(Seq("7", "8", "15")).value should contain only(
+      "7" -> Some(state21),
+      "8" -> Some(state22),
+      "15" -> Some(state42),
+    )
+  }
+
+  it should "return a None if the stateId is unknown" in {
+    val states = new SQLStateDao
+    val unknownStateId = "102"
+
+    states.getById(Seq(unknownStateId)).value should contain only (unknownStateId -> Option.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val states = new SQLStateDao
+
+    states.getById(Seq.empty).value shouldBe empty
+  }
+
+  it should "fail when an invalid stateId is given" in {
+    val states = new SQLStateDao
+
+    states.getById(Seq("12", "invalid-id", "29")).leftValue shouldBe InvalidValueError("invalid id 'invalid-id'")
+  }
+
+  "getCurrent" should "return the current states of the given deposits" in {
+    val states = new SQLStateDao
+
+    states.getCurrent(Seq(depositId2, depositId5)).value should contain only(
+      depositId2 -> Some(state23),
+      depositId5 -> Some(state53),
+    )
+  }
+
+  it should "return a None if the depositId is unknown" in {
+    val states = new SQLStateDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+
+    states.getCurrent(Seq(depositId6)).value should contain only (depositId6 -> Option.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val states = new SQLStateDao
+
+    states.getCurrent(Seq.empty).value shouldBe empty
+  }
+
+  "getAll" should "return all states associated with the given deposits" in {
+    val states = new SQLStateDao
+
+    states.getAll(Seq(depositId2, depositId5)).value should contain only(
+      depositId2 -> Seq(state20, state21, state22, state23),
+      depositId5 -> Seq(state50, state51, state52, state53),
+    )
+  }
+
+  it should "return a None if the depositId is unknown" in {
+    val states = new SQLStateDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+
+    states.getAll(Seq(depositId6)).value should contain only (depositId6 -> Seq.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val states = new SQLStateDao
+
+    states.getAll(Seq.empty).value shouldBe empty
+  }
+
+  "store" should "insert a new state into the database" in {
+    val states = new SQLStateDao
+    val timestamp = new DateTime(2019, 7, 18, 22, 38, timeZone)
+    val inputState = InputState(StateLabel.FEDORA_ARCHIVED, "blablabla", timestamp)
+    val expectedState = State("20", StateLabel.FEDORA_ARCHIVED, "blablabla", timestamp)
+
+    states.store(depositId1, inputState).value shouldBe expectedState
+    states.getById(Seq("20")).value should contain only (
+      "20" -> Some(expectedState),
+      )
+    states.getCurrent(Seq(depositId1)).value should contain only (
+      depositId1 -> Some(expectedState)
+      )
+    states.getAll(Seq(depositId1)).value.toMap.apply(depositId1) should contain(expectedState)
+  }
+
+  it should "fail when the given depositId does not exist" in {
+    val states = new SQLStateDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+    val timestamp = new DateTime(2019, 7, 18, 22, 38, timeZone)
+    val inputState = InputState(StateLabel.FEDORA_ARCHIVED, "blablabla", timestamp)
+
+    states.store(depositId6, inputState).leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+
+  "getDepositsById" should "find deposits identified by these stateId" in {
+    val states = new SQLStateDao
+
+    states.getDepositsById(Seq("7", "8", "15")).value should contain only(
+      "7" -> Some(deposit2),
+      "8" -> Some(deposit2),
+      "15" -> Some(deposit4),
+    )
+  }
+
+  it should "return a None if the stateId is unknown" in {
+    val states = new SQLStateDao
+    val unknownStateId = "102"
+
+    states.getDepositsById(Seq(unknownStateId)).value should contain only (unknownStateId -> Option.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val states = new SQLStateDao
+
+    states.getDepositsById(Seq.empty).value shouldBe empty
+  }
+
+  it should "fail when an invalid stateId is given" in {
+    val states = new SQLStateDao
+
+    states.getDepositsById(Seq("12", "invalid-id", "29")).leftValue shouldBe InvalidValueError("invalid id 'invalid-id'")
+  }
+}

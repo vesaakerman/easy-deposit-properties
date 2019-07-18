@@ -298,10 +298,6 @@ class QueryGeneratorSpec extends TestSupportFixture {
     values should contain inOrderOnly("user001", "my-bag", StateLabel.SUBMITTED.toString, "ingest-step", IngestStepLabel.FEDORA.toString)
   }
 
-  "storeDeposit" should "yield the query for inserting a deposit to the database" in {
-    QueryGenerator.storeDeposit() shouldBe "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
-  }
-
   "getLastModifiedDate" should "generate a UNION query" in {
     val depositIds = NonEmptyList.fromListUnsafe((1 to 5).map(_ => UUID.randomUUID()).toList)
     val (query, values) = QueryGenerator.getLastModifiedDate(depositIds)
@@ -323,5 +319,69 @@ class QueryGeneratorSpec extends TestSupportFixture {
       have length (depositIds.size * 6) and
         contain theSameElementsAs Seq.fill(6)(depositIds.map(_.toString).toList).flatten
     }
+  }
+
+  "getElementsById" should "generate a query that, given a table name and id column name, finds the elements associated with the given ids" in {
+    val ids = NonEmptyList.fromListUnsafe((1 to 5).map(i => s"id$i").toList)
+    val query = QueryGenerator.getElementsById("State", "stateId")(ids)
+
+    val expectedQuery =
+      """SELECT *
+        |FROM State
+        |WHERE stateId IN (?, ?, ?, ?, ?);""".stripMargin
+
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+  }
+
+  "getCurrentElementByDepositId" should "generate a query that, given a table name, finds the element that is latest associated with the given depositIds" in {
+    val depositIds = NonEmptyList.fromListUnsafe((1 to 5).map(_ => UUID.randomUUID()).toList)
+    val query = QueryGenerator.getCurrentElementByDepositId("State")(depositIds)
+
+    val expectedQuery =
+      """SELECT *
+        |FROM State
+        |INNER JOIN (
+        |  SELECT depositId, max(timestamp) AS max_timestamp
+        |  FROM State
+        |  WHERE depositId IN (?, ?, ?, ?, ?)
+        |  GROUP BY depositId
+        |) AS deposit_with_max_timestamp USING (depositId)
+        |WHERE timestamp = max_timestamp;""".stripMargin
+
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+  }
+
+  "getAllElementsByDepositId" should "generate a query that, given a table name, finds all elements that are/were associated with the given depositIds" in {
+    val depositIds = NonEmptyList.fromListUnsafe((1 to 5).map(_ => UUID.randomUUID()).toList)
+    val query = QueryGenerator.getAllElementsByDepositId("State")(depositIds)
+
+    val expectedQuery =
+      """SELECT *
+        |FROM State
+        |WHERE depositId IN (?, ?, ?, ?, ?);""".stripMargin
+
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+  }
+
+  "getDepositsById" should "generate a query that, given a table name and id column name, finds deposits corresponing to the given ids" in {
+    val ids = NonEmptyList.fromListUnsafe((1 to 5).map(i => s"id$i").toList)
+    val query = QueryGenerator.getDepositsById("State", "stateId")(ids)
+
+    val expectedQuery =
+      """SELECT stateId, depositId, bagName, creationTimestamp, depositorId
+        |FROM Deposit
+        |INNER JOIN State
+        |ON Deposit.depositId = State.depositId
+        |WHERE stateId IN (?, ?, ?, ?, ?);""".stripMargin
+
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+  }
+
+  "storeDeposit" should "yield the query for inserting a deposit into the database" in {
+    QueryGenerator.storeDeposit() shouldBe "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
+  }
+
+  "storeState" should "yield the query for inserting a State into the database" in {
+    QueryGenerator.storeState() shouldBe "INSERT INTO State (depositId, label, description, timestamp) VALUES (?, ?, ?, ?);"
   }
 }

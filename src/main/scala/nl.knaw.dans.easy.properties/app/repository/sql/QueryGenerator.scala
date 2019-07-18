@@ -89,10 +89,6 @@ object QueryGenerator {
     }
   }
 
-  def storeDeposit(): String = {
-    "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
-  }
-
   def getLastModifiedDate(ids: NonEmptyList[DepositId]): (String, NonEmptyList[String]) = {
     val whereClause = ids.toList.map(_ => "?").mkString("WHERE depositId IN (", ", ", ")")
     val tablesAndMaxFields = List(
@@ -111,5 +107,37 @@ object QueryGenerator {
     val values = tablesAndMaxFields.map(_ => stringIds).reduce(_ ::: _)
 
     query -> values
+  }
+
+  def getElementsById(tableName: String, idColumnName: String)(ids: NonEmptyList[String]): String = {
+    s"SELECT * FROM $tableName WHERE $idColumnName IN (${ ids.toList.map(_ => "?").mkString(", ") });"
+  }
+
+  def getCurrentElementByDepositId(tableName: String)(ids: NonEmptyList[DepositId]): String = {
+    s"""SELECT *
+       |FROM $tableName
+       |INNER JOIN (
+       |  SELECT depositId, max(timestamp) AS max_timestamp
+       |  FROM $tableName
+       |  WHERE depositId IN (${ ids.toList.map(_ => "?").mkString(", ") })
+       |  GROUP BY depositId
+       |) AS deposit_with_max_timestamp USING (depositId)
+       |WHERE timestamp = max_timestamp;""".stripMargin
+  }
+
+  def getAllElementsByDepositId(tableName: String)(ids: NonEmptyList[DepositId]): String = {
+    s"SELECT * FROM $tableName WHERE depositId IN (${ ids.toList.map(_ => "?").mkString(", ") });"
+  }
+
+  def getDepositsById(tableName: String, idColumnName: String)(ids: NonEmptyList[String]): String = {
+    s"SELECT $idColumnName, depositId, bagName, creationTimestamp, depositorId FROM Deposit INNER JOIN $tableName ON Deposit.depositId = $tableName.depositId WHERE $idColumnName IN (${ ids.toList.map(_ => "?").mkString(", ") });"
+  }
+
+  def storeDeposit(): String = {
+    "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
+  }
+
+  def storeState(): String = {
+    "INSERT INTO State (depositId, label, description, timestamp) VALUES (?, ?, ?, ?);"
   }
 }
