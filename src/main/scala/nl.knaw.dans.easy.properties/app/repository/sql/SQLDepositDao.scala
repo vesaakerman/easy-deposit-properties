@@ -15,132 +15,73 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.sql
 
-import java.sql.Connection
+import java.sql.{ Connection, ResultSet }
 
+import cats.data.NonEmptyList
 import cats.instances.either._
+import cats.instances.option._
+import cats.instances.stream._
 import cats.instances.vector._
+import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositFilter, DepositId, SeriesFilter, Timestamp }
-import nl.knaw.dans.easy.properties.app.repository.{ DepositDao, DepositFilters, MutationErrorOr, QueryErrorOr }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositAlreadyExistsError, DepositDao, DepositFilters, InvalidValueError, MutationErrorOr, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
-class SQLDepositDao(implicit connection: Connection) extends DepositDao with DebugEnhancedLogging {
+class SQLDepositDao(implicit connection: Connection) extends DepositDao with CommonResultSetParsers with DebugEnhancedLogging {
 
   def getAll: QueryErrorOr[Seq[Deposit]] = {
-    /*
-     * SELECT *
-     * FROM Deposit;
-     */
+    trace(())
+    val query = QueryGenerator.getAllDeposits
 
-    ???
+    val resultSet = for {
+      prepStatement <- managed(connection.prepareStatement(query))
+      resultSet <- managed(prepStatement.executeQuery())
+    } yield resultSet
+
+    resultSet.map(result =>
+      Stream.continually(result.next())
+        .takeWhile(b => b)
+        .traverse[Either[InvalidValueError, ?], Deposit](_ => parseDeposit(result))
+        .map(_.toList))
+      .either
+      .either
+      .leftMap(InvalidValueError(_))
+      .flatMap(identity)
   }
 
   def find(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Deposit])]] = {
-    /*
-     * SELECT *
-     * FROM Deposit
-     * WHERE depositId IN (?*);
-     */
+    trace(ids)
+    val query = QueryGenerator.findDeposits(ids)
 
-    ???
-  }
+    val resultSet = for {
+      prepStatement <- managed(connection.prepareStatement(query))
+      _ = ids.zipWithIndex.foreach { case (id, index) => prepStatement.setString(index + 1, id.toString) }
+      resultSet <- managed(prepStatement.executeQuery())
+    } yield resultSet
 
-  // TODO extract in separate class, such that it can be tested
-  private def createSearchQuery(filters: DepositFilters): (String, Seq[String]) = {
-    /*
-     * latest state with label:
-     *   SELECT depositId
-     *   FROM (
-     *     SELECT *, max(timestamp) over (partition by depositId) as max_timestamp
-     *     FROM State
-     *     WHERE label = ?
-     *   ) AS t
-     *   WHERE timestamp = max_timestamp
-     * 
-     * all states with label:
-     * 
-     *   SELECT DISTINCT depositId
-     *   FROM State
-     *   WHERE label = ?
-     */
-    type TableName = String
-    type LabelName = String
-    type Query = String
-
-    def createSubQuery[T <: DepositFilter](filter: T)(tableName: TableName, labelName: LabelName, labelValue: T => String): (TableName, Query, String) = {
-      val query = filter.filter match {
-        case SeriesFilter.ALL =>
-          s"SELECT DISTINCT depositId FROM $tableName WHERE $labelName = ?"
-        case SeriesFilter.LATEST =>
-          s"SELECT depositId FROM ( SELECT *, max(timestamp) over (partition by depositId) as max_timestamp FROM $tableName WHERE $labelName = ?) AS ${ tableName }WithMaxTimestamp WHERE timestamp = max_timestamp"
-      }
-
-      (tableName, query, labelValue(filter))
-    }
-
-    val (queryWherePart, whereValues) = List(
-      filters.depositorId.map("depositorId" -> _),
-      filters.bagName.map("bagName" -> _),
-    )
-      .flatten
-      .map {
-        case (labelName, value) => s"$labelName = ?" -> value
-      }
-      .foldLeft(("", List.empty[String])) {
-        case (("", vs), (subQuery, value)) =>
-          subQuery -> (value :: vs)
-        case ((q, vs), (subQuery, value)) =>
-          s"$q AND $subQuery" -> (value :: vs)
-      }
-    val (queryJoinPart, joinValues) = List(
-      filters.stateFilter.map(createSubQuery(_)("State", "label", _.label.toString)),
-      filters.ingestStepFilter.map(createSubQuery(_)("SimpleProperties", "value", _.label.toString)),
-      filters.doiRegisteredFilter.map(createSubQuery(_)("SimpleProperties", "value", _.value.toString)),
-      filters.doiActionFilter.map(createSubQuery(_)("SimpleProperties", "value", _.value.toString)),
-      filters.curatorFilter.map(createSubQuery(_)("Curation", "datamanagerUserId", _.curator)),
-      filters.isNewVersionFilter.map(createSubQuery(_)("Curation", "isNewVersion", _.isNewVersion.toString)),
-      filters.curationRequiredFilter.map(createSubQuery(_)("Curation", "isRequired", _.curationRequired.toString)),
-      filters.curationPerformedFilter.map(createSubQuery(_)("Curation", "isPerformed", _.curationPerformed.toString)),
-      filters.contentTypeFilter.map(createSubQuery(_)("SimpleProperties", "value", _.value.toString)),
-    )
-      .flatten
-      .map {
-        case (tableName, q, value) => s"INNER JOIN ($q) AS ${ tableName }SearchResult USING (depositId)" -> value
-      }
-      .foldLeft(("", List.empty[String])) {
-        case (("", vs), (subQuery, value)) => subQuery -> (value :: vs)
-        case ((q, vs), (subQuery, value)) => s"$q $subQuery" -> (value :: vs)
-      }
-    
-    val depositQueryWherePart = if (queryWherePart.isEmpty) ""
-                                else s"WHERE $queryWherePart"
-    val depositTableQuery = s"(SELECT * FROM Deposit $depositQueryWherePart) AS SelectedDeposits"
-
-    /*
-     * example:
-     *   SELECT *
-     *   FROM (
-     *     SELECT * FROM Deposit WHERE depositorId = ?
-     *   ) AS SelectedDeposits INNER JOIN (
-     *     SELECT depositId
-     *     FROM (
-     *       SELECT *, max(timestamp) over (partition by depositId) as max_timestamp
-     *       FROM State
-     *       WHERE label = ?
-     *     ) AS StateWithMaxTimestamp
-     *     WHERE timestamp = max_timestamp
-     *   ) AS StateSearchResult USING (depositId);
-     */
-    val query = s"SELECT * FROM $depositTableQuery $queryJoinPart;"
-    val values = whereValues.reverse ::: joinValues.reverse 
-
-    query -> values
+    resultSet.map(result =>
+      Stream.continually(result.next())
+        .takeWhile(b => b)
+        .traverse[Either[InvalidValueError, ?], Deposit](_ => parseDeposit(result))
+        .map(stream => {
+          val results = stream.toList
+            .groupBy(_.id)
+            .flatMap {
+              case (id, ds) => ds.headOption.tupleLeft(id)
+            }
+          ids.map(id => id -> results.get(id))
+        }))
+      .either
+      .either
+      .leftMap(InvalidValueError(_))
+      .flatMap(identity)
   }
 
   private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
-    val (query, values) = createSearchQuery(filters)
+    val (query, values) = QueryGenerator.searchDeposits(filters)
 
     val resultSet = for {
       prepStatement <- managed(connection.prepareStatement(query))
@@ -148,10 +89,19 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Deb
       resultSet <- managed(prepStatement.executeQuery())
     } yield resultSet
 
-    ???
+    resultSet.map(result =>
+      Stream.continually(result.next())
+        .takeWhile(b => b)
+        .traverse[Either[InvalidValueError, ?], Deposit](_ => parseDeposit(result))
+        .map(_.toList))
+      .either
+      .either
+      .leftMap(InvalidValueError(_))
+      .flatMap(identity)
   }
 
   def search(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]] = {
+    trace(filters)
     // ideally this would be implemented with one query,
     // but that would be quite difficult (if not impossible) to do.
     // Also, 'filters' will usually have one element and can only get larger with deep nesting.
@@ -159,28 +109,60 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Deb
   }
 
   def store(deposit: Deposit): MutationErrorOr[Deposit] = {
-    /*
-     * INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId)
-     * VALUES (?, ?, ?, ?);
-     */
+    trace(deposit)
+    val query = QueryGenerator.storeDeposit()
 
-    ???
+    managed(connection.prepareStatement(query))
+      .map(prepStatement => {
+        prepStatement.setString(1, deposit.id.toString)
+        prepStatement.setString(2, deposit.bagName.orNull)
+        prepStatement.setTimestamp(3, deposit.creationTimestamp, timeZone)
+        prepStatement.setString(4, deposit.depositorId)
+        prepStatement.executeUpdate()
+      })
+      .either
+      .either
+      .leftMap(_ => DepositAlreadyExistsError(deposit.id))
+      .map(_ => deposit)
+  }
+
+  private def parseLastModifiedResponse(resultSet: ResultSet): Either[InvalidValueError, (DepositId, Timestamp)] = {
+    for {
+      depositId <- parseDepositId(resultSet.getString("depositId"))
+      maxTimestamp <- parseDateTime(resultSet.getTimestamp("max_timestamp", timeZone), timeZone)
+    } yield depositId -> maxTimestamp
   }
 
   def lastModified(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]] = {
-    /*
-     * SELECT depositId, MAX(max)
-     * FROM (
-     *   ( SELECT depositId, MAX(creationTimestamp) FROM Deposit WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
-     *   ( SELECT depositId, MAX(timestamp) FROM State WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
-     *   ( SELECT depositId, MAX(timestamp) FROM Identifier WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
-     *   ( SELECT depositId, MAX(timestamp) FROM Curation WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
-     *   ( SELECT depositId, MAX(timestamp) FROM Springfield WHERE depositId IN (?*) GROUP BY depositId ) UNION ALL
-     *   ( SELECT depositId, MAX(timestamp) FROM SimpleProperties WHERE depositId IN (?*) GROUP BY depositId )
-     * ) AS max_timestamps
-     * GROUP BY depositId;
-     */
+    trace(ids)
+    NonEmptyList.fromList(ids.toList)
+      .map(nelIds => {
+        val (query, values) = QueryGenerator.getLastModifiedDate(nelIds)
 
-    ???
+        val resultSet = for {
+          prepStatement <- managed(connection.prepareStatement(query))
+          _ = values.toList.zipWithIndex.foreach { case (v, i) => prepStatement.setString(i + 1, v) } // 'i + 1' because these indices start at 1
+          resultSet <- managed(prepStatement.executeQuery())
+        } yield resultSet
+
+        resultSet.map(result =>
+          Stream.continually(result.next())
+            .takeWhile(b => b)
+            .traverse[Either[InvalidValueError, ?], (DepositId, Timestamp)](_ => parseLastModifiedResponse(result))
+            .map(stream => {
+              val results = stream.toList
+                .groupBy { case (depositId, _) => depositId }
+                .flatMap {
+                  case (id, rs) => rs.headOption.map { case (_, timestamp) => timestamp }.tupleLeft(id)
+                }
+              ids.map(id => id -> results.get(id))
+            })
+            .map(_.toList))
+          .either
+          .either
+          .leftMap(InvalidValueError(_))
+          .flatMap(identity)
+      })
+      .getOrElse(Seq.empty.asRight)
   }
 }

@@ -200,7 +200,7 @@ class GraphQLResolveSpec extends TestSupportFixture
 
   addServlet(servlet, "/*")
 
-  override protected def beforeEach(): Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
 
     File(getClass.getResource("/graphql-examples"))

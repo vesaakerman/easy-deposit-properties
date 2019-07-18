@@ -29,6 +29,11 @@ package object repository {
 
   abstract class QueryError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
   case class DepositDoesNotExistError(depositId: DepositId) extends QueryError(s"Deposit $depositId does not exist.")
+  case class InvalidValueError(override val msg: String) extends QueryError(msg)
+  object InvalidValueError {
+    // TODO use EitherNel in QueryErrorOr[T] instead of collapsing the errors
+    def apply(ts: Seq[Throwable]): InvalidValueError = InvalidValueError(ts.map(_.getMessage).mkString("\n"))
+  }
 
   abstract class MutationError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
   case class NoSuchDepositError(depositId: DepositId) extends MutationError(s"Deposit $depositId does not exist.")
