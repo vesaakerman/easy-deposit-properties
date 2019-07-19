@@ -71,7 +71,7 @@ VALUES ('00000000-0000-0000-0000-000000000001', 'false', 'true', 'false', 'archi
        ('00000000-0000-0000-0000-000000000005', 'false', 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-05-05 00:00:00+02'),
        ('00000000-0000-0000-0000-000000000005', 'false', 'true', 'true' , 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-05-05 04:04:00+02');
 
-INSERT INTO Springfield (depositId, domain, "user", collection, playmode, timestamp)
+INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp)
 VALUES ('00000000-0000-0000-0000-000000000001', 'domain1', 'user1', 'collection1', 'continuous', '2019-01-01 00:00:00+01'),
        ('00000000-0000-0000-0000-000000000002', 'domain1', 'user1', 'collection1', 'continuous', '2019-02-02 00:00:00+01'),
        ('00000000-0000-0000-0000-000000000002', 'domain2', 'user2', 'collection2', 'menu'      , '2019-02-02 02:02:00+01');

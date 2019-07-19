@@ -49,7 +49,7 @@ CREATE TABLE Springfield (
     springfieldId INTEGER IDENTITY NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     domain VARCHAR(32) NOT NULL,
-    user VARCHAR(32) NOT NULL,
+    springfield_user VARCHAR(32) NOT NULL,
     collection VARCHAR(32) NOT NULL,
     playmode VARCHAR(32) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,

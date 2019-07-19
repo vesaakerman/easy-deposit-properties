@@ -125,7 +125,7 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
 
   def fillSpringfieldTable(): Unit = {
     prepareTest {
-      """INSERT INTO Springfield (depositId, domain, user, collection, playmode, timestamp)
+      """INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp)
         |VALUES ('00000000-0000-0000-0000-000000000001', 'domain1', 'user1', 'collection1', 'continuous', '2019-01-01 00:00:00.000000+00:00'),
         |       ('00000000-0000-0000-0000-000000000002', 'domain1', 'user1', 'collection1', 'continuous', '2019-02-02 00:00:00.000000+00:00'),
         |       ('00000000-0000-0000-0000-000000000002', 'domain2', 'user2', 'collection2', 'menu'      , '2019-02-02 02:02:00.000000+00:00');""".stripMargin
