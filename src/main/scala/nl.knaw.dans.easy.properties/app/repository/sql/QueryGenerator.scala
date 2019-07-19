@@ -137,6 +137,10 @@ object QueryGenerator {
     "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
   }
 
+  def storeSpringfield(): String = {
+    """INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"""
+  }
+
   def storeState(): String = {
     "INSERT INTO State (depositId, label, description, timestamp) VALUES (?, ?, ?, ?);"
   }

@@ -2,6 +2,7 @@ package nl.knaw.dans.easy.properties.fixture
 
 import java.util.UUID
 
+import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import org.joda.time.{ DateTime, DateTimeZone }
@@ -122,6 +123,10 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
         |       ('00000000-0000-0000-0000-000000000005', 'false', 'true', 'true' , 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-05-05 04:04:00.000000+00:00');""".stripMargin
     }
   }
+
+  val springfield0 = Springfield("0", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  val springfield1 = Springfield("1", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  val springfield2 = Springfield("2", "domain2", "user2", "collection2", SpringfieldPlayMode.MENU, new DateTime(2019, 2, 2, 2, 2, timeZone))
 
   def fillSpringfieldTable(): Unit = {
     prepareTest {
