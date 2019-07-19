@@ -43,7 +43,7 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
   override def getAll: QueryErrorOr[Seq[Deposit]] = {
     trace(())
     val query = QueryGenerator.getAllDeposits
-    executeQuery(extractResults(parseDeposit)(_.toList))(Seq.empty[DepositId])(query)
+    executeQuery(parseDeposit)(_.toList)(Seq.empty[DepositId])(query)
   }
 
   override def find(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Deposit])]] = {
@@ -60,13 +60,13 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
 
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.findDeposits)
-      .map(executeQuery(extractResults(parseDeposit)(collectResults))(ids))
+      .map(executeQuery(parseDeposit)(collectResults)(ids))
       .getOrElse(Seq.empty.asRight)
   }
 
   private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
     val (query, values) = QueryGenerator.searchDeposits(filters)
-    executeQuery(extractResults(parseDeposit)(_.toList))(values)(query)
+    executeQuery(parseDeposit)(_.toList)(values)(query)
   }
 
   override def search(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]] = {
@@ -109,7 +109,7 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
 
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.getLastModifiedDate)
-      .map { case (query, values) => executeQuery(extractResults(parseLastModifiedResponse)(collectResults))(values.toList)(query) }
+      .map { case (query, values) => executeQuery(parseLastModifiedResponse)(collectResults)(values.toList)(query) }
       .getOrElse(Seq.empty.asRight)
   }
 }

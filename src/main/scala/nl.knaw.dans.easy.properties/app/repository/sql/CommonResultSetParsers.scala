@@ -21,7 +21,7 @@ import scala.language.higherKinds
 
 private[sql] trait CommonResultSetParsers {
 
-  private[sql] def validateId(s: String): Either[InvalidValueError, String] = {
+  private def validateId(s: String): Either[InvalidValueError, String] = {
     Either.catchOnly[NumberFormatException](s.toLong)
       .leftMap(_ => InvalidValueError(s"invalid id '$s'"))
       .map(_ => s)
@@ -51,7 +51,7 @@ private[sql] trait CommonResultSetParsers {
     } yield Deposit(depositId, bagName, creationTimestamp, depositorId)
   }
 
-  private[sql] def extractResults[T, X](parseResult: ResultSet => Either[InvalidValueError, T])
+  private def extractResults[T, X](parseResult: ResultSet => Either[InvalidValueError, T])
                                        (collectResults: Stream[T] => Seq[X])
                                        (result: ResultSet): Either[InvalidValueError, Seq[X]] = {
     Stream.continually(result.next())
@@ -60,17 +60,18 @@ private[sql] trait CommonResultSetParsers {
       .map(collectResults)
   }
 
-  private[sql] def executeQuery[Id, X](extract: ResultSet => Either[InvalidValueError, X])
-                                      (ids: Seq[Id])
-                                      (query: String)
-                                      (implicit showId: Show[Id], connection: Connection) = {
+  private[sql] def executeQuery[Id, X, T](parseResult: ResultSet => Either[InvalidValueError, T])
+                                         (collectResults: Stream[T] => Seq[X])
+                                         (ids: Seq[Id])
+                                         (query: String)
+                                         (implicit showId: Show[Id], connection: Connection) = {
     val resultSet = for {
       prepStatement <- managed(connection.prepareStatement(query))
       _ = ids.zipWithIndex.foreach { case (id, index) => prepStatement.setString(index + 1, showId.show(id)) }
       resultSet <- managed(prepStatement.executeQuery())
     } yield resultSet
 
-    resultSet.map(extract)
+    resultSet.map(extractResults(parseResult)(collectResults))
       .either
       .either
       .leftMap(InvalidValueError(_))
@@ -92,7 +93,7 @@ private[sql] trait CommonResultSetParsers {
       .map(_
         .traverse[Either[InvalidValueError, ?], String](validateId)
         .map(queryGen)
-        .flatMap(executeQuery(extractResults(extract)(collectResults))(ids))
+        .flatMap(executeQuery(extract)(collectResults)(ids))
       )
       .getOrElse(Seq.empty.asRight)
   }
@@ -112,7 +113,7 @@ private[sql] trait CommonResultSetParsers {
 
     NonEmptyList.fromList(ids.toList)
       .map(queryGen)
-      .map(executeQuery(extractResults(extract)(collectResults))(ids))
+      .map(executeQuery(extract)(collectResults)(ids))
       .getOrElse(Seq.empty.asRight)
   }
 
@@ -131,7 +132,7 @@ private[sql] trait CommonResultSetParsers {
 
     NonEmptyList.fromList(ids.toList)
       .map(queryGen)
-      .map(executeQuery(extractResults(extract)(collectResults))(ids))
+      .map(executeQuery(extract)(collectResults)(ids))
       .getOrElse(Seq.empty.asRight)
   }
 
@@ -150,7 +151,7 @@ private[sql] trait CommonResultSetParsers {
       .map(_
         .traverse[Either[InvalidValueError, ?], String](validateId)
         .map(queryGen)
-        .flatMap(executeQuery(extractResults(extract)(collectResults))(ids))
+        .flatMap(executeQuery(extract)(collectResults)(ids))
       )
       .getOrElse(Seq.empty.asRight)
   }
