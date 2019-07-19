@@ -94,12 +94,8 @@ class SQLStateDaoSpec extends TestSupportFixture
     val expectedState = State("20", StateLabel.FEDORA_ARCHIVED, "blablabla", timestamp)
 
     states.store(depositId1, inputState).value shouldBe expectedState
-    states.getById(Seq("20")).value should contain only (
-      "20" -> Some(expectedState),
-      )
-    states.getCurrent(Seq(depositId1)).value should contain only (
-      depositId1 -> Some(expectedState)
-      )
+    states.getById(Seq("20")).value should contain only ("20" -> Some(expectedState))
+    states.getCurrent(Seq(depositId1)).value should contain only (depositId1 -> Some(expectedState))
     states.getAll(Seq(depositId1)).value.toMap.apply(depositId1) should contain(expectedState)
   }
 
@@ -112,7 +108,7 @@ class SQLStateDaoSpec extends TestSupportFixture
     states.store(depositId6, inputState).leftValue shouldBe NoSuchDepositError(depositId6)
   }
 
-  "getDepositsById" should "find deposits identified by these stateId" in {
+  "getDepositsById" should "find deposits identified by these stateIds" in {
     val states = new SQLStateDao
 
     states.getDepositsById(Seq("7", "8", "15")).value should contain only(

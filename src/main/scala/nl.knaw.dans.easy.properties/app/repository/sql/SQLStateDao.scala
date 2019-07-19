@@ -17,13 +17,9 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.sql.{ Connection, ResultSet, Statement }
 
-import cats.data.NonEmptyList
-import cats.instances.either._
-import cats.instances.option._
 import cats.instances.string._
 import cats.instances.uuid._
 import cats.syntax.either._
-import cats.syntax.functor._
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr, StateDao }
@@ -58,58 +54,19 @@ class SQLStateDao(implicit connection: Connection) extends StateDao with CommonR
   override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[State])]] = {
     trace(ids)
 
-    def collectResults(stream: Stream[State]): Seq[(String, Option[State])] = {
-      val results = stream.toList
-        .groupBy(_.id)
-        .flatMap {
-          case (id, ss) => ss.headOption.tupleLeft(id)
-        }
-      ids.map(id => id -> results.get(id))
-    }
-
-    NonEmptyList.fromList(ids.toList)
-      .map(_
-        .traverse[Either[InvalidValueError, ?], String](validateId)
-        .map(QueryGenerator.getElementsById("State", "stateId"))
-        .flatMap(executeQuery(extractResults(parseState)(collectResults))(ids))
-      )
-      .getOrElse(Seq.empty.asRight)
+    executeGetById(parseState)(QueryGenerator.getElementsById("State", "stateId"))(ids)
   }
 
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[State])]] = {
     trace(ids)
 
-    def collectResults(stream: Stream[(DepositId, State)]): Seq[(DepositId, Option[State])] = {
-      val results = stream.toList
-        .groupBy { case (depositId, _) => depositId }
-        .flatMap {
-          case (id, ss) => ss.headOption.map { case (_, state) => state }.tupleLeft(id)
-        }
-      ids.map(id => id -> results.get(id))
-    }
-
-    NonEmptyList.fromList(ids.toList)
-      .map(QueryGenerator.getCurrentElementByDepositId("State"))
-      .map(executeQuery(extractResults(parseDepositIdAndState)(collectResults))(ids))
-      .getOrElse(Seq.empty.asRight)
+    executeGetCurrent(parseDepositIdAndState)(QueryGenerator.getCurrentElementByDepositId("State"))(ids)
   }
 
   override def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[State])]] = {
     trace(ids)
 
-    def collectResults(stream: Stream[(DepositId, State)]): Seq[(DepositId, Seq[State])] = {
-      val results = stream.toList
-        .groupBy { case (depositId, _) => depositId }
-        .map {
-          case (id, ss) => id -> ss.map { case (_, state) => state }
-        }
-      ids.map(id => id -> results.getOrElse(id, Seq.empty))
-    }
-
-    NonEmptyList.fromList(ids.toList)
-      .map(QueryGenerator.getAllElementsByDepositId("State"))
-      .map(executeQuery(extractResults(parseDepositIdAndState)(collectResults))(ids))
-      .getOrElse(Seq.empty.asRight)
+    executeGetAll(parseDepositIdAndState)(QueryGenerator.getAllElementsByDepositId("State"))(ids)
   }
 
   override def store(id: DepositId, state: InputState): MutationErrorOr[State] = {
@@ -141,21 +98,6 @@ class SQLStateDao(implicit connection: Connection) extends StateDao with CommonR
   override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
     trace(ids)
 
-    def collectResults(stream: Stream[(String, Deposit)]): Seq[(String, Option[Deposit])] = {
-      val results = stream.toList
-        .groupBy { case (stateId, _) => stateId }
-        .flatMap {
-          case (id, ss) => ss.headOption.map { case (_, deposit) => deposit }.tupleLeft(id)
-        }
-      ids.map(id => id -> results.get(id))
-    }
-
-    NonEmptyList.fromList(ids.toList)
-      .map(_
-        .traverse[Either[InvalidValueError, ?], String](validateId)
-        .map(QueryGenerator.getDepositsById("State", "stateId"))
-        .flatMap(executeQuery(extractResults(parseStateIdAndDeposit)(collectResults))(ids))
-      )
-      .getOrElse(Seq.empty.asRight)
+    executeGetDepositById(parseStateIdAndDeposit)(QueryGenerator.getDepositsById("State", "stateId"))(ids)
   }
 }
