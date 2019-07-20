@@ -87,16 +87,16 @@ class SQLSpringfieldDaoSpec extends TestSupportFixture
     springfields.getAll(Seq.empty).value shouldBe empty
   }
 
-  "store" should "insert a new state into the database" in {
+  "store" should "insert a new springfield into the database" in {
     val springfields = new SQLSpringfieldDao
     val timestamp = new DateTime(2019, 7, 19, 22, 45, timeZone)
     val inputSpringfield = InputSpringfield("ddd", "uuu", "ccc", SpringfieldPlayMode.MENU, timestamp)
-    val expectedState = Springfield("3", "ddd", "uuu", "ccc", SpringfieldPlayMode.MENU, timestamp)
+    val expectedSpringfield = Springfield("3", "ddd", "uuu", "ccc", SpringfieldPlayMode.MENU, timestamp)
 
-    springfields.store(depositId1, inputSpringfield).value shouldBe expectedState
-    springfields.getById(Seq("3")).value should contain only ("3" -> Some(expectedState))
-    springfields.getCurrent(Seq(depositId1)).value should contain only (depositId1 -> Some(expectedState))
-    springfields.getAll(Seq(depositId1)).value.toMap.apply(depositId1) should contain(expectedState)
+    springfields.store(depositId1, inputSpringfield).value shouldBe expectedSpringfield
+    springfields.getById(Seq("3")).value should contain only ("3" -> Some(expectedSpringfield))
+    springfields.getCurrent(Seq(depositId1)).value should contain only (depositId1 -> Some(expectedSpringfield))
+    springfields.getAll(Seq(depositId1)).value.toMap.apply(depositId1) should contain(expectedSpringfield)
   }
 
   it should "fail when the given depositId does not exist" in {

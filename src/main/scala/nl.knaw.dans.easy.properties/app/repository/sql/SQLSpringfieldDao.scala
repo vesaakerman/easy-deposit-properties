@@ -42,8 +42,8 @@ class SQLSpringfieldDao(implicit connection: Connection) extends SpringfieldDao 
   private[sql] def parseDepositIdAndSpringfield(resultSet: ResultSet): Either[InvalidValueError, (DepositId, Springfield)] = {
     for {
       depositId <- parseDepositId(resultSet.getString("depositId"))
-      state <- parseSpringfield(resultSet)
-    } yield depositId -> state
+      springfield <- parseSpringfield(resultSet)
+    } yield depositId -> springfield
   }
 
   private[sql] def parseSpringfieldIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {

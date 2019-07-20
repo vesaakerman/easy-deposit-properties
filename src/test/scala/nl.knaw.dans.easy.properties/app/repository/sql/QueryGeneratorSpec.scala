@@ -382,7 +382,7 @@ class QueryGeneratorSpec extends TestSupportFixture {
   }
 
   "storeSpringfield" should "yield the query for inserting a Springfield configuration into the database" in {
-    QueryGenerator.storeSpringfield() shouldBe """INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"""
+    QueryGenerator.storeSpringfield() shouldBe "INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
   }
 
   "storeState" should "yield the query for inserting a State into the database" in {

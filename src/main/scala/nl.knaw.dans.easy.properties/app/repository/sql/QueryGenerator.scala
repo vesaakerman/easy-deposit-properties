@@ -138,7 +138,7 @@ object QueryGenerator {
   }
 
   def storeSpringfield(): String = {
-    """INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"""
+    "INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
   }
 
   def storeState(): String = {
