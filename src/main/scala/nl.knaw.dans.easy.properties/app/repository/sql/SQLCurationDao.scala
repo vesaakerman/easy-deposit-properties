@@ -28,7 +28,7 @@ import resource.managed
 
 class SQLCurationDao(implicit connection: Connection) extends CurationDao with CommonResultSetParsers with DebugEnhancedLogging {
 
-  private[sql] def parseCuration(resultSet: ResultSet): Either[InvalidValueError, Curation] = {
+  private def parseCuration(resultSet: ResultSet): Either[InvalidValueError, Curation] = {
     for {
       timestamp <- parseDateTime(resultSet.getTimestamp("timestamp", timeZone), timeZone)
       curationId = resultSet.getString("curationId")
@@ -40,14 +40,14 @@ class SQLCurationDao(implicit connection: Connection) extends CurationDao with C
     } yield Curation(curationId, isNewVersion, isRequired, isPerformed, userId, email, timestamp)
   }
 
-  private[sql] def parseDepositIdAndCuration(resultSet: ResultSet): Either[InvalidValueError, (DepositId, Curation)] = {
+  private def parseDepositIdAndCuration(resultSet: ResultSet): Either[InvalidValueError, (DepositId, Curation)] = {
     for {
       depositId <- parseDepositId(resultSet.getString("depositId"))
       curation <- parseCuration(resultSet)
     } yield depositId -> curation
   }
 
-  private[sql] def parseCurationIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {
+  private def parseCurationIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {
     for {
       deposit <- parseDeposit(resultSet)
       curationId = resultSet.getString("curationId")

@@ -28,7 +28,7 @@ import resource.managed
 
 class SQLSpringfieldDao(implicit connection: Connection) extends SpringfieldDao with CommonResultSetParsers with DebugEnhancedLogging {
 
-  private[sql] def parseSpringfield(resultSet: ResultSet): Either[InvalidValueError, Springfield] = {
+  private def parseSpringfield(resultSet: ResultSet): Either[InvalidValueError, Springfield] = {
     for {
       playMode <- parseEnumValue(SpringfieldPlayMode, "springfield playmode")(resultSet.getString("playmode"))
       springfieldId = resultSet.getString("springfieldId")
@@ -39,14 +39,14 @@ class SQLSpringfieldDao(implicit connection: Connection) extends SpringfieldDao 
     } yield Springfield(springfieldId, domain, user, collection, playMode, timestamp)
   }
 
-  private[sql] def parseDepositIdAndSpringfield(resultSet: ResultSet): Either[InvalidValueError, (DepositId, Springfield)] = {
+  private def parseDepositIdAndSpringfield(resultSet: ResultSet): Either[InvalidValueError, (DepositId, Springfield)] = {
     for {
       depositId <- parseDepositId(resultSet.getString("depositId"))
       springfield <- parseSpringfield(resultSet)
     } yield depositId -> springfield
   }
 
-  private[sql] def parseSpringfieldIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {
+  private def parseSpringfieldIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {
     for {
       deposit <- parseDeposit(resultSet)
       springfieldId = resultSet.getString("springfieldId")

@@ -28,7 +28,7 @@ import resource.managed
 
 class SQLStateDao(implicit connection: Connection) extends StateDao with CommonResultSetParsers with DebugEnhancedLogging {
 
-  private[sql] def parseState(resultSet: ResultSet): Either[InvalidValueError, State] = {
+  private def parseState(resultSet: ResultSet): Either[InvalidValueError, State] = {
     for {
       label <- parseEnumValue(StateLabel, "state label")(resultSet.getString("label"))
       stateId = resultSet.getString("stateId")
@@ -37,14 +37,14 @@ class SQLStateDao(implicit connection: Connection) extends StateDao with CommonR
     } yield State(stateId, label, description, timestamp)
   }
 
-  private[sql] def parseDepositIdAndState(resultSet: ResultSet): Either[InvalidValueError, (DepositId, State)] = {
+  private def parseDepositIdAndState(resultSet: ResultSet): Either[InvalidValueError, (DepositId, State)] = {
     for {
       depositId <- parseDepositId(resultSet.getString("depositId"))
       state <- parseState(resultSet)
     } yield depositId -> state
   }
 
-  private[sql] def parseStateIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {
+  private def parseStateIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {
     for {
       deposit <- parseDeposit(resultSet)
       stateId = resultSet.getString("stateId")
