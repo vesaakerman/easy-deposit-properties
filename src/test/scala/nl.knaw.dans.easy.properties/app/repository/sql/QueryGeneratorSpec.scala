@@ -381,6 +381,10 @@ class QueryGeneratorSpec extends TestSupportFixture {
     QueryGenerator.storeDeposit() shouldBe "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
   }
 
+  "storeCuration" should "yield the query for inserting a Curation into the database" in {
+    QueryGenerator.storeCuration() shouldBe "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
+  }
+
   "storeSpringfield" should "yield the query for inserting a Springfield configuration into the database" in {
     QueryGenerator.storeSpringfield() shouldBe "INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
   }

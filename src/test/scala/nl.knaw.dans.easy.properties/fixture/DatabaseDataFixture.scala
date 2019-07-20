@@ -2,6 +2,7 @@ package nl.knaw.dans.easy.properties.fixture
 
 import java.util.UUID
 
+import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
@@ -107,6 +108,20 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
         |       ('00000000-0000-0000-0000-000000000005', 'bag-store', '00000000-0000-0000-0000-000000000005', '2019-05-05 00:00:00.000000+00:00');""".stripMargin
     }
   }
+
+  val curation0 = Curation("0", isNewVersion = false, isRequired = true, isPerformed = false, "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 1, 1, 0, 0, timeZone))
+  val curation1 = Curation("1", isNewVersion = false, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 3, 3, timeZone))
+  val curation2 = Curation("2", isNewVersion = false, isRequired = true, isPerformed = true, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 4, 4, timeZone))
+
+  val curation3 = Curation("3", isNewVersion = true, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 3, 3, 0, 0, timeZone))
+  val curation4 = Curation("4", isNewVersion = true, isRequired = true, isPerformed = false, "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 3, 3, 4, 4, timeZone))
+  val curation5 = Curation("5", isNewVersion = true, isRequired = true, isPerformed = true, "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 3, 3, 6, 6, timeZone))
+
+  val curation6 = Curation("6", isNewVersion = false, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 0, 0, timeZone))
+  val curation7 = Curation("7", isNewVersion = false, isRequired = true, isPerformed = true, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 4, 4, 4, 4, timeZone))
+
+  val curation8 = Curation("8", isNewVersion = false, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 5, 5, 0, 0, timeZone))
+  val curation9 = Curation("9", isNewVersion = false, isRequired = true, isPerformed = true, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 5, 5, 4, 4, timeZone))
 
   def fillCurationTable(): Unit = {
     prepareTest {
