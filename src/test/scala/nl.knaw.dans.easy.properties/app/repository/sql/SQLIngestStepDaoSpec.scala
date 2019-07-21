@@ -14,7 +14,7 @@ class SQLIngestStepDaoSpec extends TestSupportFixture
   with DatabaseDataFixture
   with EitherValues {
 
-  "getById" should "find ingest step identified by their id" in {
+  "getById" should "find ingest steps identified by their id" in {
     val ingestSteps = new SQLIngestStepDao
 
     ingestSteps.getById(Seq("4", "10", "14")).value should contain only(
