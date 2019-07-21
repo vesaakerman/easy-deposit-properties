@@ -2,6 +2,7 @@ package nl.knaw.dans.easy.properties.fixture
 
 import java.util.UUID
 
+import better.files.File
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue }
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
@@ -30,17 +31,6 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
   val deposit4 = Deposit(depositId4, Option("bag4"), new DateTime(2019, 4, 4, 0, 0, timeZone), "user001")
   val deposit5 = Deposit(depositId5, Option("bag5"), new DateTime(2019, 5, 5, 0, 0, timeZone), "user002")
 
-  def fillDepositTable(): Unit = {
-    prepareTest {
-      s"""|INSERT INTO Deposit
-          |VALUES ('$depositId1', 'bag1', '2019-01-01 00:00:00.000000+0:00', 'user001'),
-          |       ('$depositId2',  null , '2019-02-02 00:00:00.000000+0:00', 'user001'),
-          |       ('$depositId3', 'bag3', '2019-03-03 00:00:00.000000+0:00', 'user002'),
-          |       ('$depositId4', 'bag4', '2019-04-04 00:00:00.000000+0:00', 'user001'),
-          |       ('$depositId5', 'bag5', '2019-05-05 00:00:00.000000+0:00', 'user002');""".stripMargin
-    }
-  }
-
   val state10 = State("0", StateLabel.DRAFT, "draft with continued deposit", new DateTime(2019, 1, 1, 0, 0, timeZone))
   val state11 = State("1", StateLabel.DRAFT, "draft with continued deposit", new DateTime(2019, 1, 1, 1, 1, timeZone))
   val state12 = State("2", StateLabel.UPLOADED, "deposit upload has been completed", new DateTime(2019, 1, 1, 2, 2, timeZone))
@@ -66,32 +56,6 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
   val state52 = State("18", StateLabel.SUBMITTED, "deposit is processing", new DateTime(2019, 5, 5, 2, 2, timeZone))
   val state53 = State("19", StateLabel.REJECTED, "deposit is rejected", new DateTime(2019, 5, 5, 3, 3, timeZone))
 
-  def fillStateTable(): Unit = {
-    prepareTest {
-      """INSERT INTO State (depositId, label, description, timestamp)
-        |VALUES ('00000000-0000-0000-0000-000000000001', 'DRAFT'     , 'draft with continued deposit'     , '2019-01-01 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'DRAFT'     , 'draft with continued deposit'     , '2019-01-01 01:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'UPLOADED'  , 'deposit upload has been completed', '2019-01-01 02:02:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'FINALIZING', 'deposit is finalizing'            , '2019-01-01 03:03:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'SUBMITTED' , 'deposit is processing'            , '2019-01-01 04:04:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'ARCHIVED'  , 'deposit is archived'              , '2019-01-01 05:05:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'UPLOADED'  , 'deposit upload has been completed', '2019-02-02 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'FINALIZING', 'deposit is finalizing'            , '2019-02-02 01:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'SUBMITTED' , 'deposit is processing'            , '2019-02-02 02:02:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'ARCHIVED'  , 'deposit is archived'              , '2019-02-02 03:03:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'UPLOADED'  , 'deposit upload has been completed', '2019-03-03 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'FINALIZING', 'deposit is finalizing'            , '2019-03-03 01:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'INVALID'   , 'deposit is invalid'               , '2019-03-03 02:02:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'UPLOADED'  , 'deposit upload has been completed', '2019-04-04 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'FINALIZING', 'deposit is finalizing'            , '2019-04-04 01:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'ARCHIVED'  , 'deposit is archived'              , '2019-04-04 02:02:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'UPLOADED'  , 'deposit upload has been completed', '2019-05-05 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'FINALIZING', 'deposit is finalizing'            , '2019-05-05 01:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'SUBMITTED' , 'deposit is processing'            , '2019-05-05 02:02:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'REJECTED'  , 'deposit is rejected'              , '2019-05-05 03:03:00.000000+00:00');""".stripMargin
-    }
-  }
-
   val identifier0 = Identifier("0", IdentifierType.BAG_STORE, depositId1.toString, new DateTime(2019, 1, 1, 0, 0, timeZone))
   val identifier1 = Identifier("1", IdentifierType.DOI, "10.5072/dans-a1b-cde2", new DateTime(2019, 1, 1, 0, 1, timeZone))
   val identifier2 = Identifier("2", IdentifierType.URN, "urn:nbn:123456", new DateTime(2019, 1, 1, 0, 2, timeZone))
@@ -111,26 +75,6 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
 
   val identifier13 = Identifier("13", IdentifierType.BAG_STORE, depositId5.toString, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
-  def fillIdentifierTable(): Unit = {
-    prepareTest {
-      """INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp)
-        |VALUES ('00000000-0000-0000-0000-000000000001', 'bag-store', '00000000-0000-0000-0000-000000000001', '2019-01-01 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'doi'      , '10.5072/dans-a1b-cde2'               , '2019-01-01 00:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'urn'      , 'urn:nbn:123456'                      , '2019-01-01 00:02:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'fedora'   , 'easy-dataset:1'                      , '2019-01-01 00:03:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'bag-store', '00000000-0000-0000-0000-000000000002', '2019-02-02 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'doi'      , '10.5072/dans-f3g-hij4'               , '2019-02-02 00:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'urn'      , 'urn:nbn:789012'                      , '2019-02-02 00:02:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'fedora'   , 'easy-dataset:2'                      , '2019-02-02 00:03:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'bag-store', '00000000-0000-0000-0000-000000000003', '2019-03-03 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'bag-store', '00000000-0000-0000-0000-000000000004', '2019-04-04 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'doi'      , '10.5072/dans-p7q-rst8'               , '2019-04-04 00:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'urn'      , 'urn:nbn:901234'                      , '2019-04-04 00:02:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'fedora'   , 'easy-dataset:4'                      , '2019-04-04 00:03:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'bag-store', '00000000-0000-0000-0000-000000000005', '2019-05-05 00:00:00.000000+00:00');""".stripMargin
-    }
-  }
-
   val curation0 = Curation("0", isNewVersion = false, isRequired = true, isPerformed = false, "archie002", "does.not.exists2@dans.knaw.nl", new DateTime(2019, 1, 1, 0, 0, timeZone))
   val curation1 = Curation("1", isNewVersion = false, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 3, 3, timeZone))
   val curation2 = Curation("2", isNewVersion = false, isRequired = true, isPerformed = true, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 1, 1, 4, 4, timeZone))
@@ -145,34 +89,9 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
   val curation8 = Curation("8", isNewVersion = false, isRequired = true, isPerformed = false, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 5, 5, 0, 0, timeZone))
   val curation9 = Curation("9", isNewVersion = false, isRequired = true, isPerformed = true, "archie001", "does.not.exists1@dans.knaw.nl", new DateTime(2019, 5, 5, 4, 4, timeZone))
 
-  def fillCurationTable(): Unit = {
-    prepareTest {
-      """INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp)
-        |VALUES ('00000000-0000-0000-0000-000000000001', 'false', 'true', 'false', 'archie002', 'does.not.exists2@dans.knaw.nl', '2019-01-01 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'false', 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-01-01 03:03:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'false', 'true', 'true' , 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-01-01 04:04:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'true' , 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-03-03 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'true' , 'true', 'false', 'archie002', 'does.not.exists2@dans.knaw.nl', '2019-03-03 04:04:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'true' , 'true', 'true' , 'archie002', 'does.not.exists2@dans.knaw.nl', '2019-03-03 06:06:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'false', 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-04-04 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'false', 'true', 'true' , 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-04-04 04:04:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'false', 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-05-05 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'false', 'true', 'true' , 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-05-05 04:04:00.000000+00:00');""".stripMargin
-    }
-  }
-
   val springfield0 = Springfield("0", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 1, 1, 0, 0, timeZone))
   val springfield1 = Springfield("1", "domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, new DateTime(2019, 2, 2, 0, 0, timeZone))
   val springfield2 = Springfield("2", "domain2", "user2", "collection2", SpringfieldPlayMode.MENU, new DateTime(2019, 2, 2, 2, 2, timeZone))
-
-  def fillSpringfieldTable(): Unit = {
-    prepareTest {
-      """INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp)
-        |VALUES ('00000000-0000-0000-0000-000000000001', 'domain1', 'user1', 'collection1', 'continuous', '2019-01-01 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'domain1', 'user1', 'collection1', 'continuous', '2019-02-02 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'domain2', 'user2', 'collection2', 'menu'      , '2019-02-02 02:02:00.000000+00:00');""".stripMargin
-    }
-  }
 
   val step0 = IngestStep("0", IngestStepLabel.VALIDATE, new DateTime(2019, 1, 1, 4, 5, timeZone))
   val step1 = IngestStep("1", IngestStepLabel.PID_GENERATOR, new DateTime(2019, 1, 1, 4, 6, timeZone))
@@ -212,47 +131,6 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
   val contentType4 = ContentType("30", ContentTypeValue.ZIP, new DateTime(2019, 4, 4, 0, 5, timeZone))
   val contentType5 = ContentType("31", ContentTypeValue.ZIP, new DateTime(2019, 5, 5, 0, 5, timeZone))
 
-  def fillSimplePropertiesTable(): Unit = {
-    prepareTest {
-      """INSERT INTO SimpleProperties (depositId, key, value, timestamp)
-        |VALUES ('00000000-0000-0000-0000-000000000001', 'ingest-step', 'VALIDATE'     , '2019-01-01 04:05:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'ingest-step', 'PID_GENERATOR', '2019-01-01 04:06:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'ingest-step', 'FEDORA'       , '2019-01-01 04:07:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'ingest-step', 'SPRINGFIELD'  , '2019-01-01 04:08:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'ingest-step', 'BAGSTORE'     , '2019-01-01 04:09:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'ingest-step', 'SOLR4FILES'   , '2019-01-01 04:10:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'ingest-step', 'COMPLETED'    , '2019-01-01 04:11:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'ingest-step', 'VALIDATE'     , '2019-02-02 02:05:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'ingest-step', 'PID_GENERATOR', '2019-02-02 02:06:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'ingest-step', 'FEDORA'       , '2019-02-02 02:07:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'ingest-step', 'SPRINGFIELD'  , '2019-02-02 02:08:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'ingest-step', 'BAGSTORE'     , '2019-02-02 02:09:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'ingest-step', 'SOLR4FILES'   , '2019-02-02 02:10:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'ingest-step', 'COMPLETED'    , '2019-02-02 02:11:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'ingest-step', 'VALIDATE'     , '2019-05-05 04:05:00.000000+00:00'),
-        |
-        |       ('00000000-0000-0000-0000-000000000001', 'doi-registered', 'false', '2019-01-01 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'doi-registered', 'true' , '2019-01-01 04:07:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'doi-registered', 'false', '2019-02-02 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'doi-registered', 'true' , '2019-02-02 02:07:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'doi-registered', 'false', '2019-05-05 00:00:00.000000+00:00'),
-        |
-        |       ('00000000-0000-0000-0000-000000000001', 'doi-action', 'update', '2019-01-01 01:01:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'doi-action', 'none'  , '2019-01-01 04:05:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'doi-action', 'create', '2019-02-02 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'doi-action', 'create', '2019-03-03 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'doi-action', 'create', '2019-04-04 00:00:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'doi-action', 'update', '2019-05-05 00:00:00.000000+00:00'),
-        |
-        |       ('00000000-0000-0000-0000-000000000001', 'content-type', 'application/zip'         , '2019-01-01 00:05:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000001', 'content-type', 'application/octet-stream', '2019-01-01 00:10:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000002', 'content-type', 'application/zip'         , '2019-02-02 00:05:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000003', 'content-type', 'application/zip'         , '2019-03-03 00:05:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000004', 'content-type', 'application/zip'         , '2019-04-04 00:05:00.000000+00:00'),
-        |       ('00000000-0000-0000-0000-000000000005', 'content-type', 'application/zip'         , '2019-05-05 00:05:00.000000+00:00');""".stripMargin
-    }
-  }
-
   def prepareTest(query: String): Unit = {
     managed(connection.createStatement())
       .acquireAndGet(_.executeUpdate(query))
@@ -261,11 +139,10 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    fillDepositTable()
-    fillStateTable()
-    fillIdentifierTable()
-    fillCurationTable()
-    fillSpringfieldTable()
-    fillSimplePropertiesTable()
+    prepareTest {
+      File(getClass.getClassLoader.getResource("database/TestData.sql").toURI).contentAsString
+        .replace(":00+01", ":00.000000+0:00")
+        .replace(":00+02", ":00.000000+0:00")
+    }
   }
 }
