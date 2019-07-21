@@ -34,10 +34,9 @@ object DepositPropertiesGraphQLServlet {
             authenticationConfig: Auth,
             profilingConfig: Option[ProfilingConfiguration] = Option.empty,
            ): GraphQLServlet[DataContext] = {
-    val repo = repository()
     new GraphQLServlet(
       schema = DepositSchema,
-      ctxProvider = auth => DataContext(repo, auth, expectedAuth = authenticationConfig),
+      ctxProvider = auth => DataContext(repository(), auth, expectedAuth = authenticationConfig),
       deferredResolver = deferredResolver,
       middlewares = new Middlewares(profilingConfig).values,
     )

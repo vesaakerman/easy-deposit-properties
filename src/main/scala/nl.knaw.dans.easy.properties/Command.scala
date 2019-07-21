@@ -36,6 +36,7 @@ object Command extends App with DebugEnhancedLogging {
     verify()
   }
   val database = new DatabaseAccess(configuration.databaseConfig)
+  val repo = new DemoRepo()
 
   runSubcommand()
     .doIfSuccess(msg => println(s"OK: $msg"))
@@ -48,7 +49,7 @@ object Command extends App with DebugEnhancedLogging {
         case loadProps @ commandLine.loadProps =>
           val propsFile = loadProps.properties()
           val importer = new ImportProps(
-            repository = new DemoRepo().repository,
+            repository = repo.repository,
             interactor = new Interactor,
             datacite = new DataciteService(configuration.dataciteConfig),
           )
@@ -65,7 +66,7 @@ object Command extends App with DebugEnhancedLogging {
   private def runAsService(): Try[FeedBackMessage] = Try {
     val service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet(() => new DemoRepo().repository, configuration.auth, configuration.profilingConfig),
+      "/graphql" -> DepositPropertiesGraphQLServlet(() => repo.repository, configuration.auth, configuration.profilingConfig),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     Runtime.getRuntime.addShutdownHook(new Thread("service-shutdown") {
