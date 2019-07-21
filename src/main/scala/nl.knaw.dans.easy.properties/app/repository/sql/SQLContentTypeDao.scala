@@ -69,7 +69,7 @@ class SQLContentTypeDao(implicit connection: Connection) extends ContentTypeDao 
   override def store(id: DepositId, contentType: InputContentType): MutationErrorOr[ContentType] = {
     trace(id, contentType)
 
-    val query = QueryGenerator.storeSimpleProperty()
+    val query = QueryGenerator.storeSimpleProperty
 
     val managedResultSet = for {
       prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))

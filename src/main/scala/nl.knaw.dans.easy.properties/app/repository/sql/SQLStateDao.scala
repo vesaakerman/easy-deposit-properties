@@ -69,7 +69,7 @@ class SQLStateDao(implicit connection: Connection) extends StateDao with CommonR
 
   override def store(id: DepositId, state: InputState): MutationErrorOr[State] = {
     trace(id, state)
-    val query = QueryGenerator.storeState()
+    val query = QueryGenerator.storeState
 
     val managedResultSet = for {
       prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))

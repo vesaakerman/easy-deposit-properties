@@ -71,7 +71,7 @@ class SQLSpringfieldDao(implicit connection: Connection) extends SpringfieldDao 
 
   override def store(id: DepositId, springfield: InputSpringfield): MutationErrorOr[Springfield] = {
     trace(id, springfield)
-    val query = QueryGenerator.storeSpringfield()
+    val query = QueryGenerator.storeSpringfield
 
     val managedResultSet = for {
       prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))

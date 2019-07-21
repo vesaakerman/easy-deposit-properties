@@ -103,7 +103,7 @@ class SQLIdentifierDao(implicit connection: Connection) extends IdentifierDao wi
 
   override def store(id: DepositId, identifier: InputIdentifier): MutationErrorOr[Identifier] = {
     trace(id, identifier)
-    val query = QueryGenerator.storeIdentifier()
+    val query = QueryGenerator.storeIdentifier
 
     val managedResultSet = for {
       prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))

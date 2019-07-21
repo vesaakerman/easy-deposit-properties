@@ -54,7 +54,7 @@ class SQLDoiRegisteredDao(implicit connection: Connection) extends DoiRegistered
   override def store(id: DepositId, registered: DoiRegisteredEvent): MutationErrorOr[DoiRegisteredEvent] = {
     trace(id, registered)
 
-    val query = QueryGenerator.storeSimpleProperty()
+    val query = QueryGenerator.storeSimpleProperty
 
     managed(connection.prepareStatement(query))
       .map(prepStatement => {

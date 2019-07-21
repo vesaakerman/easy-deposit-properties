@@ -69,7 +69,7 @@ class SQLIngestStepDao(implicit connection: Connection) extends IngestStepDao wi
   override def store(id: DepositId, step: InputIngestStep): MutationErrorOr[IngestStep] = {
     trace(id, step)
 
-    val query = QueryGenerator.storeSimpleProperty()
+    val query = QueryGenerator.storeSimpleProperty
 
     val managedResultSet = for {
       prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))

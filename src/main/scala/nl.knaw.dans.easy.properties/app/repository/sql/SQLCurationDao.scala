@@ -72,7 +72,7 @@ class SQLCurationDao(implicit connection: Connection) extends CurationDao with C
 
   override def store(id: DepositId, curation: InputCuration): MutationErrorOr[Curation] = {
     trace(id, curation)
-    val query = QueryGenerator.storeCuration()
+    val query = QueryGenerator.storeCuration
 
     val managedResultSet = for {
       prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))

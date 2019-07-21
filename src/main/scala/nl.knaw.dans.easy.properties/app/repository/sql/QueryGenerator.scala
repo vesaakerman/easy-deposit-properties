@@ -7,7 +7,7 @@ import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 
 object QueryGenerator {
 
-  def getAllDeposits: String = "SELECT * FROM Deposit;"
+  lazy val getAllDeposits: String = "SELECT * FROM Deposit;"
 
   def findDeposits(ids: NonEmptyList[DepositId]): (String, Seq[String]) = {
     val query = s"SELECT * FROM Deposit WHERE depositId IN (${ ids.toList.map(_ => "?").mkString(", ") });"
@@ -210,27 +210,15 @@ object QueryGenerator {
     query -> values.toList
   }
 
-  def storeDeposit(): String = {
-    "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
-  }
+  lazy val storeDeposit: String = "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
 
-  def storeCuration(): String = {
-    "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
-  }
+  lazy val storeCuration: String = "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
 
-  def storeIdentifier(): String = {
-    "INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp) VALUES (?, ?, ?, ?);"
-  }
+  lazy val storeIdentifier: String = "INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp) VALUES (?, ?, ?, ?);"
 
-  def storeSimpleProperty(): String = {
-    "INSERT INTO SimpleProperties (depositId, key, value, timestamp) VALUES (?, ?, ?, ?);"
-  }
-  
-  def storeSpringfield(): String = {
-    "INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
-  }
+  lazy val storeSimpleProperty: String = "INSERT INTO SimpleProperties (depositId, key, value, timestamp) VALUES (?, ?, ?, ?);"
 
-  def storeState(): String = {
-    "INSERT INTO State (depositId, label, description, timestamp) VALUES (?, ?, ?, ?);"
-  }
+  lazy val storeSpringfield: String = "INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
+
+  lazy val storeState: String = "INSERT INTO State (depositId, label, description, timestamp) VALUES (?, ?, ?, ?);"
 }

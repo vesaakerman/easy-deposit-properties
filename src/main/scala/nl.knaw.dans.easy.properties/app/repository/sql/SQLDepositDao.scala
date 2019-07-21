@@ -76,7 +76,7 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
 
   override def store(deposit: Deposit): MutationErrorOr[Deposit] = {
     trace(deposit)
-    val query = QueryGenerator.storeDeposit()
+    val query = QueryGenerator.storeDeposit
 
     managed(connection.prepareStatement(query))
       .map(prepStatement => {

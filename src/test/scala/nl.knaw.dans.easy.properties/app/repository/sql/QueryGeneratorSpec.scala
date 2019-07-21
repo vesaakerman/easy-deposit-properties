@@ -469,26 +469,26 @@ class QueryGeneratorSpec extends TestSupportFixture {
   }
 
   "storeDeposit" should "yield the query for inserting a deposit into the database" in {
-    QueryGenerator.storeDeposit() shouldBe "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
+    QueryGenerator.storeDeposit shouldBe "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
   }
 
   "storeCuration" should "yield the query for inserting a Curation into the database" in {
-    QueryGenerator.storeCuration() shouldBe "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
+    QueryGenerator.storeCuration shouldBe "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
   }
 
   "storeSimpleProperty" should "yield the query for inserting an Identifier into the database" in {
-    QueryGenerator.storeSimpleProperty() shouldBe "INSERT INTO SimpleProperties (depositId, key, value, timestamp) VALUES (?, ?, ?, ?);"
+    QueryGenerator.storeSimpleProperty shouldBe "INSERT INTO SimpleProperties (depositId, key, value, timestamp) VALUES (?, ?, ?, ?);"
   }
 
   "storeIdentifier" should "yield the query for inserting an Identifier into the database" in {
-    QueryGenerator.storeIdentifier() shouldBe "INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp) VALUES (?, ?, ?, ?);"
+    QueryGenerator.storeIdentifier shouldBe "INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp) VALUES (?, ?, ?, ?);"
   }
 
   "storeSpringfield" should "yield the query for inserting a Springfield configuration into the database" in {
-    QueryGenerator.storeSpringfield() shouldBe "INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
+    QueryGenerator.storeSpringfield shouldBe "INSERT INTO Springfield (depositId, domain, springfield_user, collection, playmode, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
   }
 
   "storeState" should "yield the query for inserting a State into the database" in {
-    QueryGenerator.storeState() shouldBe "INSERT INTO State (depositId, label, description, timestamp) VALUES (?, ?, ?, ?);"
+    QueryGenerator.storeState shouldBe "INSERT INTO State (depositId, label, description, timestamp) VALUES (?, ?, ?, ?);"
   }
 }
