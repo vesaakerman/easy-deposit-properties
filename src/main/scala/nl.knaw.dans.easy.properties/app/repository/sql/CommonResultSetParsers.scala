@@ -84,7 +84,10 @@ private[sql] trait CommonResultSetParsers {
     def collectResults(stream: Stream[X]): Seq[(String, Option[X])] = {
       val results = stream.toList
         .groupBy(_.id)
-        .flatMap { case (id, ss) => ss.headOption.tupleLeft(id) }
+        .flatMap { case (id, ss) =>
+          assert(ss.size == 1)
+          ss.headOption.tupleLeft(id)
+        }
       ids.map(id => id -> results.get(id))
     }
 
@@ -105,7 +108,9 @@ private[sql] trait CommonResultSetParsers {
       val results = stream.toList
         .groupBy { case (depositId, _) => depositId }
         .flatMap {
-          case (id, ss) => ss.headOption.map { case (_, x) => x }.tupleLeft(id)
+          case (id, ss) =>
+            assert(ss.size == 1)
+            ss.headOption.map { case (_, x) => x }.tupleLeft(id)
         }
       ids.map(id => id -> results.get(id))
     }
@@ -142,7 +147,10 @@ private[sql] trait CommonResultSetParsers {
     def collectResults(stream: Stream[(String, Deposit)]): Seq[(String, Option[Deposit])] = {
       val results = stream.toList
         .groupBy { case (stateId, _) => stateId }
-        .flatMap { case (id, ss) => ss.headOption.map { case (_, deposit) => deposit }.tupleLeft(id) }
+        .flatMap { case (id, ss) =>
+          assert(ss.size == 1)
+          ss.headOption.map { case (_, deposit) => deposit }.tupleLeft(id)
+        }
       ids.map(id => id -> results.get(id))
     }
 
