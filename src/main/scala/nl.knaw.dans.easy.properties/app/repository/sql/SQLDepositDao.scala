@@ -56,7 +56,6 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
       ids.map(id => id -> results.get(id))
     }
 
-    // TODO same pattern can be found in other unabstracted implementations
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.findDeposits)
       .map(executeQuery(parseDeposit)(collectResults))
@@ -105,7 +104,6 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
       ids.map(id => id -> results.get(id))
     }
 
-    // TODO same pattern can be found in other unabstracted implementations
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.getLastModifiedDate)
       .map(executeQuery(parseLastModifiedResponse)(collectResults))

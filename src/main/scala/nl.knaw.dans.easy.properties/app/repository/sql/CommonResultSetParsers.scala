@@ -52,17 +52,17 @@ private[sql] trait CommonResultSetParsers {
 
   private def extractResults[T, X](parseResult: ResultSet => Either[InvalidValueError, T])
                                   (collectResults: Stream[T] => Seq[X])
-                                  (result: ResultSet): Either[InvalidValueError, Seq[X]] = {
+                                  (result: ResultSet): QueryErrorOr[Seq[X]] = {
     Stream.continually(result.next())
       .takeWhile(b => b)
       .traverse[Either[InvalidValueError, ?], T](_ => parseResult(result))
       .map(collectResults)
   }
 
-  private[sql] def executeQuery[Id, X, T](parseResult: ResultSet => Either[InvalidValueError, T])
-                                         (collectResults: Stream[T] => Seq[X])
-                                         (queryAndValues: (String, Seq[String]))
-                                         (implicit connection: Connection) = {
+  private[sql] def executeQuery[T, R](parseResult: ResultSet => Either[InvalidValueError, T])
+                                     (collectResults: Stream[T] => Seq[R])
+                                     (queryAndValues: (String, Seq[String]))
+                                     (implicit connection: Connection): QueryErrorOr[Seq[R]] = {
     val (query, values) = queryAndValues
     val resultSet = for {
       prepStatement <- managed(connection.prepareStatement(query))
@@ -77,11 +77,11 @@ private[sql] trait CommonResultSetParsers {
       .flatMap(identity)
   }
 
-  private[sql] def executeGetById[X <: Node](extract: ResultSet => Either[InvalidValueError, X])
+  private[sql] def executeGetById[T <: Node](extract: ResultSet => Either[InvalidValueError, T])
                                             (queryGen: NonEmptyList[String] => (String, Seq[String]))
                                             (ids: Seq[String])
-                                            (implicit connection: Connection): QueryErrorOr[Seq[(String, Option[X])]] = {
-    def collectResults(stream: Stream[X]): Seq[(String, Option[X])] = {
+                                            (implicit connection: Connection): QueryErrorOr[Seq[(String, Option[T])]] = {
+    def collectResults(stream: Stream[T]): Seq[(String, Option[T])] = {
       val results = stream.toList
         .groupBy(_.id)
         .flatMap { case (id, ss) =>
@@ -110,7 +110,7 @@ private[sql] trait CommonResultSetParsers {
         .flatMap {
           case (id, ss) =>
             assert(ss.size == 1)
-            ss.headOption.map { case (_, x) => x }.tupleLeft(id)
+            ss.headOption.map { case (_, t) => t }.tupleLeft(id)
         }
       ids.map(id => id -> results.get(id))
     }

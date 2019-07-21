@@ -71,7 +71,6 @@ class SQLIdentifierDao(implicit connection: Connection) extends IdentifierDao wi
       ids.map(key => key -> results.get(key))
     }
 
-    // TODO same pattern can be found in other unabstracted implementations
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.getIdentifierByDepositIdAndType)
       .map(executeQuery(parseDepositIdAndIdentifier)(collectResults))
@@ -90,7 +89,6 @@ class SQLIdentifierDao(implicit connection: Connection) extends IdentifierDao wi
       ids.map(key => key -> results.get(key))
     }
 
-    // TODO same pattern can be found in other unabstracted implementations
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.getIdentifierByTypeAndValue)
       .map(executeQuery(parseIdentifier)(collectResults))
