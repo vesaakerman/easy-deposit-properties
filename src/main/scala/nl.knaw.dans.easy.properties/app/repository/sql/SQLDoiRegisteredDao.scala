@@ -35,8 +35,8 @@ class SQLDoiRegisteredDao(implicit connection: Connection) extends DoiRegistered
   private def parseDepositIdAndDoiRegisteredEvent(resultSet: ResultSet): Either[InvalidValueError, (DepositId, DoiRegisteredEvent)] = {
     for {
       depositId <- parseDepositId(resultSet.getString("depositId"))
-      ingestStep <- parseDoiRegisteredEvent(resultSet)
-    } yield depositId -> ingestStep
+      doiRegisteredEvent <- parseDoiRegisteredEvent(resultSet)
+    } yield depositId -> doiRegisteredEvent
   }
 
   override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[DoiRegisteredEvent])]] = {
