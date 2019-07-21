@@ -4,79 +4,124 @@ import cats.data.NonEmptyList
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentTypeValue, DepositContentTypeFilter }
 import nl.knaw.dans.easy.properties.app.model.curator.DepositCuratorFilter
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DepositIsNewVersionFilter, DoiAction, SeriesFilter }
+import nl.knaw.dans.easy.properties.app.model.{ DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositIsNewVersionFilter, DoiAction, SeriesFilter }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import org.scalacheck.Arbitrary._
 import org.scalacheck.{ Arbitrary, Gen }
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{ Matchers, PropSpec }
 
-// TODO expand with other instances of this test
 class QueryGeneratorPropSpec extends PropSpec with GeneratorDrivenPropertyChecks with Matchers {
 
-  def genFromEnum[E <: Enumeration](enum: E): Gen[E#Value] = {
+  def genFromEnum[E <: Enumeration](enum: E): Arbitrary[E#Value] = Arbitrary {
     Gen.oneOf(enum.values.toList)
   }
 
-  def genSeriesFilter: Gen[SeriesFilter] = genFromEnum(SeriesFilter)
-
-  def genDepositFilter[E <: Enumeration, T](valueEnum: E)(f: (E#Value, SeriesFilter) => T): Gen[T] = {
+  private def genDepositFilter[E <: Enumeration, T](valueEnum: E)(f: (E#Value, SeriesFilter) => T): Arbitrary[T] = Arbitrary {
     for {
-      value <- genFromEnum(valueEnum)
-      filter <- genSeriesFilter
+      value <- genFromEnum(valueEnum).arbitrary
+      filter <- arbitrarySeriesFilter.arbitrary
     } yield f(value, filter)
   }
 
-  def genDepositFilter[T: Arbitrary, S](f: (T, SeriesFilter) => S): Gen[S] = {
-    for {
-      value <- implicitly[Arbitrary[T]].arbitrary
-      filter <- genSeriesFilter
-    } yield f(value, filter)
+  private def genDepositFilter[T: Arbitrary, S](f: (T, SeriesFilter) => S): Arbitrary[S] = Arbitrary {
+    arbitrary[(T, SeriesFilter)].map(f.tupled)
   }
 
-  def genDepositFilters(): Gen[DepositFilters] = {
-    for {
-      depositorId <- arbitrary[Option[String]]
-      bagName <- arbitrary[Option[String]]
-      stateFilter <- Gen.option(genDepositFilter(StateLabel)(DepositStateFilter))
-      ingestStepFilter <- Gen.option(genDepositFilter(IngestStepLabel)(DepositIngestStepFilter))
-      doiRegisteredFilter <- Gen.option(genDepositFilter(DepositDoiRegisteredFilter))
-      doiActionFilter <- Gen.option(genDepositFilter(DoiAction)(DepositDoiActionFilter))
-      curationFilter <- Gen.option(genDepositFilter(DepositCuratorFilter))
-      isNewVersionFilter <- Gen.option(genDepositFilter(DepositIsNewVersionFilter))
-      curationRequiredFilter <- Gen.option(genDepositFilter(DepositCurationRequiredFilter))
-      curationPerformedFilter <- Gen.option(genDepositFilter(DepositCurationPerformedFilter))
-      contentTypeFilter <- Gen.option(genDepositFilter(ContentTypeValue)(DepositContentTypeFilter))
-    } yield DepositFilters(
-      depositorId,
-      bagName,
-      stateFilter,
-      ingestStepFilter,
-      doiRegisteredFilter,
-      doiActionFilter,
-      curationFilter,
-      isNewVersionFilter,
-      curationRequiredFilter,
-      curationPerformedFilter,
-      contentTypeFilter,
-    )
+  implicit val arbitrarySeriesFilter: Arbitrary[SeriesFilter] = genFromEnum(SeriesFilter)
+  implicit val arbitraryIdentifierType: Arbitrary[IdentifierType] = genFromEnum(IdentifierType)
+
+  implicit val arbitraryStateFilter: Arbitrary[DepositStateFilter] = genDepositFilter(StateLabel)(DepositStateFilter)
+  implicit val arbitraryIngestStepFilter: Arbitrary[DepositIngestStepFilter] = genDepositFilter(IngestStepLabel)(DepositIngestStepFilter)
+  implicit val arbitraryDoiRegisteredFilter: Arbitrary[DepositDoiRegisteredFilter] = genDepositFilter(DepositDoiRegisteredFilter)
+  implicit val arbitraryDoiActionFilter: Arbitrary[DepositDoiActionFilter] = genDepositFilter(DoiAction)(DepositDoiActionFilter)
+  implicit val arbitraryCurationFilter: Arbitrary[DepositCuratorFilter] = genDepositFilter(DepositCuratorFilter)
+  implicit val arbitraryIsNewVersionFilter: Arbitrary[DepositIsNewVersionFilter] = genDepositFilter(DepositIsNewVersionFilter)
+  implicit val arbitraryCurationRequiredFilter: Arbitrary[DepositCurationRequiredFilter] = genDepositFilter(DepositCurationRequiredFilter)
+  implicit val arbitraryCurationPerformedFilter: Arbitrary[DepositCurationPerformedFilter] = genDepositFilter(DepositCurationPerformedFilter)
+  implicit val arbitraryContentTypeFilter: Arbitrary[DepositContentTypeFilter] = genDepositFilter(ContentTypeValue)(DepositContentTypeFilter)
+
+  implicit val arbitraryDepositFilters: Arbitrary[DepositFilters] = Arbitrary {
+    arbitrary[(
+      Option[String],
+        Option[String],
+        Option[DepositStateFilter],
+        Option[DepositIngestStepFilter],
+        Option[DepositDoiRegisteredFilter],
+        Option[DepositDoiActionFilter],
+        Option[DepositCuratorFilter],
+        Option[DepositIsNewVersionFilter],
+        Option[DepositCurationRequiredFilter],
+        Option[DepositCurationPerformedFilter],
+        Option[DepositContentTypeFilter]
+      )]
+      .map(DepositFilters.tupled)
   }
 
-  property("The number of generated question marks in the query should equal the number of elements in the value list in QueryGenerator.searchDeposits") {
-    forAll(genDepositFilters())(filters => {
-      val (query, values) = QueryGenerator.searchDeposits(filters)
+  implicit def arbitraryNonEmptyList[T: Arbitrary]: Arbitrary[NonEmptyList[T]] = Arbitrary {
+    arbitrary[(T, List[T])].map { case (t, ts) => NonEmptyList(t, ts) }
+  }
+
+  def testNumberOfQuestionMarks[T: Arbitrary](queryGen: T => (String, Seq[String])): Unit = {
+    forAll(arbitrary[T])(t => {
+      val (query, values) = queryGen(t)
       query.count(_ == '?') shouldBe values.size
     })
   }
 
-  property("The number of generated question marks in the query should equal the number of elements in the value list in QueryGenerator.getLastModifiedDate") {
-    forAll(arbitrary[List[DepositId]])(depositIds => {
-      whenever(depositIds.nonEmpty) {
-        val (query, values) = QueryGenerator.getLastModifiedDate(NonEmptyList.fromListUnsafe(depositIds))
-        query.count(_ == '?') shouldBe values.size
-      }
-    })
+  property("findDeposits") {
+    testNumberOfQuestionMarks(QueryGenerator.findDeposits)
+  }
+
+  property("searchDeposits") {
+    testNumberOfQuestionMarks(QueryGenerator.searchDeposits)
+  }
+
+  property("getLastModifiedDate") {
+    testNumberOfQuestionMarks(QueryGenerator.getLastModifiedDate)
+  }
+
+  property("getElementsById") {
+    testNumberOfQuestionMarks(QueryGenerator.getElementsById("table", "idColumn"))
+  }
+
+  property("getCurrentElementByDepositId") {
+    testNumberOfQuestionMarks(QueryGenerator.getCurrentElementByDepositId("table"))
+  }
+
+  property("getAllElementsByDepositId") {
+    testNumberOfQuestionMarks(QueryGenerator.getAllElementsByDepositId("table"))
+  }
+
+  property("getDepositsById") {
+    testNumberOfQuestionMarks(QueryGenerator.getDepositsById("table", "idColumn"))
+  }
+
+  property("getIdentifierByDepositIdAndType") {
+    testNumberOfQuestionMarks(QueryGenerator.getIdentifierByDepositIdAndType)
+  }
+
+  property("getIdentifierByTypeAndValue") {
+    testNumberOfQuestionMarks(QueryGenerator.getIdentifierByTypeAndValue)
+  }
+
+  property("getSimplePropsElementsById") {
+    testNumberOfQuestionMarks(QueryGenerator.getSimplePropsElementsById("table", "idColumn", "key"))
+  }
+
+  property("getSimplePropsCurrentElementByDepositId") {
+    testNumberOfQuestionMarks(QueryGenerator.getSimplePropsCurrentElementByDepositId("table", "key"))
+  }
+
+  property("getSimplePropsAllElementsByDepositId") {
+    testNumberOfQuestionMarks(QueryGenerator.getSimplePropsAllElementsByDepositId("table", "key"))
+  }
+
+  property("getSimplePropsDepositsById") {
+    testNumberOfQuestionMarks(QueryGenerator.getSimplePropsDepositsById("table", "idColumn", "key"))
   }
 }
