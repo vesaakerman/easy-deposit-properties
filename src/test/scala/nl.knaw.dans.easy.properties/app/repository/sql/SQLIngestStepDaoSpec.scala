@@ -1,0 +1,139 @@
+package nl.knaw.dans.easy.properties.app.repository.sql
+
+import java.util.UUID
+
+import cats.scalatest.EitherValues
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, NoSuchDepositError }
+import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
+import org.joda.time.DateTime
+
+class SQLIngestStepDaoSpec extends TestSupportFixture
+  with FileSystemSupport
+  with DatabaseFixture
+  with DatabaseDataFixture
+  with EitherValues {
+
+  "getById" should "find ingest steps identified by their id" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getById(Seq("4", "10", "14")).value should contain only(
+      "4" -> Some(step4),
+      "10" -> Some(step10),
+      "14" -> Some(step14),
+    )
+  }
+
+  it should "return a None if the id is unknown" in {
+    val ingestSteps = new SQLIngestStepDao
+    val unknownId = "102"
+
+    ingestSteps.getById(Seq(unknownId)).value should contain only (unknownId -> Option.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getById(Seq.empty).value shouldBe empty
+  }
+
+  it should "fail when an invalid id is given" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getById(Seq("12", "invalid-id", "29")).leftValue shouldBe InvalidValueError("invalid id 'invalid-id'")
+  }
+
+  "getCurrent" should "return the current ingest step of the given deposits" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getCurrent(Seq(depositId4, depositId5)).value should contain only(
+      depositId5 -> Some(step14),
+      depositId4 -> None,
+    )
+  }
+
+  it should "return a None if the depositId is unknown" in {
+    val ingestSteps = new SQLIngestStepDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+
+    ingestSteps.getCurrent(Seq(depositId6)).value should contain only (depositId6 -> Option.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getCurrent(Seq.empty).value shouldBe empty
+  }
+
+  "getAll" should "return all ingest steps associated with the given deposits" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getAll(Seq(depositId2, depositId4)).value should contain only(
+      depositId2 -> Seq(step7, step8, step9, step10, step11, step12, step13),
+      depositId4 -> Seq.empty,
+    )
+  }
+
+  it should "return a None if the depositId is unknown" in {
+    val ingestSteps = new SQLIngestStepDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+
+    ingestSteps.getAll(Seq(depositId6)).value should contain only (depositId6 -> Seq.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getAll(Seq.empty).value shouldBe empty
+  }
+
+  "store" should "insert a new ingest step into the database" in {
+    val ingestSteps = new SQLIngestStepDao
+    val timestamp = new DateTime(2019, 7, 19, 22, 45, timeZone)
+    val inputIngestStep = InputIngestStep(IngestStepLabel.BAGINDEX, timestamp)
+    val expectedIngestStep = IngestStep("32", IngestStepLabel.BAGINDEX, timestamp)
+
+    ingestSteps.store(depositId4, inputIngestStep).value shouldBe expectedIngestStep
+    ingestSteps.getById(Seq("32")).value should contain only ("32" -> Some(expectedIngestStep))
+    ingestSteps.getCurrent(Seq(depositId4)).value should contain only (depositId4 -> Some(expectedIngestStep))
+    ingestSteps.getAll(Seq(depositId4)).value.toMap.apply(depositId4) should contain(expectedIngestStep)
+  }
+
+  it should "fail when the given depositId does not exist" in {
+    val ingestSteps = new SQLIngestStepDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+    val timestamp = new DateTime(2019, 7, 18, 22, 38, timeZone)
+    val inputIngestStep = InputIngestStep(IngestStepLabel.BAGINDEX, timestamp)
+
+    ingestSteps.store(depositId6, inputIngestStep).leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+
+  "getDepositsById" should "find deposits identified by these ingestStepIds" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getDepositsById(Seq("5", "11", "13")).value should contain only(
+      "5" -> Some(deposit1),
+      "11" -> Some(deposit2),
+      "13" -> Some(deposit2),
+    )
+  }
+
+  it should "return a None if the ingestStepId is unknown" in {
+    val ingestSteps = new SQLIngestStepDao
+    val unknownIngestStepId = "102"
+
+    ingestSteps.getDepositsById(Seq(unknownIngestStepId)).value should contain only (unknownIngestStepId -> Option.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getDepositsById(Seq.empty).value shouldBe empty
+  }
+
+  it should "fail when an invalid ingestStepId is given" in {
+    val ingestSteps = new SQLIngestStepDao
+
+    ingestSteps.getDepositsById(Seq("12", "invalid-id", "29")).leftValue shouldBe InvalidValueError("invalid id 'invalid-id'")
+  }
+}

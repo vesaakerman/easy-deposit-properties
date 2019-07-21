@@ -41,7 +41,7 @@ trait DatabaseFixture extends BeforeAndAfterEach {
 
       managed(pool.getConnection)
         .flatMap(connection => managed(connection.createStatement))
-        .and(constant(File(getClass.getClassLoader.getResource("database/db-tables.sql").toURI).contentAsString))
+        .and(constant(File(getClass.getClassLoader.getResource("database/database.sql").toURI).contentAsString))
         .map { case (statement, query) => statement.executeUpdate(query) }
         .tried
         .recover { case e => println(e.getMessage); fail("could not create database for testing", e) } shouldBe a[Success[_]]

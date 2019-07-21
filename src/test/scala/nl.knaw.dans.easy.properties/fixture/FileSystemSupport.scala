@@ -25,7 +25,7 @@ trait FileSystemSupport extends BeforeAndAfterEach {
 
   implicit def existenceOfFile[FILE <: better.files.File]: Existence[FILE] = _.exists
 
-  override protected def beforeEach(): Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
 
     if (testDir.exists) testDir.delete()

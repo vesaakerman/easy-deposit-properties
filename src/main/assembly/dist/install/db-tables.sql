@@ -11,7 +11,8 @@ CREATE TABLE State (
     label VARCHAR(64) NOT NULL,
     description TEXT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    UNIQUE (depositId, timestamp)
 );
 
 CREATE TYPE IdentifierSchema AS ENUM ('doi', 'urn', 'fedora', 'bag-store');
@@ -23,7 +24,8 @@ CREATE TABLE Identifier (
     identifierValue VARCHAR(64) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
-    UNIQUE (depositId, identifierSchema)
+    UNIQUE (depositId, identifierSchema),
+    UNIQUE (depositId, timestamp)
 );
 
 CREATE TABLE Curation (
@@ -35,18 +37,20 @@ CREATE TABLE Curation (
     datamanagerUserId VARCHAR(64) NOT NULL,
     datamanagerEmail TEXT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    UNIQUE (depositId, timestamp)
 );
 
 CREATE TABLE Springfield (
     springfieldId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     domain VARCHAR(32) NOT NULL,
-    "user" VARCHAR(32) NOT NULL,
+    springfield_user VARCHAR(32) NOT NULL,
     collection VARCHAR(32) NOT NULL,
     playmode VARCHAR(32) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    UNIQUE (depositId, timestamp)
 );
 
 CREATE TABLE SimpleProperties (
@@ -55,7 +59,8 @@ CREATE TABLE SimpleProperties (
     key VARCHAR(64) NOT NULL,
     value VARCHAR(64) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (depositId) REFERENCES Deposit (depositId)
+    FOREIGN KEY (depositId) REFERENCES Deposit (depositId),
+    UNIQUE (depositId, key, timestamp)
 );
 
 GRANT INSERT, SELECT ON Deposit TO easy_deposit_properties;
