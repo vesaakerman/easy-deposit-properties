@@ -189,8 +189,9 @@ object QueryGenerator {
          |  AND depositId IN (${ ids.toList.map(_ => "?").mkString(", ") })
          |  GROUP BY depositId
          |) AS deposit_with_max_timestamp USING (depositId)
-         |WHERE timestamp = max_timestamp;""".stripMargin
-    val values = key :: ids.map(_.toString)
+         |WHERE timestamp = max_timestamp
+         |AND key = ?;""".stripMargin
+    val values = key :: (ids.map(_.toString) :+ key)
 
     query -> values.toList
   }

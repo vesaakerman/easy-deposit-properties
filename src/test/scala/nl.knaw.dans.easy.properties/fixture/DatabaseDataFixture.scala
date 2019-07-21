@@ -7,7 +7,7 @@ import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, Identifie
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiRegisteredEvent }
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.scalatest.{ BeforeAndAfterEach, Suite }
 import resource.managed
@@ -190,6 +190,12 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
   val step13 = IngestStep("13", IngestStepLabel.COMPLETED, new DateTime(2019, 2, 2, 2, 11, timeZone))
 
   val step14 = IngestStep("14", IngestStepLabel.VALIDATE, new DateTime(2019, 5, 5, 4, 5, timeZone))
+
+  val doiRegistered0 = DoiRegisteredEvent(value = false, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  val doiRegistered1 = DoiRegisteredEvent(value = true, new DateTime(2019, 1, 1, 4, 7, timeZone))
+  val doiRegistered2 = DoiRegisteredEvent(value = false, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  val doiRegistered3 = DoiRegisteredEvent(value = true, new DateTime(2019, 2, 2, 2, 7, timeZone))
+  val doiRegistered4 = DoiRegisteredEvent(value = false, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
   def fillSimplePropertiesTable(): Unit = {
     prepareTest {

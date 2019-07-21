@@ -15,5 +15,58 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.sql
 
-class SQLDoiRegisteredDao {
+import java.sql.{ Connection, ResultSet }
+
+import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.model.{ DepositId, DoiRegisteredEvent }
+import nl.knaw.dans.easy.properties.app.repository.{ DoiRegisteredDao, InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import resource.managed
+
+class SQLDoiRegisteredDao(implicit connection: Connection) extends DoiRegisteredDao with CommonResultSetParsers with DebugEnhancedLogging {
+
+  private def parseDoiRegisteredEvent(resultSet: ResultSet): Either[InvalidValueError, DoiRegisteredEvent] = {
+    for {
+      timestamp <- parseDateTime(resultSet.getTimestamp("timestamp", timeZone), timeZone)
+      value = resultSet.getBoolean("value")
+    } yield DoiRegisteredEvent(value, timestamp)
+  }
+
+  private def parseDepositIdAndDoiRegisteredEvent(resultSet: ResultSet): Either[InvalidValueError, (DepositId, DoiRegisteredEvent)] = {
+    for {
+      depositId <- parseDepositId(resultSet.getString("depositId"))
+      ingestStep <- parseDoiRegisteredEvent(resultSet)
+    } yield depositId -> ingestStep
+  }
+
+  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[DoiRegisteredEvent])]] = {
+    trace(ids)
+
+    executeGetCurrent(parseDepositIdAndDoiRegisteredEvent)(QueryGenerator.getSimplePropsCurrentElementByDepositId("SimpleProperties", "doi-registered"))(ids)
+  }
+
+  override def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[DoiRegisteredEvent])]] = {
+    trace(ids)
+
+    executeGetAll(parseDepositIdAndDoiRegisteredEvent)(QueryGenerator.getSimplePropsAllElementsByDepositId("SimpleProperties", "doi-registered"))(ids)
+  }
+
+  override def store(id: DepositId, registered: DoiRegisteredEvent): MutationErrorOr[DoiRegisteredEvent] = {
+    trace(id, registered)
+
+    val query = QueryGenerator.storeSimpleProperty()
+
+    managed(connection.prepareStatement(query))
+      .map(prepStatement => {
+        prepStatement.setString(1, id.toString)
+        prepStatement.setString(2, "doi-registered")
+        prepStatement.setString(3, registered.value.toString)
+        prepStatement.setTimestamp(4, registered.timestamp, timeZone)
+        prepStatement.executeUpdate()
+      })
+      .either
+      .either
+      .leftMap(_ => NoSuchDepositError(id))
+      .map(_ => registered)
+  }
 }
