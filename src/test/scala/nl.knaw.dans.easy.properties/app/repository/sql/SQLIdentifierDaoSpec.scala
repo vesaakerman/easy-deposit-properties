@@ -124,8 +124,7 @@ class SQLIdentifierDaoSpec extends TestSupportFixture
 
     identifiers.store(depositId5, inputIdentifier).value shouldBe expectedIdentifier
     identifiers.getById(Seq("14")).value should contain only ("14" -> Some(expectedIdentifier))
-    // TODO uncomment when getByTypesAndValues is implemented
-    //    identifiers.getByTypesAndValues(Seq((IdentifierType.FEDORA, "easy-dataset:12345"))).value should contain only (depositId5 -> Some(expectedIdentifier))
+    identifiers.getByTypesAndValues(Seq(IdentifierType.FEDORA -> "easy-dataset:12345")).value should contain only ((IdentifierType.FEDORA -> "easy-dataset:12345") -> Some(expectedIdentifier))
     identifiers.getAll(Seq(depositId5)).value.toMap.apply(depositId5) should contain(expectedIdentifier)
   }
 
