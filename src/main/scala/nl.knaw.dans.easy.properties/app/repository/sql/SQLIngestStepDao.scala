@@ -15,5 +15,87 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.sql
 
-class SQLIngestStepDao {
+import java.sql.{ Connection, ResultSet, Statement }
+
+import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
+import nl.knaw.dans.easy.properties.app.repository.{ IngestStepDao, InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import resource.managed
+
+class SQLIngestStepDao(implicit connection: Connection) extends IngestStepDao with CommonResultSetParsers with DebugEnhancedLogging {
+
+  private def parseIngestStep(resultSet: ResultSet): Either[InvalidValueError, IngestStep] = {
+    for {
+      value <- parseEnumValue(IngestStepLabel, "ingest step label")(resultSet.getString("value"))
+      id = resultSet.getString("propertyId")
+      timestamp <- parseDateTime(resultSet.getTimestamp("timestamp", timeZone), timeZone)
+    } yield IngestStep(id, value, timestamp)
+  }
+
+  private def parseDepositIdAndIngestStep(resultSet: ResultSet): Either[InvalidValueError, (DepositId, IngestStep)] = {
+    for {
+      depositId <- parseDepositId(resultSet.getString("depositId"))
+      ingestStep <- parseIngestStep(resultSet)
+    } yield depositId -> ingestStep
+  }
+
+  private def parseIngestStepIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {
+    for {
+      deposit <- parseDeposit(resultSet)
+      ingestStepId = resultSet.getString("propertyId")
+    } yield ingestStepId -> deposit
+  }
+
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[IngestStep])]] = {
+    trace(ids)
+
+    executeGetById(parseIngestStep)(QueryGenerator.getSimplePropsElementsById("SimpleProperties", "propertyId", "ingest-step"))(ids)
+  }
+
+  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IngestStep])]] = {
+    trace(ids)
+
+    executeGetCurrent(parseDepositIdAndIngestStep)(QueryGenerator.getSimplePropsCurrentElementByDepositId("SimpleProperties", "ingest-step"))(ids)
+  }
+
+  override def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[IngestStep])]] = {
+    trace(ids)
+
+    executeGetAll(parseDepositIdAndIngestStep)(QueryGenerator.getSimplePropsAllElementsByDepositId("SimpleProperties", "ingest-step"))(ids)
+  }
+
+  override def store(id: DepositId, step: InputIngestStep): MutationErrorOr[IngestStep] = {
+    trace(id, step)
+
+    val query = QueryGenerator.storeIngestStep()
+
+    val managedResultSet = for {
+      prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))
+      _ = prepStatement.setString(1, id.toString)
+      _ = prepStatement.setString(2, "ingest-step")
+      _ = prepStatement.setString(3, step.step.toString)
+      _ = prepStatement.setTimestamp(4, step.timestamp, timeZone)
+      _ = prepStatement.executeUpdate()
+      resultSetForKey <- managed(prepStatement.getGeneratedKeys)
+    } yield resultSetForKey
+
+    managedResultSet
+      .map {
+        case resultSet if resultSet.next() => resultSet.getLong(1).toString.asRight
+        case _ => throw new Exception(s"not able to insert ingest step configuration (${ step.step }, ${ step.timestamp })")
+      }
+      .either
+      .either
+      .leftMap(_ => NoSuchDepositError(id))
+      .flatMap(identity)
+      .map(id => IngestStep(id, step.step, step.timestamp))
+  }
+
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+    trace(ids)
+
+    executeGetDepositById(parseIngestStepIdAndDeposit)(QueryGenerator.getSimplePropsDepositsById("SimpleProperties", "propertyId", "ingest-step"))(ids)
+  }
 }

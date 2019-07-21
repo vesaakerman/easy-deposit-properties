@@ -4,6 +4,7 @@ import java.util.UUID
 
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
@@ -171,6 +172,24 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
         |       ('00000000-0000-0000-0000-000000000002', 'domain2', 'user2', 'collection2', 'menu'      , '2019-02-02 02:02:00.000000+00:00');""".stripMargin
     }
   }
+
+  val step0 = IngestStep("0", IngestStepLabel.VALIDATE, new DateTime(2019, 1, 1, 4, 5, timeZone))
+  val step1 = IngestStep("1", IngestStepLabel.PID_GENERATOR, new DateTime(2019, 1, 1, 4, 6, timeZone))
+  val step2 = IngestStep("2", IngestStepLabel.FEDORA, new DateTime(2019, 1, 1, 4, 7, timeZone))
+  val step3 = IngestStep("3", IngestStepLabel.SPRINGFIELD, new DateTime(2019, 1, 1, 4, 8, timeZone))
+  val step4 = IngestStep("4", IngestStepLabel.BAGSTORE, new DateTime(2019, 1, 1, 4, 9, timeZone))
+  val step5 = IngestStep("5", IngestStepLabel.SOLR4FILES, new DateTime(2019, 1, 1, 4, 10, timeZone))
+  val step6 = IngestStep("6", IngestStepLabel.COMPLETED, new DateTime(2019, 1, 1, 4, 11, timeZone))
+
+  val step7 = IngestStep("7", IngestStepLabel.VALIDATE, new DateTime(2019, 2, 2, 2, 5, timeZone))
+  val step8 = IngestStep("8", IngestStepLabel.PID_GENERATOR, new DateTime(2019, 2, 2, 2, 6, timeZone))
+  val step9 = IngestStep("9", IngestStepLabel.FEDORA, new DateTime(2019, 2, 2, 2, 7, timeZone))
+  val step10 = IngestStep("10", IngestStepLabel.SPRINGFIELD, new DateTime(2019, 2, 2, 2, 8, timeZone))
+  val step11 = IngestStep("11", IngestStepLabel.BAGSTORE, new DateTime(2019, 2, 2, 2, 9, timeZone))
+  val step12 = IngestStep("12", IngestStepLabel.SOLR4FILES, new DateTime(2019, 2, 2, 2, 10, timeZone))
+  val step13 = IngestStep("13", IngestStepLabel.COMPLETED, new DateTime(2019, 2, 2, 2, 11, timeZone))
+
+  val step14 = IngestStep("14", IngestStepLabel.VALIDATE, new DateTime(2019, 5, 5, 4, 5, timeZone))
 
   def fillSimplePropertiesTable(): Unit = {
     prepareTest {
