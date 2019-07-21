@@ -20,8 +20,6 @@ import java.sql.{ Connection, ResultSet }
 import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.option._
-import cats.instances.string._
-import cats.instances.uuid._
 import cats.instances.vector._
 import cats.syntax.either._
 import cats.syntax.functor._
@@ -42,8 +40,8 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
 
   override def getAll: QueryErrorOr[Seq[Deposit]] = {
     trace(())
-    val query = QueryGenerator.getAllDeposits
-    executeQuery(parseDeposit)(_.toList)(Seq.empty[DepositId])(query)
+
+    executeQuery(parseDeposit)(_.toList)(QueryGenerator.getAllDeposits -> List.empty)
   }
 
   override def find(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Deposit])]] = {
@@ -58,15 +56,15 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
       ids.map(id => id -> results.get(id))
     }
 
+    // TODO same pattern can be found in other unabstracted implementations
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.findDeposits)
-      .map(executeQuery(parseDeposit)(collectResults)(ids))
+      .map(executeQuery(parseDeposit)(collectResults))
       .getOrElse(Seq.empty.asRight)
   }
 
   private def search(filters: DepositFilters): QueryErrorOr[Seq[Deposit]] = {
-    val (query, values) = QueryGenerator.searchDeposits(filters)
-    executeQuery(parseDeposit)(_.toList)(values)(query)
+    executeQuery(parseDeposit)(_.toList)(QueryGenerator.searchDeposits(filters))
   }
 
   override def search(filters: Seq[DepositFilters]): QueryErrorOr[Seq[(DepositFilters, Seq[Deposit])]] = {
@@ -107,9 +105,10 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
       ids.map(id => id -> results.get(id))
     }
 
+    // TODO same pattern can be found in other unabstracted implementations
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.getLastModifiedDate)
-      .map { case (query, values) => executeQuery(parseLastModifiedResponse)(collectResults)(values.toList)(query) }
+      .map(executeQuery(parseLastModifiedResponse)(collectResults))
       .getOrElse(Seq.empty.asRight)
   }
 }

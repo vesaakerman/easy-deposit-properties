@@ -17,8 +17,6 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.sql.{ Connection, ResultSet, Statement }
 
-import cats.instances.string._
-import cats.instances.uuid._
 import cats.syntax.either._
 import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }

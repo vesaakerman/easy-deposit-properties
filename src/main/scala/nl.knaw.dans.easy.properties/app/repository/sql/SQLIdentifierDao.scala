@@ -19,8 +19,6 @@ import java.sql.{ Connection, ResultSet, Statement }
 
 import cats.data.NonEmptyList
 import cats.instances.option._
-import cats.instances.string._
-import cats.instances.uuid._
 import cats.syntax.either._
 import cats.syntax.functor._
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
@@ -73,9 +71,10 @@ class SQLIdentifierDao(implicit connection: Connection) extends IdentifierDao wi
       ids.map(key => key -> results.get(key))
     }
 
+    // TODO same pattern can be found in other unabstracted implementations
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.getIdentifierByDepositIdAndType)
-      .map { case (query, values) => executeQuery(parseDepositIdAndIdentifier)(collectResults)(values)(query) }
+      .map(executeQuery(parseDepositIdAndIdentifier)(collectResults))
       .getOrElse(Seq.empty.asRight)
   }
 
@@ -91,9 +90,10 @@ class SQLIdentifierDao(implicit connection: Connection) extends IdentifierDao wi
       ids.map(key => key -> results.get(key))
     }
 
+    // TODO same pattern can be found in other unabstracted implementations
     NonEmptyList.fromList(ids.toList)
       .map(QueryGenerator.getIdentifierByTypeAndValue)
-      .map { case (query, values) => executeQuery(parseIdentifier)(collectResults)(values)(query) }
+      .map(executeQuery(parseIdentifier)(collectResults))
       .getOrElse(Seq.empty.asRight)
   }
 

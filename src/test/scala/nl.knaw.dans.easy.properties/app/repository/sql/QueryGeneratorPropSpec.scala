@@ -13,6 +13,7 @@ import org.scalacheck.{ Arbitrary, Gen }
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{ Matchers, PropSpec }
 
+// TODO expand with other instances of this test
 class QueryGeneratorPropSpec extends PropSpec with GeneratorDrivenPropertyChecks with Matchers {
 
   def genFromEnum[E <: Enumeration](enum: E): Gen[E#Value] = {

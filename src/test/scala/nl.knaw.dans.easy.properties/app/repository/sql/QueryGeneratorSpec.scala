@@ -32,13 +32,15 @@ class QueryGeneratorSpec extends TestSupportFixture {
 
   "findDeposits" should "render the depositIds as comma separated question marks" in {
     val depositIds = NonEmptyList.fromListUnsafe((1 to 5).map(_ => UUID.randomUUID()).toList)
+    val (query, values) = QueryGenerator.findDeposits(depositIds)
 
     val expectedQuery =
       """SELECT *
         |FROM Deposit
         |WHERE depositId IN (?, ?, ?, ?, ?);""".stripMargin
 
-    QueryGenerator.findDeposits(depositIds) should equal(expectedQuery)(after being whiteSpaceNormalised)
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should contain allElementsOf depositIds.map(_.toString).toList
   }
 
   "searchDeposits" should "render a query that selects all deposits when no filters are set" in {
@@ -316,7 +318,7 @@ class QueryGeneratorSpec extends TestSupportFixture {
          |GROUP BY depositId;""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values.toList should {
+    values should {
       have length (depositIds.size * 6) and
         contain theSameElementsAs Seq.fill(6)(depositIds.map(_.toString).toList).flatten
     }
@@ -324,7 +326,7 @@ class QueryGeneratorSpec extends TestSupportFixture {
 
   "getElementsById" should "generate a query that, given a table name and id column name, finds the elements associated with the given ids" in {
     val ids = NonEmptyList.fromListUnsafe((1 to 5).map(i => s"id$i").toList)
-    val query = QueryGenerator.getElementsById("State", "stateId")(ids)
+    val (query, values) = QueryGenerator.getElementsById("State", "stateId")(ids)
 
     val expectedQuery =
       """SELECT *
@@ -332,11 +334,12 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE stateId IN (?, ?, ?, ?, ?);""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should contain allElementsOf ids.toList
   }
 
   "getCurrentElementByDepositId" should "generate a query that, given a table name, finds the element that is latest associated with the given depositIds" in {
     val depositIds = NonEmptyList.fromListUnsafe((1 to 5).map(_ => UUID.randomUUID()).toList)
-    val query = QueryGenerator.getCurrentElementByDepositId("State")(depositIds)
+    val (query, values) = QueryGenerator.getCurrentElementByDepositId("State")(depositIds)
 
     val expectedQuery =
       """SELECT *
@@ -350,11 +353,12 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE timestamp = max_timestamp;""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should contain allElementsOf depositIds.map(_.toString).toList
   }
 
   "getAllElementsByDepositId" should "generate a query that, given a table name, finds all elements that are/were associated with the given depositIds" in {
     val depositIds = NonEmptyList.fromListUnsafe((1 to 5).map(_ => UUID.randomUUID()).toList)
-    val query = QueryGenerator.getAllElementsByDepositId("State")(depositIds)
+    val (query, values) = QueryGenerator.getAllElementsByDepositId("State")(depositIds)
 
     val expectedQuery =
       """SELECT *
@@ -362,11 +366,12 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE depositId IN (?, ?, ?, ?, ?);""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should contain allElementsOf depositIds.map(_.toString).toList
   }
 
   "getDepositsById" should "generate a query that, given a table name and id column name, finds deposits corresponing to the given ids" in {
     val ids = NonEmptyList.fromListUnsafe((1 to 5).map(i => s"id$i").toList)
-    val query = QueryGenerator.getDepositsById("State", "stateId")(ids)
+    val (query, values) = QueryGenerator.getDepositsById("State", "stateId")(ids)
 
     val expectedQuery =
       """SELECT stateId, depositId, bagName, creationTimestamp, depositorId
@@ -376,6 +381,7 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE stateId IN (?, ?, ?, ?, ?);""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should contain allElementsOf ids.toList
   }
 
   "getIdentifierByDepositIdAndType" should "produce a query that selects the identifiers that belong to the given deposits and have the given identifier types" in {

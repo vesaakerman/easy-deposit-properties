@@ -3,7 +3,6 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 import java.sql.{ Connection, ResultSet }
 import java.util.UUID
 
-import cats.Show
 import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.option._
@@ -52,8 +51,8 @@ private[sql] trait CommonResultSetParsers {
   }
 
   private def extractResults[T, X](parseResult: ResultSet => Either[InvalidValueError, T])
-                                       (collectResults: Stream[T] => Seq[X])
-                                       (result: ResultSet): Either[InvalidValueError, Seq[X]] = {
+                                  (collectResults: Stream[T] => Seq[X])
+                                  (result: ResultSet): Either[InvalidValueError, Seq[X]] = {
     Stream.continually(result.next())
       .takeWhile(b => b)
       .traverse[Either[InvalidValueError, ?], T](_ => parseResult(result))
@@ -62,12 +61,12 @@ private[sql] trait CommonResultSetParsers {
 
   private[sql] def executeQuery[Id, X, T](parseResult: ResultSet => Either[InvalidValueError, T])
                                          (collectResults: Stream[T] => Seq[X])
-                                         (ids: Seq[Id])
-                                         (query: String)
-                                         (implicit showId: Show[Id], connection: Connection) = {
+                                         (queryAndValues: (String, Seq[String]))
+                                         (implicit connection: Connection) = {
+    val (query, values) = queryAndValues
     val resultSet = for {
       prepStatement <- managed(connection.prepareStatement(query))
-      _ = ids.zipWithIndex.foreach { case (id, index) => prepStatement.setString(index + 1, showId.show(id)) }
+      _ = values.zipWithIndex.foreach { case (id, index) => prepStatement.setString(index + 1, id) }
       resultSet <- managed(prepStatement.executeQuery())
     } yield resultSet
 
@@ -79,9 +78,9 @@ private[sql] trait CommonResultSetParsers {
   }
 
   private[sql] def executeGetById[X <: Node](extract: ResultSet => Either[InvalidValueError, X])
-                                            (queryGen: NonEmptyList[String] => String)
+                                            (queryGen: NonEmptyList[String] => (String, Seq[String]))
                                             (ids: Seq[String])
-                                            (implicit showId: Show[String], connection: Connection): QueryErrorOr[Seq[(String, Option[X])]] = {
+                                            (implicit connection: Connection): QueryErrorOr[Seq[(String, Option[X])]] = {
     def collectResults(stream: Stream[X]): Seq[(String, Option[X])] = {
       val results = stream.toList
         .groupBy(_.id)
@@ -93,15 +92,15 @@ private[sql] trait CommonResultSetParsers {
       .map(_
         .traverse[Either[InvalidValueError, ?], String](validateId)
         .map(queryGen)
-        .flatMap(executeQuery(extract)(collectResults)(ids))
+        .flatMap(executeQuery(extract)(collectResults))
       )
       .getOrElse(Seq.empty.asRight)
   }
 
   private[sql] def executeGetCurrent[T](extract: ResultSet => Either[InvalidValueError, (DepositId, T)])
-                                       (queryGen: NonEmptyList[DepositId] => String)
+                                       (queryGen: NonEmptyList[DepositId] => (String, Seq[String]))
                                        (ids: Seq[DepositId])
-                                       (implicit showId: Show[DepositId], connection: Connection): QueryErrorOr[Seq[(DepositId, Option[T])]] = {
+                                       (implicit connection: Connection): QueryErrorOr[Seq[(DepositId, Option[T])]] = {
     def collectResults(stream: Stream[(DepositId, T)]): Seq[(DepositId, Option[T])] = {
       val results = stream.toList
         .groupBy { case (depositId, _) => depositId }
@@ -113,14 +112,14 @@ private[sql] trait CommonResultSetParsers {
 
     NonEmptyList.fromList(ids.toList)
       .map(queryGen)
-      .map(executeQuery(extract)(collectResults)(ids))
+      .map(executeQuery(extract)(collectResults))
       .getOrElse(Seq.empty.asRight)
   }
 
   private[sql] def executeGetAll[T](extract: ResultSet => Either[InvalidValueError, (DepositId, T)])
-                                   (queryGen: NonEmptyList[DepositId] => String)
+                                   (queryGen: NonEmptyList[DepositId] => (String, Seq[String]))
                                    (ids: Seq[DepositId])
-                                   (implicit showId: Show[DepositId], connection: Connection): QueryErrorOr[Seq[(DepositId, Seq[T])]] = {
+                                   (implicit connection: Connection): QueryErrorOr[Seq[(DepositId, Seq[T])]] = {
     def collectResults(stream: Stream[(DepositId, T)]): Seq[(DepositId, Seq[T])] = {
       val results = stream.toList
         .groupBy { case (depositId, _) => depositId }
@@ -132,14 +131,14 @@ private[sql] trait CommonResultSetParsers {
 
     NonEmptyList.fromList(ids.toList)
       .map(queryGen)
-      .map(executeQuery(extract)(collectResults)(ids))
+      .map(executeQuery(extract)(collectResults))
       .getOrElse(Seq.empty.asRight)
   }
 
   private[sql] def executeGetDepositById(extract: ResultSet => Either[InvalidValueError, (String, Deposit)])
-                                        (queryGen: NonEmptyList[String] => String)
+                                        (queryGen: NonEmptyList[String] => (String, Seq[String]))
                                         (ids: Seq[String])
-                                        (implicit showId: Show[String], connection: Connection): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+                                        (implicit connection: Connection): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
     def collectResults(stream: Stream[(String, Deposit)]): Seq[(String, Option[Deposit])] = {
       val results = stream.toList
         .groupBy { case (stateId, _) => stateId }
@@ -151,7 +150,7 @@ private[sql] trait CommonResultSetParsers {
       .map(_
         .traverse[Either[InvalidValueError, ?], String](validateId)
         .map(queryGen)
-        .flatMap(executeQuery(extract)(collectResults)(ids))
+        .flatMap(executeQuery(extract)(collectResults))
       )
       .getOrElse(Seq.empty.asRight)
   }
