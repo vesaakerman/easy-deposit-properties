@@ -221,7 +221,7 @@ object QueryGenerator {
     "INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp) VALUES (?, ?, ?, ?);"
   }
 
-  def storeIngestStep(): String = {
+  def storeSimpleProperty(): String = {
     "INSERT INTO SimpleProperties (depositId, key, value, timestamp) VALUES (?, ?, ?, ?);"
   }
   

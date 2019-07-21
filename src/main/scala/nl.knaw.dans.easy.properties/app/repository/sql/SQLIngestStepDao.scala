@@ -69,7 +69,7 @@ class SQLIngestStepDao(implicit connection: Connection) extends IngestStepDao wi
   override def store(id: DepositId, step: InputIngestStep): MutationErrorOr[IngestStep] = {
     trace(id, step)
 
-    val query = QueryGenerator.storeIngestStep()
+    val query = QueryGenerator.storeSimpleProperty()
 
     val managedResultSet = for {
       prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))
@@ -84,7 +84,7 @@ class SQLIngestStepDao(implicit connection: Connection) extends IngestStepDao wi
     managedResultSet
       .map {
         case resultSet if resultSet.next() => resultSet.getLong(1).toString.asRight
-        case _ => throw new Exception(s"not able to insert ingest step configuration (${ step.step }, ${ step.timestamp })")
+        case _ => throw new Exception(s"not able to insert ingest step (${ step.step }, ${ step.timestamp })")
       }
       .either
       .either

@@ -392,7 +392,7 @@ class QueryGeneratorSpec extends TestSupportFixture {
       (UUID.fromString("00000000-0000-0000-0000-000000000001"), IdentifierType.BAG_STORE),
     )
     val (query, values) = QueryGenerator.getIdentifierByDepositIdAndType(ids)
-    
+
     val expectedQuery =
       """SELECT identifierId, depositId, identifierSchema, identifierValue, timestamp
         |FROM Identifier
@@ -407,7 +407,7 @@ class QueryGeneratorSpec extends TestSupportFixture {
         contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
     }
   }
-  
+
   it should "produce a query with no OR's in it when only one (depositId, idType) tuple is looked for" in {
     val ids = NonEmptyList.of(
       (UUID.fromString("00000000-0000-0000-0000-000000000001"), IdentifierType.BAG_STORE),
@@ -474,6 +474,10 @@ class QueryGeneratorSpec extends TestSupportFixture {
 
   "storeCuration" should "yield the query for inserting a Curation into the database" in {
     QueryGenerator.storeCuration() shouldBe "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
+  }
+
+  "storeSimpleProperty" should "yield the query for inserting an Identifier into the database" in {
+    QueryGenerator.storeSimpleProperty() shouldBe "INSERT INTO SimpleProperties (depositId, key, value, timestamp) VALUES (?, ?, ?, ?);"
   }
 
   "storeIdentifier" should "yield the query for inserting an Identifier into the database" in {
