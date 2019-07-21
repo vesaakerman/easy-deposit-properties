@@ -15,5 +15,87 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.sql
 
-class SQLContentTypeDao {
+import java.sql.{ Connection, ResultSet, Statement }
+
+import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, InputContentType }
+import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
+import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import resource.managed
+
+class SQLContentTypeDao(implicit connection: Connection) extends ContentTypeDao with CommonResultSetParsers with DebugEnhancedLogging {
+
+  private def parseContentType(resultSet: ResultSet): Either[InvalidValueError, ContentType] = {
+    for {
+      value <- parseEnumValue(ContentTypeValue, "content type")(resultSet.getString("value"))
+      id = resultSet.getString("propertyId")
+      timestamp <- parseDateTime(resultSet.getTimestamp("timestamp", timeZone), timeZone)
+    } yield ContentType(id, value, timestamp)
+  }
+
+  private def parseDepositIdAndContentType(resultSet: ResultSet): Either[InvalidValueError, (DepositId, ContentType)] = {
+    for {
+      depositId <- parseDepositId(resultSet.getString("depositId"))
+      contentType <- parseContentType(resultSet)
+    } yield depositId -> contentType
+  }
+
+  private def parseContentTypeIdAndDeposit(resultSet: ResultSet): Either[InvalidValueError, (String, Deposit)] = {
+    for {
+      deposit <- parseDeposit(resultSet)
+      contentTypeId = resultSet.getString("propertyId")
+    } yield contentTypeId -> deposit
+  }
+
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[ContentType])]] = {
+    trace(ids)
+
+    executeGetById(parseContentType)(QueryGenerator.getSimplePropsElementsById("SimpleProperties", "propertyId", "content-type"))(ids)
+  }
+
+  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[ContentType])]] = {
+    trace(ids)
+
+    executeGetCurrent(parseDepositIdAndContentType)(QueryGenerator.getSimplePropsCurrentElementByDepositId("SimpleProperties", "content-type"))(ids)
+  }
+
+  override def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[ContentType])]] = {
+    trace(ids)
+
+    executeGetAll(parseDepositIdAndContentType)(QueryGenerator.getSimplePropsAllElementsByDepositId("SimpleProperties", "content-type"))(ids)
+  }
+
+  override def store(id: DepositId, contentType: InputContentType): MutationErrorOr[ContentType] = {
+    trace(id, contentType)
+
+    val query = QueryGenerator.storeSimpleProperty()
+
+    val managedResultSet = for {
+      prepStatement <- managed(connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))
+      _ = prepStatement.setString(1, id.toString)
+      _ = prepStatement.setString(2, "content-type")
+      _ = prepStatement.setString(3, contentType.value.toString)
+      _ = prepStatement.setTimestamp(4, contentType.timestamp, timeZone)
+      _ = prepStatement.executeUpdate()
+      resultSetForKey <- managed(prepStatement.getGeneratedKeys)
+    } yield resultSetForKey
+
+    managedResultSet
+      .map {
+        case resultSet if resultSet.next() => resultSet.getLong(1).toString.asRight
+        case _ => throw new Exception(s"not able to insert content type (${ contentType.value }, ${ contentType.timestamp })")
+      }
+      .either
+      .either
+      .leftMap(_ => NoSuchDepositError(id))
+      .flatMap(identity)
+      .map(id => ContentType(id, contentType.value, contentType.timestamp))
+  }
+
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+    trace(ids)
+
+    executeGetDepositById(parseContentTypeIdAndDeposit)(QueryGenerator.getSimplePropsDepositsById("SimpleProperties", "propertyId", "content-type"))(ids)
+  }
 }

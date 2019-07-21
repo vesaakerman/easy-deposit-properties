@@ -2,6 +2,7 @@ package nl.knaw.dans.easy.properties.fixture
 
 import java.util.UUID
 
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue }
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
@@ -203,6 +204,13 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
   val doiAction3 = DoiActionEvent(DoiAction.CREATE, new DateTime(2019, 3, 3, 0, 0, timeZone))
   val doiAction4 = DoiActionEvent(DoiAction.CREATE, new DateTime(2019, 4, 4, 0, 0, timeZone))
   val doiAction5 = DoiActionEvent(DoiAction.UPDATE, new DateTime(2019, 5, 5, 0, 0, timeZone))
+
+  val contentType0 = ContentType("26", ContentTypeValue.ZIP, new DateTime(2019, 1, 1, 0, 5, timeZone))
+  val contentType1 = ContentType("27", ContentTypeValue.OCTET, new DateTime(2019, 1, 1, 0, 10, timeZone))
+  val contentType2 = ContentType("28", ContentTypeValue.ZIP, new DateTime(2019, 2, 2, 0, 5, timeZone))
+  val contentType3 = ContentType("29", ContentTypeValue.ZIP, new DateTime(2019, 3, 3, 0, 5, timeZone))
+  val contentType4 = ContentType("30", ContentTypeValue.ZIP, new DateTime(2019, 4, 4, 0, 5, timeZone))
+  val contentType5 = ContentType("31", ContentTypeValue.ZIP, new DateTime(2019, 5, 5, 0, 5, timeZone))
 
   def fillSimplePropertiesTable(): Unit = {
     prepareTest {
