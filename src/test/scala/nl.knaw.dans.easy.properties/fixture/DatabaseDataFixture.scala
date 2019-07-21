@@ -3,6 +3,7 @@ package nl.knaw.dans.easy.properties.fixture
 import java.util.UUID
 
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
@@ -88,6 +89,25 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
         |       ('00000000-0000-0000-0000-000000000005', 'REJECTED'  , 'deposit is rejected'              , '2019-05-05 03:03:00.000000+00:00');""".stripMargin
     }
   }
+
+  val identifier0 = Identifier("0", IdentifierType.BAG_STORE, depositId1.toString, new DateTime(2019, 1, 1, 0, 0, timeZone))
+  val identifier1 = Identifier("1", IdentifierType.DOI, "10.5072/dans-a1b-cde2", new DateTime(2019, 1, 1, 0, 1, timeZone))
+  val identifier2 = Identifier("2", IdentifierType.URN, "urn:nbn:123456", new DateTime(2019, 1, 1, 0, 2, timeZone))
+  val identifier3 = Identifier("3", IdentifierType.FEDORA, "easy-dataset:1", new DateTime(2019, 1, 1, 0, 3, timeZone))
+
+  val identifier4 = Identifier("4", IdentifierType.BAG_STORE, depositId2.toString, new DateTime(2019, 2, 2, 0, 0, timeZone))
+  val identifier5 = Identifier("5", IdentifierType.DOI, "10.5072/dans-f3g-hij4", new DateTime(2019, 2, 2, 0, 1, timeZone))
+  val identifier6 = Identifier("6", IdentifierType.URN, "urn:nbn:789012", new DateTime(2019, 2, 2, 0, 2, timeZone))
+  val identifier7 = Identifier("7", IdentifierType.FEDORA, "easy-dataset:2", new DateTime(2019, 2, 2, 0, 3, timeZone))
+
+  val identifier8 = Identifier("8", IdentifierType.BAG_STORE, depositId3.toString, new DateTime(2019, 3, 3, 0, 0, timeZone))
+
+  val identifier9 = Identifier("9", IdentifierType.BAG_STORE, depositId4.toString, new DateTime(2019, 4, 4, 0, 0, timeZone))
+  val identifier10 = Identifier("10", IdentifierType.DOI, "10.5072/dans-p7q-rst8", new DateTime(2019, 4, 4, 0, 1, timeZone))
+  val identifier11 = Identifier("11", IdentifierType.URN, "urn:nbn:901234", new DateTime(2019, 4, 4, 0, 2, timeZone))
+  val identifier12 = Identifier("12", IdentifierType.FEDORA, "easy-dataset:4", new DateTime(2019, 4, 4, 0, 3, timeZone))
+
+  val identifier13 = Identifier("13", IdentifierType.BAG_STORE, depositId5.toString, new DateTime(2019, 5, 5, 0, 0, timeZone))
 
   def fillIdentifierTable(): Unit = {
     prepareTest {

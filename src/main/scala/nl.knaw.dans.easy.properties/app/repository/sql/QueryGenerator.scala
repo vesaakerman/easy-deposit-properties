@@ -1,6 +1,7 @@
 package nl.knaw.dans.easy.properties.app.repository.sql
 
 import cats.data.NonEmptyList
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.{ DepositFilter, DepositId, SeriesFilter }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 
@@ -133,12 +134,42 @@ object QueryGenerator {
     s"SELECT $idColumnName, depositId, bagName, creationTimestamp, depositorId FROM Deposit INNER JOIN $tableName ON Deposit.depositId = $tableName.depositId WHERE $idColumnName IN (${ ids.toList.map(_ => "?").mkString(", ") });"
   }
 
+  def getIdentifierByDepositIdAndType(ids: NonEmptyList[(DepositId, IdentifierType)]): (String, List[String]) = {
+    val (queryWherePart, valuesWherePart) = ids
+      .map {
+        case (depositId, idType) => "(depositId = ? AND identifierSchema = ?)" -> (depositId.toString :: idType.toString :: Nil)
+      }
+      .foldLeft(("", List.empty[String])) {
+        case (("", vs), (subQuery, values)) => subQuery -> (values ::: vs)
+        case ((q, vs), (subQuery, values)) => s"$subQuery OR $q" -> (values ::: vs)
+      }
+    
+    s"SELECT identifierId, depositId, identifierSchema, identifierValue, timestamp FROM Identifier WHERE $queryWherePart;" -> valuesWherePart
+  }
+
+  def getIdentifierByTypeAndValue(ids: NonEmptyList[(IdentifierType, String)]): (String, List[String]) = {
+    val (queryWherePart, valuesWherePart) = ids
+      .map {
+        case (idType, idValue) => "(identifierSchema = ? AND identifierValue = ?)" -> (idType.toString :: idValue.toString :: Nil)
+      }
+      .foldLeft(("", List.empty[String])) {
+        case (("", vs), (subQuery, values)) => subQuery -> (values ::: vs)
+        case ((q, vs), (subQuery, values)) => s"$subQuery OR $q" -> (values ::: vs)
+      }
+
+    s"SELECT identifierId, identifierSchema, identifierValue, timestamp FROM Identifier WHERE $queryWherePart;" -> valuesWherePart
+  }
+
   def storeDeposit(): String = {
     "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
   }
 
   def storeCuration(): String = {
     "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
+  }
+
+  def storeIdentifier(): String = {
+    "INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp) VALUES (?, ?, ?, ?);"
   }
 
   def storeSpringfield(): String = {

@@ -1,0 +1,171 @@
+package nl.knaw.dans.easy.properties.app.repository.sql
+
+import java.util.UUID
+
+import cats.scalatest.EitherValues
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType, InputIdentifier }
+import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, NoSuchDepositError }
+import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
+import org.joda.time.DateTime
+
+class SQLIdentifierDaoSpec extends TestSupportFixture
+  with FileSystemSupport
+  with DatabaseFixture
+  with DatabaseDataFixture
+  with EitherValues {
+
+  "getById" should "find identifiers identified by their identifierId" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getById(Seq("7", "9", "13")).value should contain only(
+      "7" -> Some(identifier7),
+      "9" -> Some(identifier9),
+      "13" -> Some(identifier13),
+    )
+  }
+
+  it should "return a None if the identifierId is unknown" in {
+    val identifiers = new SQLIdentifierDao
+    val unknownIdentifierId = "102"
+
+    identifiers.getById(Seq(unknownIdentifierId)).value should contain only (unknownIdentifierId -> Option.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getById(Seq.empty).value shouldBe empty
+  }
+
+  it should "fail when an invalid identifierId is given" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getById(Seq("12", "invalid-id", "29")).leftValue shouldBe InvalidValueError("invalid id 'invalid-id'")
+  }
+
+  "getByType" should "find the identifiers with the given depositIds and types" in {
+    val identifiers = new SQLIdentifierDao
+    val input = Seq(depositId2 -> IdentifierType.FEDORA, depositId5 -> IdentifierType.BAG_STORE)
+
+    identifiers.getByType(input).value should contain only(
+      (depositId2 -> IdentifierType.FEDORA) -> Some(identifier7),
+      (depositId5 -> IdentifierType.BAG_STORE) -> Some(identifier13),
+    )
+  }
+
+  it should "return a None if the depositId is unknown" in {
+    val identifiers = new SQLIdentifierDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+
+    identifiers.getByType(Seq(depositId6 -> IdentifierType.BAG_STORE)).value should contain only ((depositId6 -> IdentifierType.BAG_STORE) -> None)
+  }
+
+  it should "return a None if there is no identifier with the given type for this deposit" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getByType(Seq(depositId5 -> IdentifierType.FEDORA)).value should contain only ((depositId5 -> IdentifierType.FEDORA) -> None)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getByType(Seq.empty).value shouldBe empty
+  }
+
+  "getByTypesAndValues" should "find the identifiers with the given types and values" in {
+    val identifiers = new SQLIdentifierDao
+    val input = Seq(IdentifierType.FEDORA -> "easy-dataset:1", IdentifierType.DOI -> "10.5072/dans-p7q-rst8")
+
+    identifiers.getByTypesAndValues(input).value should contain only(
+      (IdentifierType.FEDORA -> "easy-dataset:1") -> Some(identifier3),
+      (IdentifierType.DOI -> "10.5072/dans-p7q-rst8") -> Some(identifier10),
+    )
+  }
+
+  it should "return a None if there is no identifier with the given value for this type" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getByTypesAndValues(Seq(IdentifierType.URN -> "easy-dataset:1")).value should contain only ((IdentifierType.URN -> "easy-dataset:1") -> None)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getByTypesAndValues(Seq.empty).value shouldBe empty
+  }
+
+  "getAll" should "return all identifiers associated with the given deposits" in {
+    val identifiers = new SQLIdentifierDao
+
+    val results = identifiers.getAll(Seq(depositId2, depositId5)).value.toMap
+    results.keySet should contain only(depositId2, depositId5)
+    results(depositId2) should contain only(identifier4, identifier5, identifier6, identifier7)
+    results(depositId5) should contain only identifier13
+  }
+
+  it should "return a None if the depositId is unknown" in {
+    val identifiers = new SQLIdentifierDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+
+    identifiers.getAll(Seq(depositId6)).value should contain only (depositId6 -> Seq.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getAll(Seq.empty).value shouldBe empty
+  }
+
+  "store" should "insert a new state into the database" in {
+    val identifiers = new SQLIdentifierDao
+    val timestamp = new DateTime(2019, 7, 18, 22, 38, timeZone)
+    val inputIdentifier = InputIdentifier(IdentifierType.FEDORA, "easy-dataset:12345", timestamp)
+    val expectedIdentifier = Identifier("14", IdentifierType.FEDORA, "easy-dataset:12345", timestamp)
+
+    identifiers.store(depositId5, inputIdentifier).value shouldBe expectedIdentifier
+    identifiers.getById(Seq("14")).value should contain only ("14" -> Some(expectedIdentifier))
+    // TODO uncomment when getByTypesAndValues is implemented
+    //    identifiers.getByTypesAndValues(Seq((IdentifierType.FEDORA, "easy-dataset:12345"))).value should contain only (depositId5 -> Some(expectedIdentifier))
+    identifiers.getAll(Seq(depositId5)).value.toMap.apply(depositId5) should contain(expectedIdentifier)
+  }
+
+  it should "fail when the given depositId does not exist" in {
+    val identifiers = new SQLIdentifierDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+    val timestamp = new DateTime(2019, 7, 18, 22, 38, timeZone)
+    val inputIdentifier = InputIdentifier(IdentifierType.FEDORA, "easy-dataset:12345", timestamp)
+
+    identifiers.store(depositId6, inputIdentifier).leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+
+  // TODO more tests based on foreign keys and unique constraints
+
+  "getDepositsById" should "find deposits identified by these identifierIds" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getDepositsById(Seq("6", "8", "13")).value should contain only(
+      "6" -> Some(deposit2),
+      "8" -> Some(deposit3),
+      "13" -> Some(deposit5),
+    )
+  }
+
+  it should "return a None if the identifierId is unknown" in {
+    val identifiers = new SQLIdentifierDao
+    val unknownIdentifierId = "102"
+
+    identifiers.getDepositsById(Seq(unknownIdentifierId)).value should contain only (unknownIdentifierId -> Option.empty)
+  }
+
+  it should "return an empty collection when the input collection is empty" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getDepositsById(Seq.empty).value shouldBe empty
+  }
+
+  it should "fail when an invalid identifierId is given" in {
+    val identifiers = new SQLIdentifierDao
+
+    identifiers.getDepositsById(Seq("12", "invalid-id", "29")).leftValue shouldBe InvalidValueError("invalid id 'invalid-id'")
+  }
+}

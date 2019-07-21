@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.data.NonEmptyList
 import nl.knaw.dans.easy.properties.app.model.SeriesFilter
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, StateLabel }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
@@ -377,12 +378,100 @@ class QueryGeneratorSpec extends TestSupportFixture {
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
   }
 
+  "getIdentifierByDepositIdAndType" should "produce a query that selects the identifiers that belong to the given deposits and have the given identifier types" in {
+    val ids = NonEmptyList.of(
+      (UUID.fromString("00000000-0000-0000-0000-000000000002"), IdentifierType.URN),
+      (UUID.fromString("00000000-0000-0000-0000-000000000002"), IdentifierType.DOI),
+      (UUID.fromString("00000000-0000-0000-0000-000000000004"), IdentifierType.FEDORA),
+      (UUID.fromString("00000000-0000-0000-0000-000000000001"), IdentifierType.BAG_STORE),
+    )
+    val (query, values) = QueryGenerator.getIdentifierByDepositIdAndType(ids)
+    
+    val expectedQuery =
+      """SELECT identifierId, depositId, identifierSchema, identifierValue, timestamp
+        |FROM Identifier
+        |WHERE (depositId = ? AND identifierSchema = ?)
+        |OR (depositId = ? AND identifierSchema = ?)
+        |OR (depositId = ? AND identifierSchema = ?)
+        |OR (depositId = ? AND identifierSchema = ?);""".stripMargin
+
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should {
+      have length (ids.size * 2) and
+        contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
+    }
+  }
+  
+  it should "produce a query with no OR's in it when only one (depositId, idType) tuple is looked for" in {
+    val ids = NonEmptyList.of(
+      (UUID.fromString("00000000-0000-0000-0000-000000000001"), IdentifierType.BAG_STORE),
+    )
+    val (query, values) = QueryGenerator.getIdentifierByDepositIdAndType(ids)
+
+    val expectedQuery =
+      """SELECT identifierId, depositId, identifierSchema, identifierValue, timestamp
+        |FROM Identifier
+        |WHERE (depositId = ? AND identifierSchema = ?);""".stripMargin
+
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should {
+      have length (ids.size * 2) and
+        contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
+    }
+  }
+
+  "getIdentifierByTypeAndValue" should "produce a query that selects the identifiers according to their type and value" in {
+    val ids = NonEmptyList.of(
+      (IdentifierType.URN, "abc"),
+      (IdentifierType.DOI, "foo"),
+      (IdentifierType.FEDORA, "bar"),
+      (IdentifierType.BAG_STORE, "def"),
+    )
+    val (query, values) = QueryGenerator.getIdentifierByTypeAndValue(ids)
+
+    val expectedQuery =
+      """SELECT identifierId, identifierSchema, identifierValue, timestamp
+        |FROM Identifier
+        |WHERE (identifierSchema = ? AND identifierValue = ?)
+        |OR (identifierSchema = ? AND identifierValue = ?)
+        |OR (identifierSchema = ? AND identifierValue = ?)
+        |OR (identifierSchema = ? AND identifierValue = ?);""".stripMargin
+
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should {
+      have length (ids.size * 2) and
+        contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
+    }
+  }
+
+  it should "produce a query with no OR's in it when only one (depositId, idType) tuple is looked for" in {
+    val ids = NonEmptyList.of(
+      (IdentifierType.BAG_STORE, "foobar"),
+    )
+    val (query, values) = QueryGenerator.getIdentifierByTypeAndValue(ids)
+
+    val expectedQuery =
+      """SELECT identifierId, identifierSchema, identifierValue, timestamp
+        |FROM Identifier
+        |WHERE (identifierSchema = ? AND identifierValue = ?);""".stripMargin
+
+    query should equal(expectedQuery)(after being whiteSpaceNormalised)
+    values should {
+      have length (ids.size * 2) and
+        contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
+    }
+  }
+
   "storeDeposit" should "yield the query for inserting a deposit into the database" in {
     QueryGenerator.storeDeposit() shouldBe "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
   }
 
   "storeCuration" should "yield the query for inserting a Curation into the database" in {
     QueryGenerator.storeCuration() shouldBe "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
+  }
+
+  "storeIdentifier" should "yield the query for inserting an Identifier into the database" in {
+    QueryGenerator.storeIdentifier() shouldBe "INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp) VALUES (?, ?, ?, ?);"
   }
 
   "storeSpringfield" should "yield the query for inserting a Springfield configuration into the database" in {
