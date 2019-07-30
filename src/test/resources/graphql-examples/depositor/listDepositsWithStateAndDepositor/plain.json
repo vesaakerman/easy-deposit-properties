@@ -5,6 +5,17 @@
         "edges": [
           {
             "node": {
+              "creationTimestamp": "2019-01-01T00:00:00.000Z",
+              "depositor": {
+                "depositorId": "user001"
+              },
+              "state": {
+                "description": "deposit is archived"
+              }
+            }
+          },
+          {
+            "node": {
               "creationTimestamp": "2019-02-02T00:00:00.000Z",
               "depositor": {
                 "depositorId": "user001"
@@ -17,17 +28,6 @@
           {
             "node": {
               "creationTimestamp": "2019-04-04T00:00:00.000Z",
-              "depositor": {
-                "depositorId": "user001"
-              },
-              "state": {
-                "description": "deposit is archived"
-              }
-            }
-          },
-          {
-            "node": {
-              "creationTimestamp": "2019-01-01T00:00:00.000Z",
               "depositor": {
                 "depositorId": "user001"
               },

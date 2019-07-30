@@ -4,6 +4,17 @@
       "edges": [
         {
           "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "contentType": {
+              "id": "Q29udGVudFR5cGU6MTE=",
+              "deposit": {
+                "depositId": "00000000-0000-0000-0000-000000000001"
+              }
+            }
+          }
+        },
+        {
+          "node": {
             "depositId": "00000000-0000-0000-0000-000000000002",
             "contentType": {
               "id": "Q29udGVudFR5cGU6MjA=",
@@ -15,11 +26,11 @@
         },
         {
           "node": {
-            "depositId": "00000000-0000-0000-0000-000000000005",
+            "depositId": "00000000-0000-0000-0000-000000000003",
             "contentType": {
-              "id": "Q29udGVudFR5cGU6NTA=",
+              "id": "Q29udGVudFR5cGU6MzA=",
               "deposit": {
-                "depositId": "00000000-0000-0000-0000-000000000005"
+                "depositId": "00000000-0000-0000-0000-000000000003"
               }
             }
           }
@@ -37,22 +48,11 @@
         },
         {
           "node": {
-            "depositId": "00000000-0000-0000-0000-000000000001",
+            "depositId": "00000000-0000-0000-0000-000000000005",
             "contentType": {
-              "id": "Q29udGVudFR5cGU6MTE=",
+              "id": "Q29udGVudFR5cGU6NTA=",
               "deposit": {
-                "depositId": "00000000-0000-0000-0000-000000000001"
-              }
-            }
-          }
-        },
-        {
-          "node": {
-            "depositId": "00000000-0000-0000-0000-000000000003",
-            "contentType": {
-              "id": "Q29udGVudFR5cGU6MzA=",
-              "deposit": {
-                "depositId": "00000000-0000-0000-0000-000000000003"
+                "depositId": "00000000-0000-0000-0000-000000000005"
               }
             }
           }

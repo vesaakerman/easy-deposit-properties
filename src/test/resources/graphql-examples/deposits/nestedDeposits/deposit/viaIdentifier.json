@@ -4,6 +4,17 @@
       "edges": [
         {
           "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "identifier": {
+              "id": "SWRlbnRpZmllcjoxMg==",
+              "deposit": {
+                "depositId": "00000000-0000-0000-0000-000000000001"
+              }
+            }
+          }
+        },
+        {
+          "node": {
             "depositId": "00000000-0000-0000-0000-000000000002",
             "identifier": {
               "id": "SWRlbnRpZmllcjoyMg==",
@@ -15,7 +26,7 @@
         },
         {
           "node": {
-            "depositId": "00000000-0000-0000-0000-000000000005",
+            "depositId": "00000000-0000-0000-0000-000000000003",
             "identifier": null
           }
         },
@@ -32,18 +43,7 @@
         },
         {
           "node": {
-            "depositId": "00000000-0000-0000-0000-000000000001",
-            "identifier": {
-              "id": "SWRlbnRpZmllcjoxMg==",
-              "deposit": {
-                "depositId": "00000000-0000-0000-0000-000000000001"
-              }
-            }
-          }
-        },
-        {
-          "node": {
-            "depositId": "00000000-0000-0000-0000-000000000003",
+            "depositId": "00000000-0000-0000-0000-000000000005",
             "identifier": null
           }
         }

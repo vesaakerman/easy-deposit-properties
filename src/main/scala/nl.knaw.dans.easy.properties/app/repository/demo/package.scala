@@ -30,7 +30,7 @@ import scala.collection.mutable
 package object demo {
 
   type Repo[T] = mutable.Map[DepositId, T]
-  val Repo: mutable.Map.type = mutable.Map
+  val Repo: mutable.SortedMap.type = mutable.SortedMap
 
   type DepositRepo = Repo[Deposit]
   type StateRepo = Repo[Seq[State]]

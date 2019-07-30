@@ -7,6 +7,15 @@
           "edges": [
             {
               "node": {
+                "depositId": "00000000-0000-0000-0000-000000000001",
+                "state": {
+                  "label": "ARCHIVED",
+                  "description": "deposit is archived"
+                }
+              }
+            },
+            {
+              "node": {
                 "depositId": "00000000-0000-0000-0000-000000000002",
                 "state": {
                   "label": "ARCHIVED",
@@ -17,15 +26,6 @@
             {
               "node": {
                 "depositId": "00000000-0000-0000-0000-000000000004",
-                "state": {
-                  "label": "ARCHIVED",
-                  "description": "deposit is archived"
-                }
-              }
-            },
-            {
-              "node": {
-                "depositId": "00000000-0000-0000-0000-000000000001",
                 "state": {
                   "label": "ARCHIVED",
                   "description": "deposit is archived"

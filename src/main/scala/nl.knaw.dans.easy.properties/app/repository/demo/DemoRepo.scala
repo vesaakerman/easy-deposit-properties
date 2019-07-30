@@ -29,6 +29,7 @@ import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, CurationDao
 import org.joda.time.{ DateTime, DateTimeZone }
 
 import scala.collection.mutable
+import scala.math.Ordering.Tuple2
 
 class DemoRepo {
 

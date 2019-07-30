@@ -26,12 +26,6 @@
           "timestamp": "2019-01-01T00:01:00.000Z"
         },
         {
-          "id": "SWRlbnRpZmllcjoxMQ==",
-          "type": "BAG_STORE",
-          "value": "00000000-0000-0000-0000-000000000001",
-          "timestamp": "2019-01-01T00:00:00.000Z"
-        },
-        {
           "id": "SWRlbnRpZmllcjoxMw==",
           "type": "URN",
           "value": "urn:nbn:123456",
@@ -42,6 +36,12 @@
           "type": "FEDORA",
           "value": "easy-dataset:1",
           "timestamp": "2019-01-01T00:03:00.000Z"
+        },
+        {
+          "id": "SWRlbnRpZmllcjoxMQ==",
+          "type": "BAG_STORE",
+          "value": "00000000-0000-0000-0000-000000000001",
+          "timestamp": "2019-01-01T00:00:00.000Z"
         }
       ],
       "doiRegistered": true,

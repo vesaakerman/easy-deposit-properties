@@ -4,6 +4,25 @@
       "edges": [
         {
           "node": {
+            "depositId": "00000000-0000-0000-0000-000000000001",
+            "contentTypes": [
+              {
+                "id": "Q29udGVudFR5cGU6MTA=",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000001"
+                }
+              },
+              {
+                "id": "Q29udGVudFR5cGU6MTE=",
+                "deposit": {
+                  "depositId": "00000000-0000-0000-0000-000000000001"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": {
             "depositId": "00000000-0000-0000-0000-000000000002",
             "contentTypes": [
               {
@@ -17,12 +36,12 @@
         },
         {
           "node": {
-            "depositId": "00000000-0000-0000-0000-000000000005",
+            "depositId": "00000000-0000-0000-0000-000000000003",
             "contentTypes": [
               {
-                "id": "Q29udGVudFR5cGU6NTA=",
+                "id": "Q29udGVudFR5cGU6MzA=",
                 "deposit": {
-                  "depositId": "00000000-0000-0000-0000-000000000005"
+                  "depositId": "00000000-0000-0000-0000-000000000003"
                 }
               }
             ]
@@ -43,31 +62,12 @@
         },
         {
           "node": {
-            "depositId": "00000000-0000-0000-0000-000000000001",
+            "depositId": "00000000-0000-0000-0000-000000000005",
             "contentTypes": [
               {
-                "id": "Q29udGVudFR5cGU6MTA=",
+                "id": "Q29udGVudFR5cGU6NTA=",
                 "deposit": {
-                  "depositId": "00000000-0000-0000-0000-000000000001"
-                }
-              },
-              {
-                "id": "Q29udGVudFR5cGU6MTE=",
-                "deposit": {
-                  "depositId": "00000000-0000-0000-0000-000000000001"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "node": {
-            "depositId": "00000000-0000-0000-0000-000000000003",
-            "contentTypes": [
-              {
-                "id": "Q29udGVudFR5cGU6MzA=",
-                "deposit": {
-                  "depositId": "00000000-0000-0000-0000-000000000003"
+                  "depositId": "00000000-0000-0000-0000-000000000005"
                 }
               }
             ]

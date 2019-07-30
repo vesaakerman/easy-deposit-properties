@@ -4,97 +4,6 @@
       "edges": [
         {
           "node": {
-            "depositId": "00000000-0000-0000-0000-000000000002",
-            "ingestSteps": {
-              "edges": [
-                {
-                  "node": {
-                    "id": "SW5nZXN0U3RlcDoyMA==",
-                    "deposit": {
-                      "depositId": "00000000-0000-0000-0000-000000000002"
-                    }
-                  }
-                },
-                {
-                  "node": {
-                    "id": "SW5nZXN0U3RlcDoyMQ==",
-                    "deposit": {
-                      "depositId": "00000000-0000-0000-0000-000000000002"
-                    }
-                  }
-                },
-                {
-                  "node": {
-                    "id": "SW5nZXN0U3RlcDoyMg==",
-                    "deposit": {
-                      "depositId": "00000000-0000-0000-0000-000000000002"
-                    }
-                  }
-                },
-                {
-                  "node": {
-                    "id": "SW5nZXN0U3RlcDoyMw==",
-                    "deposit": {
-                      "depositId": "00000000-0000-0000-0000-000000000002"
-                    }
-                  }
-                },
-                {
-                  "node": {
-                    "id": "SW5nZXN0U3RlcDoyNA==",
-                    "deposit": {
-                      "depositId": "00000000-0000-0000-0000-000000000002"
-                    }
-                  }
-                },
-                {
-                  "node": {
-                    "id": "SW5nZXN0U3RlcDoyNQ==",
-                    "deposit": {
-                      "depositId": "00000000-0000-0000-0000-000000000002"
-                    }
-                  }
-                },
-                {
-                  "node": {
-                    "id": "SW5nZXN0U3RlcDoyNg==",
-                    "deposit": {
-                      "depositId": "00000000-0000-0000-0000-000000000002"
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        },
-        {
-          "node": {
-            "depositId": "00000000-0000-0000-0000-000000000005",
-            "ingestSteps": {
-              "edges": [
-                {
-                  "node": {
-                    "id": "SW5nZXN0U3RlcDo1MA==",
-                    "deposit": {
-                      "depositId": "00000000-0000-0000-0000-000000000005"
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        },
-        {
-          "node": {
-            "depositId": "00000000-0000-0000-0000-000000000004",
-            "ingestSteps": {
-              "edges": [
-              ]
-            }
-          }
-        },
-        {
-          "node": {
             "depositId": "00000000-0000-0000-0000-000000000001",
             "ingestSteps": {
               "edges": [
@@ -160,9 +69,100 @@
         },
         {
           "node": {
+            "depositId": "00000000-0000-0000-0000-000000000002",
+            "ingestSteps": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "SW5nZXN0U3RlcDoyMA==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000002"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "SW5nZXN0U3RlcDoyMQ==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000002"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "SW5nZXN0U3RlcDoyMg==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000002"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "SW5nZXN0U3RlcDoyMw==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000002"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "SW5nZXN0U3RlcDoyNA==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000002"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "SW5nZXN0U3RlcDoyNQ==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000002"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "SW5nZXN0U3RlcDoyNg==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000002"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
             "depositId": "00000000-0000-0000-0000-000000000003",
             "ingestSteps": {
               "edges": [
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000004",
+            "ingestSteps": {
+              "edges": [
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "depositId": "00000000-0000-0000-0000-000000000005",
+            "ingestSteps": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "SW5nZXN0U3RlcDo1MA==",
+                    "deposit": {
+                      "depositId": "00000000-0000-0000-0000-000000000005"
+                    }
+                  }
+                }
               ]
             }
           }

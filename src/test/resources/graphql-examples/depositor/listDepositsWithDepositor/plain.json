@@ -5,19 +5,19 @@
         "edges": [
           {
             "node": {
-              "depositId": "00000000-0000-0000-0000-000000000005",
+              "depositId": "00000000-0000-0000-0000-000000000003",
               "state": {
-                "label": "REJECTED",
-                "description": "deposit is rejected"
+                "label": "INVALID",
+                "description": "deposit is invalid"
               }
             }
           },
           {
             "node": {
-              "depositId": "00000000-0000-0000-0000-000000000003",
+              "depositId": "00000000-0000-0000-0000-000000000005",
               "state": {
-                "label": "INVALID",
-                "description": "deposit is invalid"
+                "label": "REJECTED",
+                "description": "deposit is rejected"
               }
             }
           }
