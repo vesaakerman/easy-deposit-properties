@@ -7,49 +7,49 @@
             "node": {
               "id": "SW5nZXN0U3RlcDoxMA==",
               "step": "VALIDATE",
-              "timestamp": "2019-01-01T04:05:00.000+01:00"
+              "timestamp": "2019-01-01T04:05:00.000Z"
             }
           },
           {
             "node": {
               "id": "SW5nZXN0U3RlcDoxMQ==",
               "step": "PID_GENERATOR",
-              "timestamp": "2019-01-01T04:06:00.000+01:00"
+              "timestamp": "2019-01-01T04:06:00.000Z"
             }
           },
           {
             "node": {
               "id": "SW5nZXN0U3RlcDoxMg==",
               "step": "FEDORA",
-              "timestamp": "2019-01-01T04:07:00.000+01:00"
+              "timestamp": "2019-01-01T04:07:00.000Z"
             }
           },
           {
             "node": {
               "id": "SW5nZXN0U3RlcDoxMw==",
               "step": "SPRINGFIELD",
-              "timestamp": "2019-01-01T04:08:00.000+01:00"
+              "timestamp": "2019-01-01T04:08:00.000Z"
             }
           },
           {
             "node": {
               "id": "SW5nZXN0U3RlcDoxNA==",
               "step": "BAGSTORE",
-              "timestamp": "2019-01-01T04:09:00.000+01:00"
+              "timestamp": "2019-01-01T04:09:00.000Z"
             }
           },
           {
             "node": {
               "id": "SW5nZXN0U3RlcDoxNQ==",
               "step": "SOLR4FILES",
-              "timestamp": "2019-01-01T04:10:00.000+01:00"
+              "timestamp": "2019-01-01T04:10:00.000Z"
             }
           },
           {
             "node": {
               "id": "SW5nZXN0U3RlcDoxNg==",
               "step": "COMPLETED",
-              "timestamp": "2019-01-01T04:11:00.000+01:00"
+              "timestamp": "2019-01-01T04:11:00.000Z"
             }
           }
         ]

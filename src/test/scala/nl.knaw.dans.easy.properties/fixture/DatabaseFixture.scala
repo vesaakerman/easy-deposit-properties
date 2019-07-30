@@ -35,7 +35,7 @@ trait DatabaseFixture extends BeforeAndAfterEach {
     dbDriverClassName = "org.hsqldb.jdbcDriver",
     dbUrl = s"jdbc:hsqldb:file:${ databaseDir.toString }/db"
   )
-  private val databaseAccess = new DatabaseAccess(dbConfig) {
+  val databaseAccess: DatabaseAccess = new DatabaseAccess(dbConfig) {
     override protected def createConnectionPool: ConnectionPool = {
       val pool = super.createConnectionPool
 

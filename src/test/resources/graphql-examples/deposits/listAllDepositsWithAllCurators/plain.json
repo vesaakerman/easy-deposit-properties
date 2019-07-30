@@ -11,14 +11,14 @@
                   "node": {
                     "userId": "archie002",
                     "email": "does.not.exists2@dans.knaw.nl",
-                    "timestamp": "2019-01-01T00:00:00.000+01:00"
+                    "timestamp": "2019-01-01T00:00:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "userId": "archie001",
                     "email": "does.not.exists1@dans.knaw.nl",
-                    "timestamp": "2019-01-01T03:03:00.000+01:00"
+                    "timestamp": "2019-01-01T03:03:00.000Z"
                   }
                 }
               ]
@@ -43,14 +43,14 @@
                   "node": {
                     "userId": "archie001",
                     "email": "does.not.exists1@dans.knaw.nl",
-                    "timestamp": "2019-03-03T00:00:00.000+01:00"
+                    "timestamp": "2019-03-03T00:00:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "userId": "archie002",
                     "email": "does.not.exists2@dans.knaw.nl",
-                    "timestamp": "2019-03-03T04:04:00.000+01:00"
+                    "timestamp": "2019-03-03T04:04:00.000Z"
                   }
                 }
               ]
@@ -66,7 +66,7 @@
                   "node": {
                     "userId": "archie001",
                     "email": "does.not.exists1@dans.knaw.nl",
-                    "timestamp": "2019-04-04T00:00:00.000+02:00"
+                    "timestamp": "2019-04-04T00:00:00.000Z"
                   }
                 }
               ]
@@ -82,7 +82,7 @@
                   "node": {
                     "userId": "archie001",
                     "email": "does.not.exists1@dans.knaw.nl",
-                    "timestamp": "2019-05-05T00:00:00.000+02:00"
+                    "timestamp": "2019-05-05T00:00:00.000Z"
                   }
                 }
               ]

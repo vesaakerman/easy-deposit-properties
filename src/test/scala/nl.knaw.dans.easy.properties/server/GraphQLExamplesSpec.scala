@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.properties.server
 
 import better.files.File
-import better.files.File.currentWorkingDirectory
 import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.app.repository.demo.DemoRepo
 import nl.knaw.dans.easy.properties.fixture.TestSupportFixture
@@ -43,19 +42,13 @@ class GraphQLExamplesSpec extends TestSupportFixture
 
   addServlet(servlet, "/*")
 
-  override protected def beforeEach(): Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     repo.resetRepository()
   }
 
   "graphQL examples" should behave like {
-    val testDir = currentWorkingDirectory / "target" / "test" / getClass.getSimpleName
-    val graphqlExamplesDir = testDir / "graphql"
-
-    if (testDir.exists) testDir.delete()
-    testDir.createDirectories()
-
-    File(getClass.getResource("/graphql-examples")).copyTo(graphqlExamplesDir)
+    val graphqlExamplesDir = File(getClass.getResource("/graphql-examples"))
 
     def findJsonOutput(graphQLFile: File): File = {
       graphqlExamplesDir / graphqlExamplesDir.relativize(graphQLFile.parent).toString / s"${ graphQLFile.nameWithoutExtension }.json"
@@ -95,7 +88,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
         |}""".stripMargin
     val mutation =
       """mutation {
-        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000+02:00"}) {
+        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000Z"}) {
         |    clientMutationId
         |    state {
         |      label
@@ -114,7 +107,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
           "state" -> {
             ("label" -> "ARCHIVED") ~
               ("description" -> "deposit is archived") ~
-              ("timestamp" -> "2019-01-01T05:05:00.000+01:00")
+              ("timestamp" -> "2019-01-01T05:05:00.000Z")
           }
         }
       }
@@ -126,7 +119,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
             ("state" -> {
               ("label" -> "FEDORA_ARCHIVED") ~
                 ("description" -> "the deposit is archived in Fedora as easy-dataset:13") ~
-                ("timestamp" -> "2019-07-02T08:15:00.000+02:00")
+                ("timestamp" -> "2019-07-02T08:15:00.000Z")
             })
         }
       }
@@ -137,7 +130,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
           "state" -> {
             ("label" -> "FEDORA_ARCHIVED") ~
               ("description" -> "the deposit is archived in Fedora as easy-dataset:13") ~
-              ("timestamp" -> "2019-07-02T08:15:00.000+02:00")
+              ("timestamp" -> "2019-07-02T08:15:00.000Z")
           }
         }
       }
@@ -162,7 +155,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
   it should "return an error in the body when no authentication is given for a mutation" in {
     val mutation =
       """mutation {
-        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000+02:00"}) {
+        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000Z"}) {
         |    clientMutationId
         |    state {
         |      label
@@ -189,7 +182,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
 
     post(uri = "/", body = mutationBody.getBytes /* no authentication header */) {
       body shouldBe expectedMutationOutput
-      
+
       // Yes, we don't provide authentication, but in GraphQL we still return a 200. See:
       //   * https://github.com/rmosolgo/graphql-ruby/issues/1130#issuecomment-347373937
       //   * https://www.graph.cool/docs/faq/api-eep0ugh1wa/#how-does-error-handling-work-with-graphcool

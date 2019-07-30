@@ -5,37 +5,37 @@
         "id": "U3RhdGU6MTA=",
         "label": "DRAFT",
         "description": "draft with continued deposit",
-        "timestamp": "2019-01-01T00:00:00.000+01:00"
+        "timestamp": "2019-01-01T00:00:00.000Z"
       },
       {
         "id": "U3RhdGU6MTE=",
         "label": "DRAFT",
         "description": "draft with continued deposit",
-        "timestamp": "2019-01-01T01:01:00.000+01:00"
+        "timestamp": "2019-01-01T01:01:00.000Z"
       },
       {
         "id": "U3RhdGU6MTI=",
         "label": "UPLOADED",
         "description": "deposit upload has been completed",
-        "timestamp": "2019-01-01T02:02:00.000+01:00"
+        "timestamp": "2019-01-01T02:02:00.000Z"
       },
       {
         "id": "U3RhdGU6MTM=",
         "label": "FINALIZING",
         "description": "deposit is finalizing",
-        "timestamp": "2019-01-01T03:03:00.000+01:00"
+        "timestamp": "2019-01-01T03:03:00.000Z"
       },
       {
         "id": "U3RhdGU6MTQ=",
         "label": "SUBMITTED",
         "description": "deposit is processing",
-        "timestamp": "2019-01-01T04:04:00.000+01:00"
+        "timestamp": "2019-01-01T04:04:00.000Z"
       },
       {
         "id": "U3RhdGU6MTU=",
         "label": "ARCHIVED",
         "description": "deposit is archived",
-        "timestamp": "2019-01-01T05:05:00.000+01:00"
+        "timestamp": "2019-01-01T05:05:00.000Z"
       }
     ]
   }

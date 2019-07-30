@@ -13,25 +13,25 @@
           {
             "node": {
               "step": "VALIDATE",
-              "timestamp": "2019-01-01T04:05:00.000+01:00"
+              "timestamp": "2019-01-01T04:05:00.000Z"
             }
           },
           {
             "node": {
               "step": "PID_GENERATOR",
-              "timestamp": "2019-01-01T04:06:00.000+01:00"
+              "timestamp": "2019-01-01T04:06:00.000Z"
             }
           },
           {
             "node": {
               "step": "FEDORA",
-              "timestamp": "2019-01-01T04:07:00.000+01:00"
+              "timestamp": "2019-01-01T04:07:00.000Z"
             }
           },
           {
             "node": {
               "step": "SPRINGFIELD",
-              "timestamp": "2019-01-01T04:08:00.000+01:00"
+              "timestamp": "2019-01-01T04:08:00.000Z"
             }
           }
         ]

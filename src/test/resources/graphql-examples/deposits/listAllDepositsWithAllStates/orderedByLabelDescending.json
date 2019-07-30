@@ -11,42 +11,42 @@
                   "node": {
                     "label": "ARCHIVED",
                     "description": "deposit is archived",
-                    "timestamp": "2019-01-01T05:05:00.000+01:00"
+                    "timestamp": "2019-01-01T05:05:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "SUBMITTED",
                     "description": "deposit is processing",
-                    "timestamp": "2019-01-01T04:04:00.000+01:00"
+                    "timestamp": "2019-01-01T04:04:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "FINALIZING",
                     "description": "deposit is finalizing",
-                    "timestamp": "2019-01-01T03:03:00.000+01:00"
+                    "timestamp": "2019-01-01T03:03:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "UPLOADED",
                     "description": "deposit upload has been completed",
-                    "timestamp": "2019-01-01T02:02:00.000+01:00"
+                    "timestamp": "2019-01-01T02:02:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "DRAFT",
                     "description": "draft with continued deposit",
-                    "timestamp": "2019-01-01T00:00:00.000+01:00"
+                    "timestamp": "2019-01-01T00:00:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "DRAFT",
                     "description": "draft with continued deposit",
-                    "timestamp": "2019-01-01T01:01:00.000+01:00"
+                    "timestamp": "2019-01-01T01:01:00.000Z"
                   }
                 }
               ]
@@ -62,28 +62,28 @@
                   "node": {
                     "label": "ARCHIVED",
                     "description": "deposit is archived",
-                    "timestamp": "2019-02-02T03:03:00.000+01:00"
+                    "timestamp": "2019-02-02T03:03:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "SUBMITTED",
                     "description": "deposit is processing",
-                    "timestamp": "2019-02-02T02:02:00.000+01:00"
+                    "timestamp": "2019-02-02T02:02:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "FINALIZING",
                     "description": "deposit is finalizing",
-                    "timestamp": "2019-02-02T01:01:00.000+01:00"
+                    "timestamp": "2019-02-02T01:01:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "UPLOADED",
                     "description": "deposit upload has been completed",
-                    "timestamp": "2019-02-02T00:00:00.000+01:00"
+                    "timestamp": "2019-02-02T00:00:00.000Z"
                   }
                 }
               ]
@@ -99,21 +99,21 @@
                   "node": {
                     "label": "INVALID",
                     "description": "deposit is invalid",
-                    "timestamp": "2019-03-03T02:02:00.000+01:00"
+                    "timestamp": "2019-03-03T02:02:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "FINALIZING",
                     "description": "deposit is finalizing",
-                    "timestamp": "2019-03-03T01:01:00.000+01:00"
+                    "timestamp": "2019-03-03T01:01:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "UPLOADED",
                     "description": "deposit upload has been completed",
-                    "timestamp": "2019-03-03T00:00:00.000+01:00"
+                    "timestamp": "2019-03-03T00:00:00.000Z"
                   }
                 }
               ]
@@ -129,21 +129,21 @@
                   "node": {
                     "label": "ARCHIVED",
                     "description": "deposit is archived",
-                    "timestamp": "2019-04-04T02:02:00.000+02:00"
+                    "timestamp": "2019-04-04T02:02:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "FINALIZING",
                     "description": "deposit is finalizing",
-                    "timestamp": "2019-04-04T01:01:00.000+02:00"
+                    "timestamp": "2019-04-04T01:01:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "UPLOADED",
                     "description": "deposit upload has been completed",
-                    "timestamp": "2019-04-04T00:00:00.000+02:00"
+                    "timestamp": "2019-04-04T00:00:00.000Z"
                   }
                 }
               ]
@@ -159,28 +159,28 @@
                   "node": {
                     "label": "REJECTED",
                     "description": "deposit is rejected",
-                    "timestamp": "2019-05-05T03:03:00.000+02:00"
+                    "timestamp": "2019-05-05T03:03:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "SUBMITTED",
                     "description": "deposit is processing",
-                    "timestamp": "2019-05-05T02:02:00.000+02:00"
+                    "timestamp": "2019-05-05T02:02:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "FINALIZING",
                     "description": "deposit is finalizing",
-                    "timestamp": "2019-05-05T01:01:00.000+02:00"
+                    "timestamp": "2019-05-05T01:01:00.000Z"
                   }
                 },
                 {
                   "node": {
                     "label": "UPLOADED",
                     "description": "deposit upload has been completed",
-                    "timestamp": "2019-05-05T00:00:00.000+02:00"
+                    "timestamp": "2019-05-05T00:00:00.000Z"
                   }
                 }
               ]

@@ -5,7 +5,7 @@
         {
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000005",
-            "creationTimestamp": "2019-05-05T00:00:00.000+02:00",
+            "creationTimestamp": "2019-05-05T00:00:00.000Z",
             "depositor": {
               "depositorId": "user002"
             },

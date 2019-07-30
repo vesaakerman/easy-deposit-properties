@@ -6,7 +6,7 @@
           {
             "node": {
               "depositId": "00000000-0000-0000-0000-000000000002",
-              "creationTimestamp": "2019-02-02T00:00:00.000+01:00",
+              "creationTimestamp": "2019-02-02T00:00:00.000Z",
               "depositor": {
                 "depositorId": "user001"
               },
@@ -19,7 +19,7 @@
           {
             "node": {
               "depositId": "00000000-0000-0000-0000-000000000001",
-              "creationTimestamp": "2019-01-01T00:00:00.000+01:00",
+              "creationTimestamp": "2019-01-01T00:00:00.000Z",
               "depositor": {
                 "depositorId": "user001"
               },

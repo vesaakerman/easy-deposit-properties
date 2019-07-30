@@ -1,5 +1,5 @@
 mutation {
-    addIdentifier(input: {clientMutationId: "my-mutation-id", depositId: "00000000-0000-0000-0000-000000000003", type: DOI, value: "abcdef", timestamp: "2019-05-26T23:08:00.000+02:00"}) {
+    addIdentifier(input: {clientMutationId: "my-mutation-id", depositId: "00000000-0000-0000-0000-000000000003", type: DOI, value: "abcdef", timestamp: "2019-05-26T23:08:00.000Z"}) {
         clientMutationId
         identifier {
             id

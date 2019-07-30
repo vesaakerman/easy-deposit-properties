@@ -13,19 +13,19 @@
           {
             "node": {
               "step": "BAGSTORE",
-              "timestamp": "2019-01-01T04:09:00.000+01:00"
+              "timestamp": "2019-01-01T04:09:00.000Z"
             }
           },
           {
             "node": {
               "step": "SOLR4FILES",
-              "timestamp": "2019-01-01T04:10:00.000+01:00"
+              "timestamp": "2019-01-01T04:10:00.000Z"
             }
           },
           {
             "node": {
               "step": "COMPLETED",
-              "timestamp": "2019-01-01T04:11:00.000+01:00"
+              "timestamp": "2019-01-01T04:11:00.000Z"
             }
           }
         ]

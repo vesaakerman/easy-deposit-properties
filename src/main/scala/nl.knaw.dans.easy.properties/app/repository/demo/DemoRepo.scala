@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.demo
 
-import java.util.{ TimeZone, UUID }
+import java.util.UUID
 
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue }
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
@@ -32,7 +32,7 @@ import scala.collection.mutable
 
 class DemoRepo {
 
-  private val timeZone = DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/Amsterdam"))
+  private val timeZone = DateTimeZone.UTC
 
   private val depositId1 = UUID.fromString("00000000-0000-0000-0000-000000000001")
   private val depositId2 = UUID.fromString("00000000-0000-0000-0000-000000000002")

@@ -7,14 +7,14 @@
             "node": {
               "label": "UPLOADED",
               "description": "deposit upload has been completed",
-              "timestamp": "2019-01-01T02:02:00.000+01:00"
+              "timestamp": "2019-01-01T02:02:00.000Z"
             }
           },
           {
             "node": {
               "label": "FINALIZING",
               "description": "deposit is finalizing",
-              "timestamp": "2019-01-01T03:03:00.000+01:00"
+              "timestamp": "2019-01-01T03:03:00.000Z"
             }
           }
         ]
@@ -25,28 +25,28 @@
             "node": {
               "label": "DRAFT",
               "description": "draft with continued deposit",
-              "timestamp": "2019-01-01T00:00:00.000+01:00"
+              "timestamp": "2019-01-01T00:00:00.000Z"
             }
           },
           {
             "node": {
               "label": "DRAFT",
               "description": "draft with continued deposit",
-              "timestamp": "2019-01-01T01:01:00.000+01:00"
+              "timestamp": "2019-01-01T01:01:00.000Z"
             }
           },
           {
             "node": {
               "label": "SUBMITTED",
               "description": "deposit is processing",
-              "timestamp": "2019-01-01T04:04:00.000+01:00"
+              "timestamp": "2019-01-01T04:04:00.000Z"
             }
           },
           {
             "node": {
               "label": "ARCHIVED",
               "description": "deposit is archived",
-              "timestamp": "2019-01-01T05:05:00.000+01:00"
+              "timestamp": "2019-01-01T05:05:00.000Z"
             }
           }
         ]
@@ -57,42 +57,42 @@
             "node": {
               "label": "DRAFT",
               "description": "draft with continued deposit",
-              "timestamp": "2019-01-01T00:00:00.000+01:00"
+              "timestamp": "2019-01-01T00:00:00.000Z"
             }
           },
           {
             "node": {
               "label": "DRAFT",
               "description": "draft with continued deposit",
-              "timestamp": "2019-01-01T01:01:00.000+01:00"
+              "timestamp": "2019-01-01T01:01:00.000Z"
             }
           },
           {
             "node": {
               "label": "UPLOADED",
               "description": "deposit upload has been completed",
-              "timestamp": "2019-01-01T02:02:00.000+01:00"
+              "timestamp": "2019-01-01T02:02:00.000Z"
             }
           },
           {
             "node": {
               "label": "FINALIZING",
               "description": "deposit is finalizing",
-              "timestamp": "2019-01-01T03:03:00.000+01:00"
+              "timestamp": "2019-01-01T03:03:00.000Z"
             }
           },
           {
             "node": {
               "label": "SUBMITTED",
               "description": "deposit is processing",
-              "timestamp": "2019-01-01T04:04:00.000+01:00"
+              "timestamp": "2019-01-01T04:04:00.000Z"
             }
           },
           {
             "node": {
               "label": "ARCHIVED",
               "description": "deposit is archived",
-              "timestamp": "2019-01-01T05:05:00.000+01:00"
+              "timestamp": "2019-01-01T05:05:00.000Z"
             }
           }
         ]
@@ -103,7 +103,7 @@
             "node": {
               "label": "SUBMITTED",
               "description": "deposit is processing",
-              "timestamp": "2019-01-01T04:04:00.000+01:00"
+              "timestamp": "2019-01-01T04:04:00.000Z"
             }
           }
         ]
@@ -113,13 +113,13 @@
           {
             "node": {
               "step": "VALIDATE",
-              "timestamp": "2019-01-01T04:05:00.000+01:00"
+              "timestamp": "2019-01-01T04:05:00.000Z"
             }
           },
           {
             "node": {
               "step": "PID_GENERATOR",
-              "timestamp": "2019-01-01T04:06:00.000+01:00"
+              "timestamp": "2019-01-01T04:06:00.000Z"
             }
           }
         ]
@@ -130,7 +130,7 @@
             "node": {
               "userId": "archie001",
               "email": "does.not.exists1@dans.knaw.nl",
-              "timestamp": "2019-01-01T03:03:00.000+01:00"
+              "timestamp": "2019-01-01T03:03:00.000Z"
             }
           }
         ]
@@ -140,7 +140,7 @@
       "contentTypes": [
         {
           "value": "application/zip",
-          "timestamp": "2019-01-01T00:05:00.000+01:00"
+          "timestamp": "2019-01-01T00:05:00.000Z"
         }
       ]
     }
