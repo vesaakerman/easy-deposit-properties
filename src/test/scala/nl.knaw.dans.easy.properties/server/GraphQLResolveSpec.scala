@@ -41,6 +41,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatra.test.EmbeddedJettyContainer
 import org.scalatra.test.scalatest.ScalatraSuite
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
 
 trait GraphQLResolveSpecTestObjects {
@@ -185,7 +186,7 @@ class GraphQLResolveSpec extends TestSupportFixture
   with EmbeddedJettyContainer
   with ScalatraSuite {
 
-  private val graphqlExamplesDir = testDir / "graphql"
+  private val graphqlExamplesDir = File(getClass.getResource("/graphql-examples"))
   private val depositDao = mock[DepositDao]
   private val stateDao = mock[StateDao]
   private val ingestStepDao = mock[IngestStepDao]
@@ -196,17 +197,14 @@ class GraphQLResolveSpec extends TestSupportFixture
   private val springfieldDao = mock[SpringfieldDao]
   private val contentTypeDao = mock[ContentTypeDao]
   private val repository = Repository(depositDao, stateDao, ingestStepDao, identifierDao, doiRegisteredDao, doiActionDao, curationDao, springfieldDao, contentTypeDao)
-  private val servlet = DepositPropertiesGraphQLServlet(() => repository, Auth("", ""))
+  private val servlet = DepositPropertiesGraphQLServlet[Unit](
+    connGen = _ (()),
+    repository = _ => repository,
+    authenticationConfig = Auth("", ""),
+  )
   private implicit val jsonFormats: Formats = new DefaultFormats {}
 
   addServlet(servlet, "/*")
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-
-    File(getClass.getResource("/graphql-examples"))
-      .copyTo(graphqlExamplesDir)
-  }
 
   "graphql" should "resolve 'deposit/findDeposit/plain.graphql' with 19 calls to the repository" in {
     val input = graphqlExamplesDir / "deposit" / "findDeposit" / "plain.graphql"
@@ -1686,8 +1684,8 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "node" / "onContentType.graphql"
 
     inSequence {
-      contentTypeDao.getById _ expects Seq("11") once() returning Seq(
-        "11" -> Some(contentType1),
+      contentTypeDao.getById _ expects Seq("27") once() returning Seq(
+        "27" -> Some(contentType1),
       ).asRight
       inAnyOrder {
         contentTypeDao.getDepositsById _ expects Seq(contentType1.id) once() returning Seq(
@@ -1707,8 +1705,8 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "node" / "onCurator.graphql"
 
     inSequence {
-      curationDao.getById _ expects Seq("51") once() returning Seq(
-        "51" -> Some(curation1),
+      curationDao.getById _ expects Seq("9") once() returning Seq(
+        "9" -> Some(curation1),
       ).asRight
       inAnyOrder {
         curationDao.getDepositsById _ expects Seq(curation1.id) once() returning Seq(
@@ -1743,8 +1741,8 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "node" / "onIdentifier.graphql"
 
     inSequence {
-      identifierDao.getById _ expects Seq("12") once() returning Seq(
-        "12" -> Some(identifier2),
+      identifierDao.getById _ expects Seq("1") once() returning Seq(
+        "1" -> Some(identifier2),
       ).asRight
       identifierDao.getDepositsById _ expects Seq(identifier2.id) once() returning Seq(
         identifier2.id -> Some(deposit1),
@@ -1758,8 +1756,8 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "node" / "onIngestStep.graphql"
 
     inSequence {
-      ingestStepDao.getById _ expects Seq("10") once() returning Seq(
-        "10" -> Some(step1),
+      ingestStepDao.getById _ expects Seq("0") once() returning Seq(
+        "0" -> Some(step1),
       ).asRight
       inAnyOrder {
         ingestStepDao.getDepositsById _ expects Seq(step1.id) once() returning Seq(
@@ -1779,8 +1777,8 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "node" / "onSpringfield.graphql"
 
     inSequence {
-      springfieldDao.getById _ expects Seq("10") once() returning Seq(
-        "10" -> Some(springfield1),
+      springfieldDao.getById _ expects Seq("0") once() returning Seq(
+        "0" -> Some(springfield1),
       ).asRight
       springfieldDao.getDepositsById _ expects Seq(springfield1.id) once() returning Seq(
         springfield1.id -> Some(deposit1),
@@ -1794,8 +1792,8 @@ class GraphQLResolveSpec extends TestSupportFixture
     val input = graphqlExamplesDir / "node" / "onState.graphql"
 
     inSequence {
-      stateDao.getById _ expects Seq("15") once() returning Seq(
-        "15" -> Some(state2),
+      stateDao.getById _ expects Seq("5") once() returning Seq(
+        "5" -> Some(state2),
       ).asRight
       inAnyOrder {
         stateDao.getDepositsById _ expects Seq(state2.id) once() returning Seq(
@@ -1814,9 +1812,9 @@ class GraphQLResolveSpec extends TestSupportFixture
   it should "resolve 'nodes/onContentType.graphql' with 1 calls to the repository" in {
     val input = graphqlExamplesDir / "nodes" / "onContentType.graphql"
 
-    contentTypeDao.getById _ expects Seq("10", "11") once() returning Seq(
-      "10" -> Some(contentType1),
-      "11" -> Some(contentType2),
+    contentTypeDao.getById _ expects Seq("26", "27") once() returning Seq(
+      "26" -> Some(contentType1),
+      "27" -> Some(contentType2),
     ).asRight
 
     runQuery(input)
@@ -1825,9 +1823,9 @@ class GraphQLResolveSpec extends TestSupportFixture
   it should "resolve 'nodes/onCurator.graphql' with 1 calls to the repository" in {
     val input = graphqlExamplesDir / "nodes" / "onCurator.graphql"
 
-    curationDao.getById _ expects Seq("10", "11") once() returning Seq(
-      "10" -> Some(curation1),
-      "11" -> Some(curation1),
+    curationDao.getById _ expects Seq("0", "1") once() returning Seq(
+      "0" -> Some(curation1),
+      "1" -> Some(curation1),
     ).asRight
 
     runQuery(input)
@@ -1860,11 +1858,11 @@ class GraphQLResolveSpec extends TestSupportFixture
   it should "resolve 'nodes/onIdentifier.graphql' with 1 calls to the repository" in {
     val input = graphqlExamplesDir / "nodes" / "onIdentifier.graphql"
 
-    identifierDao.getById _ expects Seq("13", "14", "11", "12") once() returning Seq(
-      "11" -> Some(identifier1),
-      "12" -> Some(identifier2),
-      "13" -> Some(identifier3),
-      "14" -> Some(identifier1),
+    identifierDao.getById _ expects Seq("3", "0", "1", "2") once() returning Seq(
+      "0" -> Some(identifier1),
+      "1" -> Some(identifier2),
+      "2" -> Some(identifier3),
+      "3" -> Some(identifier1),
     ).asRight
 
     runQuery(input)
@@ -1873,14 +1871,14 @@ class GraphQLResolveSpec extends TestSupportFixture
   it should "resolve 'nodes/onIngestStep.graphql' with 1 calls to the repository" in {
     val input = graphqlExamplesDir / "nodes" / "onIngestStep.graphql"
 
-    ingestStepDao.getById _ expects Seq("16", "13", "10", "14", "11", "15", "12") once() returning Seq(
-      "10" -> Some(step1),
-      "11" -> Some(step2),
-      "12" -> Some(step3),
-      "13" -> Some(step1),
-      "14" -> Some(step2),
-      "15" -> Some(step3),
-      "16" -> Some(step1),
+    ingestStepDao.getById _ expects Seq("3", "0", "4", "1", "5", "2", "6") once() returning Seq(
+      "0" -> Some(step1),
+      "1" -> Some(step2),
+      "2" -> Some(step3),
+      "3" -> Some(step1),
+      "4" -> Some(step2),
+      "5" -> Some(step3),
+      "6" -> Some(step1),
     ).asRight
 
     runQuery(input)
@@ -1889,10 +1887,10 @@ class GraphQLResolveSpec extends TestSupportFixture
   it should "resolve 'nodes/onSpringfield.graphql' with 1 calls to the repository" in {
     val input = graphqlExamplesDir / "nodes" / "onSpringfield.graphql"
 
-    springfieldDao.getById _ expects Seq("20", "21", "10") once() returning Seq(
-      "10" -> Some(springfield1),
-      "20" -> Some(springfield2),
-      "21" -> Some(springfield1),
+    springfieldDao.getById _ expects Seq("0", "1", "2") once() returning Seq(
+      "0" -> Some(springfield1),
+      "1" -> Some(springfield2),
+      "2" -> Some(springfield1),
     ).asRight
 
     runQuery(input)
@@ -1901,13 +1899,13 @@ class GraphQLResolveSpec extends TestSupportFixture
   it should "resolve 'nodes/onState.graphql' with 1 calls to the repository" in {
     val input = graphqlExamplesDir / "nodes" / "onState.graphql"
 
-    stateDao.getById _ expects Seq("13", "10", "14", "11", "15", "12") once() returning Seq(
-      "10" -> Some(state1),
-      "11" -> Some(state2),
-      "12" -> Some(state3),
-      "13" -> Some(state1),
-      "14" -> Some(state2),
-      "15" -> Some(state3),
+    stateDao.getById _ expects Seq("3", "0", "4", "1", "5", "2") once() returning Seq(
+      "0" -> Some(state1),
+      "1" -> Some(state2),
+      "2" -> Some(state3),
+      "3" -> Some(state1),
+      "4" -> Some(state2),
+      "5" -> Some(state3),
     ).asRight
 
     runQuery(input)

@@ -17,12 +17,12 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.sql.Connection
 
+import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, CurationDao, DepositDao, DoiActionDao, DoiRegisteredDao, IdentifierDao, IngestStepDao, Repository, SpringfieldDao, StateDao }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-class SQLRepo(implicit connection: Connection) extends DebugEnhancedLogging {
+class SQLRepo(implicit connection: Connection, errorHandler: SQLErrorHandler) extends DebugEnhancedLogging {
 
-  logger.info("new SQLRepo")
   private val depositDao: DepositDao = new SQLDepositDao
   private val stateDao: StateDao = new SQLStateDao
   private val ingestStepDao: IngestStepDao = new SQLIngestStepDao

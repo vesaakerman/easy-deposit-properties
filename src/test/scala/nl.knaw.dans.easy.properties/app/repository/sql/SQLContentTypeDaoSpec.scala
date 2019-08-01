@@ -17,9 +17,9 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.util.UUID
 
-import cats.scalatest.EitherValues
+import cats.scalatest.{ EitherMatchers, EitherValues }
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, InputContentType }
-import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, NoSuchDepositError }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, InvalidValueError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 
@@ -27,7 +27,8 @@ class SQLContentTypeDaoSpec extends TestSupportFixture
   with FileSystemSupport
   with DatabaseFixture
   with DatabaseDataFixture
-  with EitherValues {
+  with EitherValues
+  with EitherMatchers {
 
   "getById" should "find content types identified by their id" in {
     val contentTypes = new SQLContentTypeDao
@@ -121,6 +122,17 @@ class SQLContentTypeDaoSpec extends TestSupportFixture
     val inputContentType = InputContentType(ContentTypeValue.OCTET, timestamp)
 
     contentTypes.store(depositId6, inputContentType).leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+
+  it should "fail when the depositId and timestamp combination is already present, even though the other values are different" in {
+    val contentTypes = new SQLContentTypeDao
+    val depositId = depositId1
+    val timestamp = new DateTime(2019, 1, 1, 6, 6, timeZone)
+    val inputContentType1 = InputContentType(ContentTypeValue.OCTET, timestamp)
+    val inputContentType2 = InputContentType(ContentTypeValue.ZIP, timestamp)
+
+    contentTypes.store(depositId, inputContentType1) shouldBe right
+    contentTypes.store(depositId, inputContentType2).leftValue shouldBe DepositIdAndTimestampAlreadyExistError(depositId, timestamp, "content type")
   }
 
   "getDepositsById" should "find deposits identified by these contentTypeIds" in {

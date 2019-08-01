@@ -1,5 +1,5 @@
 query {
-    node(id: "SW5nZXN0U3RlcDoxMA==") {
+    node(id: "SW5nZXN0U3RlcDow") {
         ... on IngestStep {
             step
             timestamp

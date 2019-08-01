@@ -15,13 +15,18 @@
  */
 package nl.knaw.dans.easy.properties
 
+import java.sql.Connection
+import java.util.concurrent.Executors
+
 import better.files.File
-import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
-import nl.knaw.dans.easy.properties.app.repository.demo.DemoRepo
+import nl.knaw.dans.easy.properties.app.database.{ DatabaseAccess, SQLErrorHandler }
+import nl.knaw.dans.easy.properties.app.repository.sql.SQLRepo
 import nl.knaw.dans.easy.properties.server.{ DepositPropertiesGraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.daemon.{ Daemon, DaemonContext }
+
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor }
 
 class ServiceStarter extends Daemon with DebugEnhancedLogging {
   var database: DatabaseAccess = _
@@ -31,10 +36,11 @@ class ServiceStarter extends Daemon with DebugEnhancedLogging {
     logger.info("Initializing service...")
     val configuration = Configuration(File(System.getProperty("app.home")))
     database = new DatabaseAccess(configuration.databaseConfig)
-    val repo = new DemoRepo()
+    implicit val executionContext: ExecutionContextExecutor = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(16))
+    implicit val sqlErrorHandler: SQLErrorHandler = SQLErrorHandler(configuration.databaseConfig)
     service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet(() => repo.repository, configuration.auth, configuration.profilingConfig),
+      "/graphql" -> DepositPropertiesGraphQLServlet[Connection](database.futureTransaction, implicit conn => new SQLRepo().repository, configuration.auth, configuration.profilingConfig),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     logger.info("Service initialized.")

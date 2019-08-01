@@ -18,13 +18,14 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 import java.sql.{ Connection, ResultSet, Statement }
 
 import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr, SpringfieldDao }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, InvalidValueError, MutationError, MutationErrorOr, NoSuchDepositError, QueryErrorOr, SpringfieldDao }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
-class SQLSpringfieldDao(implicit connection: Connection) extends SpringfieldDao with CommonResultSetParsers with DebugEnhancedLogging {
+class SQLSpringfieldDao(implicit connection: Connection, errorHandler: SQLErrorHandler) extends SpringfieldDao with CommonResultSetParsers with DebugEnhancedLogging {
 
   private def parseSpringfield(resultSet: ResultSet): Either[InvalidValueError, Springfield] = {
     for {
@@ -92,7 +93,13 @@ class SQLSpringfieldDao(implicit connection: Connection) extends SpringfieldDao 
       }
       .either
       .either
-      .leftMap(_ => NoSuchDepositError(id))
+      .leftMap(ts => {
+        assert(ts.nonEmpty)
+        ts.collectFirst {
+          case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
+          case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, springfield.timestamp, "springfield")
+        }.getOrElse(new MutationError(ts.head.getMessage) {})
+      })
       .flatMap(identity)
       .map(springfieldId => Springfield(springfieldId, springfield.domain, springfield.user, springfield.collection, springfield.playmode, springfield.timestamp))
   }

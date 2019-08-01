@@ -3,7 +3,7 @@
     "updateState": {
       "clientMutationId": "my-mutation-id",
       "state": {
-        "id": "U3RhdGU6NDUx",
+        "id": "U3RhdGU6MjA=",
         "label": "UPLOADED",
         "description": "deposit is ready for finalising",
         "timestamp": "2019-05-15T23:55:00.000Z"

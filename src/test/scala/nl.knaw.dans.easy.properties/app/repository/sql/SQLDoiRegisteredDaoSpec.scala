@@ -17,9 +17,9 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.util.UUID
 
-import cats.scalatest.EitherValues
+import cats.scalatest.{ EitherMatchers, EitherValues }
 import nl.knaw.dans.easy.properties.app.model.DoiRegisteredEvent
-import nl.knaw.dans.easy.properties.app.repository.NoSuchDepositError
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 
@@ -27,7 +27,8 @@ class SQLDoiRegisteredDaoSpec extends TestSupportFixture
   with FileSystemSupport
   with DatabaseFixture
   with DatabaseDataFixture
-  with EitherValues {
+  with EitherValues
+  with EitherMatchers {
 
   "getCurrent" should "return the current doi registered event of the given deposits" in {
     val doiRegistereds = new SQLDoiRegisteredDao
@@ -90,5 +91,16 @@ class SQLDoiRegisteredDaoSpec extends TestSupportFixture
     val doiRegisteredEvent = DoiRegisteredEvent(value = true, timestamp)
 
     doiRegistereds.store(depositId6, doiRegisteredEvent).leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+
+  it should "fail when the depositId and timestamp combination is already present, even though the other values are different" in {
+    val doiRegistereds = new SQLDoiRegisteredDao
+    val depositId = depositId1
+    val timestamp = new DateTime(2019, 1, 1, 6, 6, timeZone)
+    val doiRegisteredEvent1 = DoiRegisteredEvent(value = true, timestamp)
+    val doiRegisteredEvent2 = DoiRegisteredEvent(value = false, timestamp)
+
+    doiRegistereds.store(depositId, doiRegisteredEvent1) shouldBe right
+    doiRegistereds.store(depositId, doiRegisteredEvent2).leftValue shouldBe DepositIdAndTimestampAlreadyExistError(depositId, timestamp, "doi registered event")
   }
 }

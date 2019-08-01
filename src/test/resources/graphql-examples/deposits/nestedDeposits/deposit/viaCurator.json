@@ -6,7 +6,7 @@
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000001",
             "curator": {
-              "id": "Q3VyYXRvcjoxMQ==",
+              "id": "Q3VyYXRvcjox",
               "deposit": {
                 "depositId": "00000000-0000-0000-0000-000000000001"
               }
@@ -23,7 +23,7 @@
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000003",
             "curator": {
-              "id": "Q3VyYXRvcjozMQ==",
+              "id": "Q3VyYXRvcjo0",
               "deposit": {
                 "depositId": "00000000-0000-0000-0000-000000000003"
               }
@@ -34,7 +34,7 @@
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000004",
             "curator": {
-              "id": "Q3VyYXRvcjo0MA==",
+              "id": "Q3VyYXRvcjo2",
               "deposit": {
                 "depositId": "00000000-0000-0000-0000-000000000004"
               }
@@ -45,7 +45,7 @@
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000005",
             "curator": {
-              "id": "Q3VyYXRvcjo1MA==",
+              "id": "Q3VyYXRvcjo4",
               "deposit": {
                 "depositId": "00000000-0000-0000-0000-000000000005"
               }

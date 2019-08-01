@@ -32,13 +32,14 @@ import sangria.parser._
 import sangria.schema.Schema
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.language.postfixOps
+import scala.language.{ higherKinds, postfixOps }
 
-class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
-                          ctxProvider: Option[Auth] => Ctx,
-                          deferredResolver: DeferredResolver[Ctx] = DeferredResolver.empty,
-                          exceptionHandler: ExceptionHandler = defaultExceptionHandler,
-                          middlewares: List[Middleware[Ctx]] = List.empty)
+class GraphQLServlet[Ctx, Conn](schema: Schema[Ctx, Unit],
+                                connGen: (Conn => Future[ActionResult]) => Future[ActionResult],
+                                ctxProvider: Conn => Option[Auth] => Ctx,
+                                deferredResolver: DeferredResolver[Ctx] = DeferredResolver.empty,
+                                exceptionHandler: ExceptionHandler = defaultExceptionHandler,
+                                middlewares: List[Middleware[Ctx]] = List.empty)
   extends ScalatraServlet
     with FutureSupport
     with ServletLogger
@@ -52,13 +53,14 @@ class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
 
   post("/") {
     contentType = "application/json"
+    val auth = getAuthentication
 
     val GraphQLInput(query, variables, operation) = Serialization.read[GraphQLInput](request.body)
     QueryParser.parse(query)(DeliveryScheme.Either)
       .fold({
         case e: SyntaxError => Future.successful(BadRequest(syntaxError(e)))
         case e => Future.failed(e)
-      }, execute(variables, operation, getAuthentication))
+      }, execute(variables, operation, auth))
   }
 
   private def getAuthentication: Option[Auth] = {
@@ -70,21 +72,26 @@ class GraphQLServlet[Ctx](schema: Schema[Ctx, Unit],
   }
 
   private def execute(variables: Option[String], operation: Option[String], auth: Option[Auth])(queryAst: Document): Future[ActionResult] = {
-    Executor.execute(
-      schema = schema,
-      queryAst = queryAst,
-      userContext = ctxProvider(auth),
-      operationName = operation,
-      variables = parseVariables(variables),
-      deferredResolver = deferredResolver,
-      exceptionHandler = exceptionHandler,
-      middleware = middlewares,
-    )
-      .map(Serialization.writePretty(_))
-      .map(Ok(_))
+    connGen(conn => {
+      Executor.execute(
+        schema = schema,
+        queryAst = queryAst,
+        userContext = ctxProvider(conn)(auth),
+        operationName = operation,
+        variables = parseVariables(variables),
+        deferredResolver = deferredResolver,
+        exceptionHandler = exceptionHandler,
+        middleware = middlewares,
+      )
+        .map(Serialization.writePretty(_))
+        .map(Ok(_))
+        .recover {
+          case error: QueryAnalysisError => BadRequest(Serialization.write(error.resolveError))
+          case error: ErrorWithResolver => InternalServerError(Serialization.write(error.resolveError))
+        }
+    })
       .recover {
-        case error: QueryAnalysisError => BadRequest(Serialization.write(error.resolveError))
-        case error: ErrorWithResolver => InternalServerError(Serialization.write(error.resolveError))
+        case error => InternalServerError(Serialization.write(error.getMessage))
       }
   }
 

@@ -1,5 +1,5 @@
 query {
-    node(id: "U3ByaW5nZmllbGQ6MTA=") {
+    node(id: "U3ByaW5nZmllbGQ6MA==") {
         ... on Springfield {
             domain
             user

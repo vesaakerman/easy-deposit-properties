@@ -1,5 +1,5 @@
 query {
-    nodes(ids: ["Q3VyYXRvcjoxMA==", "Q3VyYXRvcjoxMQ=="]) {
+    nodes(ids: ["Q3VyYXRvcjow", "Q3VyYXRvcjox"]) {
         ... on Curator {
             userId
             email

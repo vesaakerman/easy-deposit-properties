@@ -23,6 +23,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.dbcp2.BasicDataSource
 import resource._
 
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Try }
 
@@ -87,5 +88,30 @@ class DatabaseAccess(dbConfig: DatabaseConfiguration) extends DebugEnhancedLoggi
       })
       .tried
       .flatten
+  }
+
+  def futureTransaction[T](actionFunc: Connection => Future[T])(implicit context: ExecutionContext): Future[T] = {
+    Future { pool.getConnection }
+      .flatMap(connection => {
+        connection setAutoCommit false
+        val savepoint = connection.setSavepoint()
+
+        actionFunc(connection)
+          .map(t => {
+            connection.commit()
+            connection setAutoCommit true
+            connection.close()
+
+            t
+          })
+          .recoverWith {
+            case NonFatal(e) =>
+              Future {
+                connection rollback savepoint
+                connection.close()
+              }
+                .flatMap(_ => Future.failed(e))
+          }
+      })
   }
 }

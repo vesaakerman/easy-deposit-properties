@@ -18,13 +18,14 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 import java.sql.{ Connection, ResultSet, Statement }
 
 import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel, InputIngestStep }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import nl.knaw.dans.easy.properties.app.repository.{ IngestStepDao, InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, IngestStepDao, InvalidValueError, MutationError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
-class SQLIngestStepDao(implicit connection: Connection) extends IngestStepDao with CommonResultSetParsers with DebugEnhancedLogging {
+class SQLIngestStepDao(implicit connection: Connection, errorHandler: SQLErrorHandler) extends IngestStepDao with CommonResultSetParsers with DebugEnhancedLogging {
 
   private def parseIngestStep(resultSet: ResultSet): Either[InvalidValueError, IngestStep] = {
     for {
@@ -88,7 +89,13 @@ class SQLIngestStepDao(implicit connection: Connection) extends IngestStepDao wi
       }
       .either
       .either
-      .leftMap(_ => NoSuchDepositError(id))
+      .leftMap(ts => {
+        assert(ts.nonEmpty)
+        ts.collectFirst {
+          case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
+          case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, step.timestamp, "ingest step")
+        }.getOrElse(new MutationError(ts.head.getMessage) {})
+      })
       .flatMap(identity)
       .map(id => IngestStep(id, step.step, step.timestamp))
   }

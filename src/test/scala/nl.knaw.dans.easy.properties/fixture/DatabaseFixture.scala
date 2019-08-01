@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.properties.fixture
 import java.sql.Connection
 
 import better.files.File
-import nl.knaw.dans.easy.properties.app.database.{ DatabaseAccess, DatabaseConfiguration }
+import nl.knaw.dans.easy.properties.app.database.{ DatabaseAccess, DatabaseConfiguration, SQLErrorHandler }
 import org.scalatest.BeforeAndAfterEach
 import resource.{ constant, managed }
 
@@ -51,6 +51,7 @@ trait DatabaseFixture extends BeforeAndAfterEach {
       pool
     }
   }
+  implicit lazy val errorHandler: SQLErrorHandler = SQLErrorHandler(dbConfig)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

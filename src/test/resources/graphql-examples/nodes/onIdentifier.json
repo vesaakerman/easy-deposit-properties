@@ -2,25 +2,25 @@
   "data": {
     "nodes": [
       {
-        "id": "SWRlbnRpZmllcjoxMg==",
-        "type": "DOI",
-        "value": "10.5072/dans-a1b-cde2",
-        "timestamp": "2019-01-01T00:01:00.000Z"
-      },
-      {
-        "id": "SWRlbnRpZmllcjoxMQ==",
+        "id": "SWRlbnRpZmllcjow",
         "type": "BAG_STORE",
         "value": "00000000-0000-0000-0000-000000000001",
         "timestamp": "2019-01-01T00:00:00.000Z"
       },
       {
-        "id": "SWRlbnRpZmllcjoxMw==",
+        "id": "SWRlbnRpZmllcjox",
+        "type": "DOI",
+        "value": "10.5072/dans-a1b-cde2",
+        "timestamp": "2019-01-01T00:01:00.000Z"
+      },
+      {
+        "id": "SWRlbnRpZmllcjoy",
         "type": "URN",
         "value": "urn:nbn:123456",
         "timestamp": "2019-01-01T00:02:00.000Z"
       },
       {
-        "id": "SWRlbnRpZmllcjoxNA==",
+        "id": "SWRlbnRpZmllcjoz",
         "type": "FEDORA",
         "value": "easy-dataset:1",
         "timestamp": "2019-01-01T00:03:00.000Z"

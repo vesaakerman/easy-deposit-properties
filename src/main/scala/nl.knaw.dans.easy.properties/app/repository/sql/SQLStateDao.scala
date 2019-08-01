@@ -18,13 +18,14 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 import java.sql.{ Connection, ResultSet, Statement }
 
 import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr, StateDao }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, InvalidValueError, MutationError, MutationErrorOr, NoSuchDepositError, QueryErrorOr, StateDao }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
-class SQLStateDao(implicit connection: Connection) extends StateDao with CommonResultSetParsers with DebugEnhancedLogging {
+class SQLStateDao(implicit connection: Connection, errorHandler: SQLErrorHandler) extends StateDao with CommonResultSetParsers with DebugEnhancedLogging {
 
   private def parseState(resultSet: ResultSet): Either[InvalidValueError, State] = {
     for {
@@ -88,7 +89,13 @@ class SQLStateDao(implicit connection: Connection) extends StateDao with CommonR
       }
       .either
       .either
-      .leftMap(_ => NoSuchDepositError(id))
+      .leftMap(ts => {
+        assert(ts.nonEmpty)
+        ts.collectFirst {
+          case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
+          case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, state.timestamp, "state")
+        }.getOrElse(new MutationError(ts.head.getMessage) {})
+      })
       .flatMap(identity)
       .map(stateId => State(stateId, state.label, state.description, state.timestamp))
   }

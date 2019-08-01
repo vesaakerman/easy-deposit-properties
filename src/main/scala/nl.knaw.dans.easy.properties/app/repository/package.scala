@@ -16,8 +16,8 @@
 package nl.knaw.dans.easy.properties.app
 
 import nl.knaw.dans.easy.properties.ApplicationError
-import nl.knaw.dans.easy.properties.app.model.DepositId
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
+import nl.knaw.dans.easy.properties.app.model.{ DepositId, Timestamp }
 import sangria.execution.UserFacingError
 
 import scala.concurrent.Future
@@ -31,14 +31,14 @@ package object repository {
   case class DepositDoesNotExistError(depositId: DepositId) extends QueryError(s"Deposit $depositId does not exist.")
   case class InvalidValueError(override val msg: String) extends QueryError(msg)
   object InvalidValueError {
-    // TODO use EitherNel in QueryErrorOr[T] instead of collapsing the errors
     def apply(ts: Seq[Throwable]): InvalidValueError = InvalidValueError(ts.map(_.getMessage).mkString("\n"))
   }
 
   abstract class MutationError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
   case class NoSuchDepositError(depositId: DepositId) extends MutationError(s"Deposit $depositId does not exist.")
   case class DepositAlreadyExistsError(depositId: DepositId) extends MutationError(s"Deposit $depositId already exist.")
-  case class IdentifierAlreadyExistsError(depositId: DepositId, identifierType: IdentifierType) extends MutationError(s"Identifier $identifierType already exists for $depositId.")
+  case class DepositIdAndTimestampAlreadyExistError(depositId: DepositId, timestamp: Timestamp, objName: String) extends MutationError(s"Cannot insert this $objName: timestamp '$timestamp' is already used for another $objName associated to depositId $depositId.")
+  case class IdentifierAlreadyExistsError(depositId: DepositId, identifierType: IdentifierType) extends MutationError(s"Identifier $identifierType already exists for depositId $depositId.")
 
   implicit class MaxByOption[A](val t: TraversableOnce[A]) extends AnyVal {
     def maxByOption[B](f: A => B)(implicit cmp: Ordering[B]): Option[A] = {

@@ -17,9 +17,10 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.util.UUID
 
-import cats.scalatest.EitherValues
+import cats.scalatest.{ EitherMatchers, EitherValues }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel, InputIngestStep }
-import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, NoSuchDepositError }
+import nl.knaw.dans.easy.properties.app.model.state.{ InputState, StateLabel }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, InvalidValueError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 
@@ -27,7 +28,8 @@ class SQLIngestStepDaoSpec extends TestSupportFixture
   with FileSystemSupport
   with DatabaseFixture
   with DatabaseDataFixture
-  with EitherValues {
+  with EitherValues
+  with EitherMatchers {
 
   "getById" should "find ingest steps identified by their id" in {
     val ingestSteps = new SQLIngestStepDao
@@ -121,6 +123,17 @@ class SQLIngestStepDaoSpec extends TestSupportFixture
     val inputIngestStep = InputIngestStep(IngestStepLabel.BAGINDEX, timestamp)
 
     ingestSteps.store(depositId6, inputIngestStep).leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+
+  it should "fail when the depositId and timestamp combination is already present, even though the other values are different" in {
+    val ingestSteps = new SQLIngestStepDao
+    val depositId = depositId1
+    val timestamp = new DateTime(2019, 1, 1, 6, 6, timeZone)
+    val inputIngestStep1 = InputIngestStep(IngestStepLabel.BAGINDEX, timestamp)
+    val inputIngestStep2 = InputIngestStep(IngestStepLabel.BAGSTORE, timestamp)
+
+    ingestSteps.store(depositId, inputIngestStep1) shouldBe right
+    ingestSteps.store(depositId, inputIngestStep2).leftValue shouldBe DepositIdAndTimestampAlreadyExistError(depositId, timestamp, "ingest step")
   }
 
   "getDepositsById" should "find deposits identified by these ingestStepIds" in {

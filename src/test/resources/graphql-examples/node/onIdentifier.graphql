@@ -1,5 +1,5 @@
 query {
-    node(id: "SWRlbnRpZmllcjoxMg==") {
+    node(id: "SWRlbnRpZmllcjox") {
         ... on Identifier {
             id
             type

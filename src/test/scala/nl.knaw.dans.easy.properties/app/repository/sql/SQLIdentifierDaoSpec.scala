@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.util.UUID
 
-import cats.scalatest.EitherValues
+import cats.scalatest.{ EitherMatchers, EitherValues }
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
@@ -27,7 +27,8 @@ class SQLIdentifierDaoSpec extends TestSupportFixture
   with FileSystemSupport
   with DatabaseFixture
   with DatabaseDataFixture
-  with EitherValues {
+  with EitherValues
+  with EitherMatchers {
 
   "getById" should "find identifiers identified by their identifierId" in {
     val identifiers = new SQLIdentifierDao
@@ -152,7 +153,27 @@ class SQLIdentifierDaoSpec extends TestSupportFixture
     identifiers.store(depositId6, inputIdentifier).leftValue shouldBe NoSuchDepositError(depositId6)
   }
 
-  // TODO more tests based on foreign keys and unique constraints
+  it should "fail when the depositId and schema combination is already present, even though the value is different" in {
+    val identifiers = new SQLIdentifierDao
+    val depositId = depositId3
+    val timestamp = new DateTime(2019, 3, 3, 1, 1, timeZone)
+    val inputIdentifier1 = InputIdentifier(IdentifierType.FEDORA, "easy-dataset:12345", timestamp)
+    val inputIdentifier2 = InputIdentifier(IdentifierType.FEDORA, "easy-dataset:56789", timestamp)
+
+    identifiers.store(depositId, inputIdentifier1) shouldBe right
+    identifiers.store(depositId, inputIdentifier2).leftValue.msg should include(s"identifier fedora already exists for depositId $depositId")
+  }
+
+  it should "fail when the depositId and timestamp combination is already present, even though the schema and value are different" in {
+    val identifiers = new SQLIdentifierDao
+    val depositId = depositId3
+    val timestamp = new DateTime(2019, 3, 3, 1, 1, timeZone)
+    val inputIdentifier1 = InputIdentifier(IdentifierType.FEDORA, "easy-dataset:12345", timestamp)
+    val inputIdentifier2 = InputIdentifier(IdentifierType.URN, "foobar", timestamp)
+
+    identifiers.store(depositId, inputIdentifier1) shouldBe right
+    identifiers.store(depositId, inputIdentifier2).leftValue.msg should include(s"timestamp '$timestamp' is already used for another identifier associated to depositId $depositId")
+  }
 
   "getDepositsById" should "find deposits identified by these identifierIds" in {
     val identifiers = new SQLIdentifierDao

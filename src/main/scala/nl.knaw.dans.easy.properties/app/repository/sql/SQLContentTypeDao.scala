@@ -18,13 +18,14 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 import java.sql.{ Connection, ResultSet, Statement }
 
 import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, InputContentType }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
+import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, DepositIdAndTimestampAlreadyExistError, InvalidValueError, MutationError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
-class SQLContentTypeDao(implicit connection: Connection) extends ContentTypeDao with CommonResultSetParsers with DebugEnhancedLogging {
+class SQLContentTypeDao(implicit connection: Connection, errorHandler: SQLErrorHandler) extends ContentTypeDao with CommonResultSetParsers with DebugEnhancedLogging {
 
   private def parseContentType(resultSet: ResultSet): Either[InvalidValueError, ContentType] = {
     for {
@@ -88,7 +89,13 @@ class SQLContentTypeDao(implicit connection: Connection) extends ContentTypeDao 
       }
       .either
       .either
-      .leftMap(_ => NoSuchDepositError(id))
+      .leftMap(ts => {
+        assert(ts.nonEmpty)
+        ts.collectFirst {
+          case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
+          case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, contentType.timestamp, "content type")
+        }.getOrElse(new MutationError(ts.head.getMessage) {})
+      })
       .flatMap(identity)
       .map(id => ContentType(id, contentType.value, contentType.timestamp))
   }

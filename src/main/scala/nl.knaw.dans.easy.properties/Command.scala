@@ -15,15 +15,19 @@
  */
 package nl.knaw.dans.easy.properties
 
+import java.sql.Connection
+import java.util.concurrent.Executors
+
 import better.files.File
 import nl.knaw.dans.easy.DataciteService
-import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
+import nl.knaw.dans.easy.properties.app.database.{ DatabaseAccess, SQLErrorHandler }
 import nl.knaw.dans.easy.properties.app.legacyImport.{ ImportProps, Interactor }
-import nl.knaw.dans.easy.properties.app.repository.demo.DemoRepo
+import nl.knaw.dans.easy.properties.app.repository.sql.SQLRepo
 import nl.knaw.dans.easy.properties.server.{ DepositPropertiesGraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor }
 import scala.language.reflectiveCalls
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Try }
@@ -35,8 +39,6 @@ object Command extends App with DebugEnhancedLogging {
   val commandLine: CommandLineOptions = new CommandLineOptions(args, configuration) {
     verify()
   }
-  val database = new DatabaseAccess(configuration.databaseConfig)
-  val repo = new DemoRepo()
 
   runSubcommand()
     .doIfSuccess(msg => println(s"OK: $msg"))
@@ -46,27 +48,42 @@ object Command extends App with DebugEnhancedLogging {
   private def runSubcommand(): Try[FeedBackMessage] = {
     commandLine.subcommand
       .collect {
-        case loadProps @ commandLine.loadProps =>
-          val propsFile = loadProps.properties()
-          val importer = new ImportProps(
-            repository = repo.repository,
-            interactor = new Interactor,
-            datacite = new DataciteService(configuration.dataciteConfig),
-          )
-
-          Try {
-            importer.loadDepositProperties(propsFile)
-              .fold(_.msg, identity)
-          }
+        case loadProps @ commandLine.loadProps => runLoadProps(loadProps.properties())
         case commandLine.runService => runAsService()
       }
       .getOrElse(Failure(new IllegalArgumentException(s"Unknown command: ${ commandLine.subcommand }")))
   }
 
+  private def runLoadProps(propsFile: File): Try[FeedBackMessage] = {
+    val database = new DatabaseAccess(configuration.databaseConfig)
+    implicit val sqlErrorHandler: SQLErrorHandler = SQLErrorHandler(configuration.databaseConfig)
+
+    for {
+      _ <- database.initConnectionPool()
+      msg <- database.doTransaction(implicit connection => Try {
+        new ImportProps(
+          repository = new SQLRepo().repository,
+          interactor = new Interactor,
+          datacite = new DataciteService(configuration.dataciteConfig),
+        )
+          .loadDepositProperties(propsFile)
+          .fold(_.msg, identity)
+      })
+        .doIfSuccess(_ => database.closeConnectionPool())
+        .doIfFailure {
+          case _ => database.closeConnectionPool().unsafeGetOrThrow
+        }
+    } yield msg
+  }
+
   private def runAsService(): Try[FeedBackMessage] = Try {
+    val database = new DatabaseAccess(configuration.databaseConfig)
+    implicit val executionContext: ExecutionContextExecutor = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(16))
+    implicit val sqlErrorHandler: SQLErrorHandler = SQLErrorHandler(configuration.databaseConfig)
+
     val service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet(() => repo.repository, configuration.auth, configuration.profilingConfig),
+      "/graphql" -> DepositPropertiesGraphQLServlet[Connection](database.futureTransaction, implicit conn => new SQLRepo().repository, configuration.auth, configuration.profilingConfig),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     Runtime.getRuntime.addShutdownHook(new Thread("service-shutdown") {

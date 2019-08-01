@@ -15,10 +15,12 @@
  */
 package nl.knaw.dans.easy.properties.server
 
+import java.sql.Connection
+
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
-import nl.knaw.dans.easy.properties.app.repository.demo.DemoRepo
-import nl.knaw.dans.easy.properties.fixture.TestSupportFixture
+import nl.knaw.dans.easy.properties.app.repository.sql.SQLRepo
+import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.json4s.JsonAST.JNull
 import org.json4s.JsonDSL._
 import org.json4s.ext.UUIDSerializer
@@ -29,22 +31,29 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatra.test.EmbeddedJettyContainer
 import org.scalatra.test.scalatest.ScalatraSuite
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class GraphQLExamplesSpec extends TestSupportFixture
+  with FileSystemSupport
+  with DatabaseFixture
+  with DatabaseDataFixture
   with BeforeAndAfterEach
   with EmbeddedJettyContainer
   with ScalatraSuite {
 
-  private val repo = new DemoRepo()
   private val auth = Auth("my-username", "my-password")
   private val authHeader = "Authorization" -> "Basic bXktdXNlcm5hbWU6bXktcGFzc3dvcmQ="
-  private val servlet = DepositPropertiesGraphQLServlet(() => repo.repository, auth)
+  private val servlet = DepositPropertiesGraphQLServlet[Connection](
+    connGen = databaseAccess.futureTransaction,
+    repository = new SQLRepo()(_, errorHandler).repository,
+    authenticationConfig = auth,
+  )
   implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
   addServlet(servlet, "/*")
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    repo.resetRepository()
   }
 
   "graphQL examples" should behave like {
@@ -88,7 +97,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
         |}""".stripMargin
     val mutation =
       """mutation {
-        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000Z"}) {
+        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000+02:00"}) {
         |    clientMutationId
         |    state {
         |      label
@@ -119,7 +128,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
             ("state" -> {
               ("label" -> "FEDORA_ARCHIVED") ~
                 ("description" -> "the deposit is archived in Fedora as easy-dataset:13") ~
-                ("timestamp" -> "2019-07-02T08:15:00.000Z")
+                ("timestamp" -> "2019-07-02T06:15:00.000Z")
             })
         }
       }
@@ -130,7 +139,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
           "state" -> {
             ("label" -> "FEDORA_ARCHIVED") ~
               ("description" -> "the deposit is archived in Fedora as easy-dataset:13") ~
-              ("timestamp" -> "2019-07-02T08:15:00.000Z")
+              ("timestamp" -> "2019-07-02T06:15:00.000Z")
           }
         }
       }
@@ -155,7 +164,7 @@ class GraphQLExamplesSpec extends TestSupportFixture
   it should "return an error in the body when no authentication is given for a mutation" in {
     val mutation =
       """mutation {
-        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000Z"}) {
+        |  updateState(input: {clientMutationId: "Hello Internet", depositId: "00000000-0000-0000-0000-000000000001", label: FEDORA_ARCHIVED, description: "the deposit is archived in Fedora as easy-dataset:13", timestamp: "2019-07-02T08:15:00.000+02:00"}) {
         |    clientMutationId
         |    state {
         |      label

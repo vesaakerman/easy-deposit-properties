@@ -7,25 +7,25 @@
             "depositId": "00000000-0000-0000-0000-000000000001",
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjoxMg==",
+                "id": "SWRlbnRpZmllcjow",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000001"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjoxMw==",
+                "id": "SWRlbnRpZmllcjox",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000001"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjoxNA==",
+                "id": "SWRlbnRpZmllcjoz",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000001"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjoxMQ==",
+                "id": "SWRlbnRpZmllcjoy",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000001"
                 }
@@ -38,25 +38,25 @@
             "depositId": "00000000-0000-0000-0000-000000000002",
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjoyMg==",
+                "id": "SWRlbnRpZmllcjo0",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000002"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjoyMw==",
+                "id": "SWRlbnRpZmllcjo1",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000002"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjoyNA==",
+                "id": "SWRlbnRpZmllcjo3",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000002"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjoyMQ==",
+                "id": "SWRlbnRpZmllcjo2",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000002"
                 }
@@ -69,7 +69,7 @@
             "depositId": "00000000-0000-0000-0000-000000000003",
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjozMQ==",
+                "id": "SWRlbnRpZmllcjo4",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000003"
                 }
@@ -82,25 +82,25 @@
             "depositId": "00000000-0000-0000-0000-000000000004",
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjo0Mg==",
+                "id": "SWRlbnRpZmllcjo5",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000004"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjo0Mw==",
+                "id": "SWRlbnRpZmllcjoxMA==",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000004"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjo0NA==",
+                "id": "SWRlbnRpZmllcjoxMg==",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000004"
                 }
               },
               {
-                "id": "SWRlbnRpZmllcjo0MQ==",
+                "id": "SWRlbnRpZmllcjoxMQ==",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000004"
                 }
@@ -113,7 +113,7 @@
             "depositId": "00000000-0000-0000-0000-000000000005",
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjo1MQ==",
+                "id": "SWRlbnRpZmllcjoxMw==",
                 "deposit": {
                   "depositId": "00000000-0000-0000-0000-000000000005"
                 }

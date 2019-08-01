@@ -15,28 +15,26 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import java.util.concurrent.Executors
-
 import nl.knaw.dans.easy.properties.app.graphql.DataContext
 import nl.knaw.dans.easy.properties.app.graphql.GraphQLSchema._
 import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.app.graphql.middleware.{ Middlewares, ProfilingConfiguration }
 import nl.knaw.dans.easy.properties.app.repository.Repository
+import org.scalatra.ActionResult
 
-import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
+import scala.concurrent.{ ExecutionContext, Future }
 
 object DepositPropertiesGraphQLServlet {
 
-  private implicit val executionContext: ExecutionContextExecutorService =
-    ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(16))
-
-  def apply(repository: () => Repository,
-            authenticationConfig: Auth,
-            profilingConfig: Option[ProfilingConfiguration] = Option.empty,
-           ): GraphQLServlet[DataContext] = {
-    new GraphQLServlet(
+  def apply[Conn](connGen: (Conn => Future[ActionResult]) => Future[ActionResult],
+                  repository: Conn => Repository,
+                  authenticationConfig: Auth,
+                  profilingConfig: Option[ProfilingConfiguration] = Option.empty,
+                 )(implicit executionContext: ExecutionContext): GraphQLServlet[DataContext, Conn] = {
+    new GraphQLServlet[DataContext, Conn](
       schema = DepositSchema,
-      ctxProvider = auth => DataContext(repository(), auth, expectedAuth = authenticationConfig),
+      connGen = connGen,
+      ctxProvider = conn => auth => DataContext(repository(conn), auth, authenticationConfig),
       deferredResolver = deferredResolver,
       middlewares = new Middlewares(profilingConfig).values,
     )

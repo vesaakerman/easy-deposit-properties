@@ -18,13 +18,14 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 import java.sql.{ Connection, ResultSet, Statement }
 
 import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import nl.knaw.dans.easy.properties.app.repository.{ CurationDao, InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
+import nl.knaw.dans.easy.properties.app.repository.{ CurationDao, DepositIdAndTimestampAlreadyExistError, InvalidValueError, MutationError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
-class SQLCurationDao(implicit connection: Connection) extends CurationDao with CommonResultSetParsers with DebugEnhancedLogging {
+class SQLCurationDao(implicit connection: Connection, errorHandler: SQLErrorHandler) extends CurationDao with CommonResultSetParsers with DebugEnhancedLogging {
 
   private def parseCuration(resultSet: ResultSet): Either[InvalidValueError, Curation] = {
     for {
@@ -94,7 +95,13 @@ class SQLCurationDao(implicit connection: Connection) extends CurationDao with C
       }
       .either
       .either
-      .leftMap(_ => NoSuchDepositError(id))
+      .leftMap(ts => {
+        assert(ts.nonEmpty)
+        ts.collectFirst {
+          case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
+          case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, curation.timestamp, "curation")
+        }.getOrElse(new MutationError(ts.head.getMessage) {})
+      })
       .flatMap(identity)
       .map(curationId => Curation(curationId, curation.isNewVersion, curation.isRequired, curation.isPerformed, curation.datamanagerUserId, curation.datamanagerEmail, curation.timestamp))
   }

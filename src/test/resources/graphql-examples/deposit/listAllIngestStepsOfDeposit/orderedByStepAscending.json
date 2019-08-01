@@ -5,49 +5,49 @@
         "edges": [
           {
             "node": {
-              "id": "SW5nZXN0U3RlcDoxMA==",
+              "id": "SW5nZXN0U3RlcDow",
               "step": "VALIDATE",
               "timestamp": "2019-01-01T04:05:00.000Z"
             }
           },
           {
             "node": {
-              "id": "SW5nZXN0U3RlcDoxMQ==",
+              "id": "SW5nZXN0U3RlcDox",
               "step": "PID_GENERATOR",
               "timestamp": "2019-01-01T04:06:00.000Z"
             }
           },
           {
             "node": {
-              "id": "SW5nZXN0U3RlcDoxMg==",
+              "id": "SW5nZXN0U3RlcDoy",
               "step": "FEDORA",
               "timestamp": "2019-01-01T04:07:00.000Z"
             }
           },
           {
             "node": {
-              "id": "SW5nZXN0U3RlcDoxMw==",
+              "id": "SW5nZXN0U3RlcDoz",
               "step": "SPRINGFIELD",
               "timestamp": "2019-01-01T04:08:00.000Z"
             }
           },
           {
             "node": {
-              "id": "SW5nZXN0U3RlcDoxNA==",
+              "id": "SW5nZXN0U3RlcDo0",
               "step": "BAGSTORE",
               "timestamp": "2019-01-01T04:09:00.000Z"
             }
           },
           {
             "node": {
-              "id": "SW5nZXN0U3RlcDoxNQ==",
+              "id": "SW5nZXN0U3RlcDo1",
               "step": "SOLR4FILES",
               "timestamp": "2019-01-01T04:10:00.000Z"
             }
           },
           {
             "node": {
-              "id": "SW5nZXN0U3RlcDoxNg==",
+              "id": "SW5nZXN0U3RlcDo2",
               "step": "COMPLETED",
               "timestamp": "2019-01-01T04:11:00.000Z"
             }

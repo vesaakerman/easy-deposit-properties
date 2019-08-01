@@ -1,5 +1,5 @@
 query {
-    nodes(ids: ["SWRlbnRpZmllcjoxMg==", "SWRlbnRpZmllcjoxMQ==", "SWRlbnRpZmllcjoxMw==", "SWRlbnRpZmllcjoxNA=="]) {
+    nodes(ids: ["SWRlbnRpZmllcjow", "SWRlbnRpZmllcjox", "SWRlbnRpZmllcjoy", "SWRlbnRpZmllcjoz"]) {
         ... on Identifier {
             id
             type

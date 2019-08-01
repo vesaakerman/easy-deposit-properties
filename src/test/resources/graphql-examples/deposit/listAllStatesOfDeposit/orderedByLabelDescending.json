@@ -5,7 +5,7 @@
         "edges": [
           {
             "node": {
-              "id": "U3RhdGU6MTU=",
+              "id": "U3RhdGU6NQ==",
               "label": "ARCHIVED",
               "description": "deposit is archived",
               "timestamp": "2019-01-01T05:05:00.000Z"
@@ -13,7 +13,7 @@
           },
           {
             "node": {
-              "id": "U3RhdGU6MTQ=",
+              "id": "U3RhdGU6NA==",
               "label": "SUBMITTED",
               "description": "deposit is processing",
               "timestamp": "2019-01-01T04:04:00.000Z"
@@ -21,7 +21,7 @@
           },
           {
             "node": {
-              "id": "U3RhdGU6MTM=",
+              "id": "U3RhdGU6Mw==",
               "label": "FINALIZING",
               "description": "deposit is finalizing",
               "timestamp": "2019-01-01T03:03:00.000Z"
@@ -29,7 +29,7 @@
           },
           {
             "node": {
-              "id": "U3RhdGU6MTI=",
+              "id": "U3RhdGU6Mg==",
               "label": "UPLOADED",
               "description": "deposit upload has been completed",
               "timestamp": "2019-01-01T02:02:00.000Z"
@@ -37,7 +37,7 @@
           },
           {
             "node": {
-              "id": "U3RhdGU6MTA=",
+              "id": "U3RhdGU6MA==",
               "label": "DRAFT",
               "description": "draft with continued deposit",
               "timestamp": "2019-01-01T00:00:00.000Z"
@@ -45,7 +45,7 @@
           },
           {
             "node": {
-              "id": "U3RhdGU6MTE=",
+              "id": "U3RhdGU6MQ==",
               "label": "DRAFT",
               "description": "draft with continued deposit",
               "timestamp": "2019-01-01T01:01:00.000Z"

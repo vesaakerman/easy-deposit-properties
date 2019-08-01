@@ -18,12 +18,13 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 import java.sql.{ Connection, ResultSet }
 
 import cats.syntax.either._
+import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.model.{ DepositId, DoiRegisteredEvent }
-import nl.knaw.dans.easy.properties.app.repository.{ DoiRegisteredDao, InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, DoiRegisteredDao, InvalidValueError, MutationError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
-class SQLDoiRegisteredDao(implicit connection: Connection) extends DoiRegisteredDao with CommonResultSetParsers with DebugEnhancedLogging {
+class SQLDoiRegisteredDao(implicit connection: Connection, errorHandler: SQLErrorHandler) extends DoiRegisteredDao with CommonResultSetParsers with DebugEnhancedLogging {
 
   private def parseDoiRegisteredEvent(resultSet: ResultSet): Either[InvalidValueError, DoiRegisteredEvent] = {
     for {
@@ -66,7 +67,13 @@ class SQLDoiRegisteredDao(implicit connection: Connection) extends DoiRegistered
       })
       .either
       .either
-      .leftMap(_ => NoSuchDepositError(id))
+      .leftMap(ts => {
+        assert(ts.nonEmpty)
+        ts.collectFirst {
+          case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
+          case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, registered.timestamp, "doi registered event")
+        }.getOrElse(new MutationError(ts.head.getMessage) {})
+      })
       .map(_ => registered)
   }
 }

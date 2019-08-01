@@ -17,9 +17,9 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.util.UUID
 
-import cats.scalatest.EitherValues
+import cats.scalatest.{ EitherMatchers, EitherValues }
 import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield, SpringfieldPlayMode }
-import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, NoSuchDepositError }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, InvalidValueError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 
@@ -27,7 +27,8 @@ class SQLSpringfieldDaoSpec extends TestSupportFixture
   with FileSystemSupport
   with DatabaseFixture
   with DatabaseDataFixture
-  with EitherValues {
+  with EitherValues
+  with EitherMatchers {
 
   "getById" should "find springfield configurations identified by their springfieldId" in {
     val springfields = new SQLSpringfieldDao
@@ -121,6 +122,17 @@ class SQLSpringfieldDaoSpec extends TestSupportFixture
     val inputSpringfield = InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.MENU, timestamp)
 
     springfields.store(depositId6, inputSpringfield).leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+
+  it should "fail when the depositId and timestamp combination is already present, even though the other values are different" in {
+    val springfields = new SQLSpringfieldDao
+    val depositId = depositId1
+    val timestamp = new DateTime(2019, 1, 1, 6, 6, timeZone)
+    val inputSpringfield1 = InputSpringfield("domain1", "user1", "collection1", SpringfieldPlayMode.CONTINUOUS, timestamp)
+    val inputSpringfield2 = InputSpringfield("domain2", "user2", "collection2", SpringfieldPlayMode.MENU, timestamp)
+
+    springfields.store(depositId, inputSpringfield1) shouldBe right
+    springfields.store(depositId, inputSpringfield2).leftValue shouldBe DepositIdAndTimestampAlreadyExistError(depositId, timestamp, "springfield")
   }
 
   "getDepositsById" should "find deposits identified by these springfieldIds" in {

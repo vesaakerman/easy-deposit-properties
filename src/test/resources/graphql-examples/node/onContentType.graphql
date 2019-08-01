@@ -1,5 +1,5 @@
 query {
-    node(id: "Q29udGVudFR5cGU6MTE=") {
+    node(id: "Q29udGVudFR5cGU6Mjc=") {
         ... on ContentType {
             value
             timestamp

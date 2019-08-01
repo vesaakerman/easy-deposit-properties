@@ -13,7 +13,7 @@
           "domain": "domain2",
           "user": "user2",
           "collection": "collection2",
-          "playmode": "CONTINUOUS",
+          "playmode": "MENU",
           "timestamp": "2019-02-02T02:02:00.000Z"
         }
       ]

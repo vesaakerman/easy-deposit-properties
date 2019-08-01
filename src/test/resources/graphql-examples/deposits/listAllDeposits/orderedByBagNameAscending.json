@@ -22,28 +22,28 @@
             },
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjoyMg==",
+                "id": "SWRlbnRpZmllcjo0",
+                "type": "BAG_STORE",
+                "value": "00000000-0000-0000-0000-000000000002",
+                "timestamp": "2019-02-02T00:00:00.000Z"
+              },
+              {
+                "id": "SWRlbnRpZmllcjo1",
                 "type": "DOI",
                 "value": "10.5072/dans-f3g-hij4",
                 "timestamp": "2019-02-02T00:01:00.000Z"
               },
               {
-                "id": "SWRlbnRpZmllcjoyMw==",
-                "type": "URN",
-                "value": "urn:nbn:789012",
-                "timestamp": "2019-02-02T00:02:00.000Z"
-              },
-              {
-                "id": "SWRlbnRpZmllcjoyNA==",
+                "id": "SWRlbnRpZmllcjo3",
                 "type": "FEDORA",
                 "value": "easy-dataset:2",
                 "timestamp": "2019-02-02T00:03:00.000Z"
               },
               {
-                "id": "SWRlbnRpZmllcjoyMQ==",
-                "type": "BAG_STORE",
-                "value": "00000000-0000-0000-0000-000000000002",
-                "timestamp": "2019-02-02T00:00:00.000Z"
+                "id": "SWRlbnRpZmllcjo2",
+                "type": "URN",
+                "value": "urn:nbn:789012",
+                "timestamp": "2019-02-02T00:02:00.000Z"
               }
             ],
             "doiRegistered": true,
@@ -82,7 +82,7 @@
               "domain": "domain2",
               "user": "user2",
               "collection": "collection2",
-              "playmode": "CONTINUOUS",
+              "playmode": "MENU",
               "timestamp": "2019-02-02T02:02:00.000Z"
             },
             "springfields": [
@@ -97,7 +97,7 @@
                 "domain": "domain2",
                 "user": "user2",
                 "collection": "collection2",
-                "playmode": "CONTINUOUS",
+                "playmode": "MENU",
                 "timestamp": "2019-02-02T02:02:00.000Z"
               }
             ],
@@ -133,28 +133,28 @@
             },
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjoxMg==",
+                "id": "SWRlbnRpZmllcjow",
+                "type": "BAG_STORE",
+                "value": "00000000-0000-0000-0000-000000000001",
+                "timestamp": "2019-01-01T00:00:00.000Z"
+              },
+              {
+                "id": "SWRlbnRpZmllcjox",
                 "type": "DOI",
                 "value": "10.5072/dans-a1b-cde2",
                 "timestamp": "2019-01-01T00:01:00.000Z"
               },
               {
-                "id": "SWRlbnRpZmllcjoxMw==",
-                "type": "URN",
-                "value": "urn:nbn:123456",
-                "timestamp": "2019-01-01T00:02:00.000Z"
-              },
-              {
-                "id": "SWRlbnRpZmllcjoxNA==",
+                "id": "SWRlbnRpZmllcjoz",
                 "type": "FEDORA",
                 "value": "easy-dataset:1",
                 "timestamp": "2019-01-01T00:03:00.000Z"
               },
               {
-                "id": "SWRlbnRpZmllcjoxMQ==",
-                "type": "BAG_STORE",
-                "value": "00000000-0000-0000-0000-000000000001",
-                "timestamp": "2019-01-01T00:00:00.000Z"
+                "id": "SWRlbnRpZmllcjoy",
+                "type": "URN",
+                "value": "urn:nbn:123456",
+                "timestamp": "2019-01-01T00:02:00.000Z"
               }
             ],
             "doiRegistered": true,
@@ -172,7 +172,7 @@
             "doiActionEvents": [
               {
                 "value": "UPDATE",
-                "timestamp": "2019-01-01T00:00:00.000Z"
+                "timestamp": "2019-01-01T01:01:00.000Z"
               },
               {
                 "value": "NONE",
@@ -276,7 +276,7 @@
             "ingestStep": null,
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjozMQ==",
+                "id": "SWRlbnRpZmllcjo4",
                 "type": "BAG_STORE",
                 "value": "00000000-0000-0000-0000-000000000003",
                 "timestamp": "2019-03-03T00:00:00.000Z"
@@ -289,7 +289,7 @@
             "doiActionEvents": [
               {
                 "value": "CREATE",
-                "timestamp": "2019-02-02T00:00:00.000Z"
+                "timestamp": "2019-03-03T00:00:00.000Z"
               }
             ],
             "curator": {
@@ -372,28 +372,28 @@
             "ingestStep": null,
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjo0Mg==",
+                "id": "SWRlbnRpZmllcjo5",
+                "type": "BAG_STORE",
+                "value": "00000000-0000-0000-0000-000000000004",
+                "timestamp": "2019-04-04T00:00:00.000Z"
+              },
+              {
+                "id": "SWRlbnRpZmllcjoxMA==",
                 "type": "DOI",
                 "value": "10.5072/dans-p7q-rst8",
                 "timestamp": "2019-04-04T00:01:00.000Z"
               },
               {
-                "id": "SWRlbnRpZmllcjo0Mw==",
-                "type": "URN",
-                "value": "urn:nbn:901234",
-                "timestamp": "2019-04-04T00:02:00.000Z"
-              },
-              {
-                "id": "SWRlbnRpZmllcjo0NA==",
+                "id": "SWRlbnRpZmllcjoxMg==",
                 "type": "FEDORA",
                 "value": "easy-dataset:4",
                 "timestamp": "2019-04-04T00:03:00.000Z"
               },
               {
-                "id": "SWRlbnRpZmllcjo0MQ==",
-                "type": "BAG_STORE",
-                "value": "00000000-0000-0000-0000-000000000004",
-                "timestamp": "2019-04-04T00:00:00.000Z"
+                "id": "SWRlbnRpZmllcjoxMQ==",
+                "type": "URN",
+                "value": "urn:nbn:901234",
+                "timestamp": "2019-04-04T00:02:00.000Z"
               }
             ],
             "doiRegistered": null,
@@ -403,7 +403,7 @@
             "doiActionEvents": [
               {
                 "value": "CREATE",
-                "timestamp": "2019-02-02T00:00:00.000Z"
+                "timestamp": "2019-04-04T00:00:00.000Z"
               }
             ],
             "curator": {
@@ -482,7 +482,7 @@
             },
             "identifiers": [
               {
-                "id": "SWRlbnRpZmllcjo1MQ==",
+                "id": "SWRlbnRpZmllcjoxMw==",
                 "type": "BAG_STORE",
                 "value": "00000000-0000-0000-0000-000000000005",
                 "timestamp": "2019-05-05T00:00:00.000Z"

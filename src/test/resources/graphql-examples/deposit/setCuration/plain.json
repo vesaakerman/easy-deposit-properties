@@ -3,7 +3,7 @@
     "setCuration": {
       "clientMutationId": "my-mutation-id",
       "curation": {
-        "id": "Q3VyYXRpb246MTUx",
+        "id": "Q3VyYXRpb246MTA=",
         "datamanagerUserId": "archie003",
         "datamanagerEmail": "does.not.exists3@dans.knaw.nl",
         "isNewVersion": true,

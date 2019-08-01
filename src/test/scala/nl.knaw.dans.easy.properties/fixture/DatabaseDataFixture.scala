@@ -156,8 +156,6 @@ trait DatabaseDataFixture extends BeforeAndAfterEach {
 
     prepareTest {
       File(getClass.getClassLoader.getResource("database/TestData.sql").toURI).contentAsString
-        .replace(":00+01", ":00.000000+0:00")
-        .replace(":00+02", ":00.000000+0:00")
     }
   }
 }

@@ -6,7 +6,7 @@
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000001",
             "identifier": {
-              "id": "SWRlbnRpZmllcjoxMg==",
+              "id": "SWRlbnRpZmllcjox",
               "deposit": {
                 "depositId": "00000000-0000-0000-0000-000000000001"
               }
@@ -17,7 +17,7 @@
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000002",
             "identifier": {
-              "id": "SWRlbnRpZmllcjoyMg==",
+              "id": "SWRlbnRpZmllcjo1",
               "deposit": {
                 "depositId": "00000000-0000-0000-0000-000000000002"
               }
@@ -34,7 +34,7 @@
           "node": {
             "depositId": "00000000-0000-0000-0000-000000000004",
             "identifier": {
-              "id": "SWRlbnRpZmllcjo0Mg==",
+              "id": "SWRlbnRpZmllcjoxMA==",
               "deposit": {
                 "depositId": "00000000-0000-0000-0000-000000000004"
               }

@@ -21,14 +21,15 @@ import cats.data.NonEmptyList
 import cats.instances.option._
 import cats.syntax.either._
 import cats.syntax.functor._
+import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType, InputIdentifier }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
-import nl.knaw.dans.easy.properties.app.repository.{ IdentifierDao, InvalidValueError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
+import nl.knaw.dans.easy.properties.app.repository.{ IdentifierDao, InvalidValueError, MutationError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
-class SQLIdentifierDao(implicit connection: Connection) extends IdentifierDao with CommonResultSetParsers with DebugEnhancedLogging {
+class SQLIdentifierDao(implicit connection: Connection, errorHandler: SQLErrorHandler) extends IdentifierDao with CommonResultSetParsers with DebugEnhancedLogging {
 
   private def parseIdentifier(resultSet: ResultSet): Either[InvalidValueError, Identifier] = {
     for {
@@ -122,7 +123,17 @@ class SQLIdentifierDao(implicit connection: Connection) extends IdentifierDao wi
       }
       .either
       .either
-      .leftMap(_ => NoSuchDepositError(id))
+      .leftMap(ts => {
+        assert(ts.nonEmpty)
+        ts.collectFirst {
+          case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
+          case t if errorHandler.isUniquenessConstraintError(t) =>
+            // we can't really decide which uniqueness constraint is violated here given the error returned from the database
+            val msg = s"Cannot insert this identifier: identifier ${ identifier.idType } already exists for depositId $id or " +
+              s"timestamp '${ identifier.timestamp }' is already used for another identifier associated to depositId $id."
+            new MutationError(msg) {}
+        }.getOrElse(new MutationError(ts.head.getMessage) {})
+      })
       .flatMap(identity)
       .map(identifierId => Identifier(identifierId, identifier.idType, identifier.idValue, identifier.timestamp))
   }

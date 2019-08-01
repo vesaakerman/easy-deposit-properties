@@ -17,9 +17,9 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.util.UUID
 
-import cats.scalatest.EitherValues
+import cats.scalatest.{ EitherMatchers, EitherValues }
 import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
-import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, NoSuchDepositError }
+import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, InvalidValueError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 
@@ -27,7 +27,8 @@ class SQLCurationDaoSpec extends TestSupportFixture
   with FileSystemSupport
   with DatabaseFixture
   with DatabaseDataFixture
-  with EitherValues {
+  with EitherValues
+  with EitherMatchers {
 
   "getById" should "find curation configurations identified by their curationId" in {
     val curations = new SQLCurationDao
@@ -121,6 +122,17 @@ class SQLCurationDaoSpec extends TestSupportFixture
     val inputCuration = InputCuration(isNewVersion = true, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
 
     curations.store(depositId6, inputCuration).leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+
+  it should "fail when the depositId and timestamp combination is already present, even though the other values are different" in {
+    val curations = new SQLCurationDao
+    val depositId = depositId1
+    val timestamp = new DateTime(2019, 1, 1, 5, 5, timeZone)
+    val inputCuration1 = InputCuration(isNewVersion = true, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
+    val inputCuration2 = InputCuration(isNewVersion = false, isRequired = false, isPerformed = true, "foo", "foo@bar.com", timestamp)
+
+    curations.store(depositId, inputCuration1) shouldBe right
+    curations.store(depositId, inputCuration2).leftValue shouldBe DepositIdAndTimestampAlreadyExistError(depositId, timestamp, "curation")
   }
 
   "getDepositsById" should "find deposits identified by these curationIds" in {

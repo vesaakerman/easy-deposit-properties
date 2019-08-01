@@ -1,5 +1,5 @@
 query {
-    nodes(ids: ["Q29udGVudFR5cGU6MTA=", "Q29udGVudFR5cGU6MTE="]) {
+    nodes(ids: ["Q29udGVudFR5cGU6MjY=", "Q29udGVudFR5cGU6Mjc="]) {
         ... on ContentType {
             value
             timestamp
