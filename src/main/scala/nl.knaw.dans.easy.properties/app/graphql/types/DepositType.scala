@@ -60,7 +60,7 @@ trait DepositType {
   lazy val depositBagNameFilterArgument: Argument[Option[String]] = Argument(
     name = "bagName",
     argumentType = OptionInputType(StringType),
-    description = Some("Find only those deposits that have this specified bag name"),
+    description = Some("Find only those deposits that have this specified bag name."),
     defaultValue = None,
     fromInput = coercedScalaInput,
     astDirectives = Vector.empty,

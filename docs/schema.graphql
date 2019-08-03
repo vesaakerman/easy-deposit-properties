@@ -155,7 +155,7 @@ type Curation implements Node {
     """
     curatorFilter: SeriesFilter! = LATEST
 
-    """Find only those deposits that have this specified bag name"""
+    """Find only those deposits that have this specified bag name."""
     bagName: String
 
     """List only those deposits that have this specified state label."""
@@ -263,7 +263,7 @@ type Curator implements Node {
     """
     curatorFilter: SeriesFilter! = LATEST
 
-    """Find only those deposits that have this specified bag name"""
+    """Find only those deposits that have this specified bag name."""
     bagName: String
 
     """List only those deposits that have this specified state label."""
@@ -710,7 +710,7 @@ type Depositor {
 
   """List all deposits originating from the same depositor."""
   deposits(
-    """Find only those deposits that have this specified bag name"""
+    """Find only those deposits that have this specified bag name."""
     bagName: String
 
     """List only those deposits that have this specified state label."""
@@ -1075,7 +1075,7 @@ type Query {
 
   """List all registered deposits."""
   deposits(
-    """Find only those deposits that have this specified bag name"""
+    """Find only those deposits that have this specified bag name."""
     bagName: String
 
     """List only those deposits that have this specified state label."""

@@ -1,4 +1,4 @@
-query ListAllDepositsOrderedByDepositIdDescending {
+query ListAllDepositsOrderedByCreationTimestampDescending {
     deposits(orderBy: {field: CREATION_TIMESTAMP, direction: DESC}) {
         edges {
             node {

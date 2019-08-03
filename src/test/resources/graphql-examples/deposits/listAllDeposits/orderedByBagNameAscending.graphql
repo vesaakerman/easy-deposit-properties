@@ -1,4 +1,4 @@
-query ListAllDepositsOrderedByDepositIdAscending {
+query ListAllDepositsOrderedByBagNameAscending {
     deposits(orderBy: {field: BAG_NAME, direction: ASC}) {
         edges {
             node {

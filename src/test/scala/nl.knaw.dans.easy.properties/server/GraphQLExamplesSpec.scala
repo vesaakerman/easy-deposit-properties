@@ -52,10 +52,6 @@ class GraphQLExamplesSpec extends TestSupportFixture
 
   addServlet(servlet, "/*")
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-  }
-
   "graphQL examples" should behave like {
     val graphqlExamplesDir = File(getClass.getResource("/graphql-examples"))
 
