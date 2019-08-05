@@ -54,6 +54,12 @@ GRAPHQL INTERFACE
 5. in your browser, go to http://localhost:20200/graphiql
 
 
+GRAPHIQL TOOLS
+--------------
+To interact with the GraphQL servlet, use the internal http://localhost:20200/graphiql interface.
+Alternatively, on Mac, use the [GraphiQL.app](https://github.com/skevy/graphiql-app).
+
+
 GRAPHQL SCHEMA
 --------------
 
