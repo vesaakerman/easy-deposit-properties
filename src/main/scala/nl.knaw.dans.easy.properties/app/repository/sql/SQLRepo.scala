@@ -19,9 +19,8 @@ import java.sql.Connection
 
 import nl.knaw.dans.easy.properties.app.database.SQLErrorHandler
 import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, CurationDao, DepositDao, DoiActionDao, DoiRegisteredDao, IdentifierDao, IngestStepDao, Repository, SpringfieldDao, StateDao }
-import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-class SQLRepo(implicit connection: Connection, errorHandler: SQLErrorHandler) extends DebugEnhancedLogging {
+class SQLRepo(implicit connection: Connection, errorHandler: SQLErrorHandler) {
 
   private val depositDao: DepositDao = new SQLDepositDao
   private val stateDao: StateDao = new SQLStateDao
