@@ -97,7 +97,7 @@ class SQLIngestStepDao(implicit connection: Connection, errorHandler: SQLErrorHa
         }.getOrElse(new MutationError(ts.head.getMessage) {})
       })
       .flatMap(identity)
-      .map(id => IngestStep(id, step.step, step.timestamp))
+      .map(step.toOutput)
   }
 
   override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {

@@ -101,7 +101,7 @@ class SQLSpringfieldDao(implicit connection: Connection, errorHandler: SQLErrorH
         }.getOrElse(new MutationError(ts.head.getMessage) {})
       })
       .flatMap(identity)
-      .map(springfieldId => Springfield(springfieldId, springfield.domain, springfield.user, springfield.collection, springfield.playmode, springfield.timestamp))
+      .map(springfield.toOutput)
   }
 
   override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {

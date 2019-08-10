@@ -18,4 +18,9 @@ package nl.knaw.dans.easy.properties.app.model.state
 import nl.knaw.dans.easy.properties.app.model.Timestamp
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
 
-case class InputState(label: StateLabel, description: String, timestamp: Timestamp)
+case class InputState(label: StateLabel, description: String, timestamp: Timestamp) {
+
+  def toOutput(id: String): State = {
+    State(id, label, description, timestamp)
+  }
+}

@@ -97,7 +97,7 @@ class SQLStateDao(implicit connection: Connection, errorHandler: SQLErrorHandler
         }.getOrElse(new MutationError(ts.head.getMessage) {})
       })
       .flatMap(identity)
-      .map(stateId => State(stateId, state.label, state.description, state.timestamp))
+      .map(state.toOutput)
   }
 
   override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {

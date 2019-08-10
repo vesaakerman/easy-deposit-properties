@@ -97,7 +97,7 @@ class SQLContentTypeDao(implicit connection: Connection, errorHandler: SQLErrorH
         }.getOrElse(new MutationError(ts.head.getMessage) {})
       })
       .flatMap(identity)
-      .map(id => ContentType(id, contentType.value, contentType.timestamp))
+      .map(contentType.toOutput)
   }
 
   override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {

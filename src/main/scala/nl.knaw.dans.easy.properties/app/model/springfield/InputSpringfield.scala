@@ -23,4 +23,9 @@ case class InputSpringfield(domain: String,
                             collection: String,
                             playmode: SpringfieldPlayMode,
                             timestamp: Timestamp,
-                           )
+                           ) {
+
+  def toOutput(id: String): Springfield = {
+    Springfield(id, domain, user, collection, playmode, timestamp)
+  }
+}

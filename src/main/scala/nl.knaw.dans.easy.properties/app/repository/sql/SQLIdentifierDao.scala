@@ -135,7 +135,7 @@ class SQLIdentifierDao(implicit connection: Connection, errorHandler: SQLErrorHa
         }.getOrElse(new MutationError(ts.head.getMessage) {})
       })
       .flatMap(identity)
-      .map(identifierId => Identifier(identifierId, identifier.idType, identifier.idValue, identifier.timestamp))
+      .map(identifier.toOutput)
   }
 
   override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {

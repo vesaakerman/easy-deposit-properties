@@ -23,4 +23,9 @@ case class InputCuration(isNewVersion: Boolean,
                          datamanagerUserId: String,
                          datamanagerEmail: String,
                          timestamp: Timestamp,
-                        )
+                        ) {
+
+  def toOutput(id: String): Curation = {
+    Curation(id, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp)
+  }
+}

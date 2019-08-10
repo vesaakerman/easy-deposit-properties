@@ -18,4 +18,9 @@ package nl.knaw.dans.easy.properties.app.model.identifier
 import nl.knaw.dans.easy.properties.app.model.Timestamp
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 
-case class InputIdentifier(idType: IdentifierType, idValue: String, timestamp: Timestamp)
+case class InputIdentifier(idType: IdentifierType, idValue: String, timestamp: Timestamp) {
+
+  def toOutput(id: String): Identifier = {
+    Identifier(id, idType, idValue, timestamp)
+  }
+}

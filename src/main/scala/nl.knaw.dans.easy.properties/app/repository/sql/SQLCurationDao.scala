@@ -103,7 +103,7 @@ class SQLCurationDao(implicit connection: Connection, errorHandler: SQLErrorHand
         }.getOrElse(new MutationError(ts.head.getMessage) {})
       })
       .flatMap(identity)
-      .map(curationId => Curation(curationId, curation.isNewVersion, curation.isRequired, curation.isPerformed, curation.datamanagerUserId, curation.datamanagerEmail, curation.timestamp))
+      .map(curation.toOutput)
   }
 
   override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
