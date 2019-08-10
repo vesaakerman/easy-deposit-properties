@@ -70,7 +70,7 @@ class ImportPropsSpec extends TestSupportFixture
   private val datacite = mock[MockDataciteService]
   private val timeZone = DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/Amsterdam"))
   private val time = new DateTime(2019, 1, 1, 0, 0, timeZone)
-  private val importProps = new ImportProps(repo, interactor, datacite)
+  private val importProps = new ImportProps(repo, interactor, datacite, testMode = false)
 
   "loadDepositProperties" should "read the given deposit.properties file and call the repository on it" in {
     val file = testDir / "readProps" / "bf729483-5d9b-4509-a8f2-91db639fb52f" / "deposit.properties"

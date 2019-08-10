@@ -28,7 +28,7 @@ class CommandLineOptions(args: Array[String], configuration: Configuration) exte
   val description: String = s"""Service for keeping track of the deposit properties"""
   val synopsis: String =
     s"""
-       |  $printedName load-props <properties-file>
+       |  $printedName load-props [--doUpdate] <properties-file>
        |  $printedName run-service""".stripMargin
 
   version(s"$printedName v${ configuration.version }")
@@ -49,6 +49,13 @@ class CommandLineOptions(args: Array[String], configuration: Configuration) exte
       name = "<properties-file>",
       descr = "The deposit.properties file to be read.",
     )
+    val doUpdate: ScallopOption[Boolean] = opt(
+      name = "doUpdate",
+      noshort = true,
+      default = Some(false),
+      descr = "Without this argument the properties are not imported, the default is a test mode that logs the intended changes",
+    )
+
     validatePathExists(props)
     validatePathIsFile(props)
 

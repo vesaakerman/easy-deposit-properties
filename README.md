@@ -8,7 +8,7 @@ easy-deposit-properties
 SYNOPSIS
 --------
 
-    easy-deposit-properties load-props <properties-file>
+    easy-deposit-properties load-props [--doUpdate] <properties-file>
     easy-deposit-properties run-service
 
 
@@ -27,7 +27,9 @@ ARGUMENTS
        -v, --version   Show version of this program
 
     Subcommand: load-props - Load a deposit.properties file and import it in the backend repository.
-      -h, --help   Show help message
+          --doUpdate   Without this argument the properties are not imported, the
+                       default is a test mode that logs the intended changes
+      -h, --help       Show help message
     
      trailing arguments:
       <properties-file> (required)   The deposit.properties file to be read.

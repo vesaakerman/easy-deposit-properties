@@ -25,21 +25,22 @@ import cats.syntax.option._
 import cats.syntax.traverse._
 import nl.knaw.dans.easy.properties.ApplicationErrorOr
 import nl.knaw.dans.easy.properties.Command.FeedBackMessage
-import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentTypeValue, InputContentType }
-import nl.knaw.dans.easy.properties.app.model.curation.InputCuration
-import nl.knaw.dans.easy.properties.app.model.identifier.{ IdentifierType, InputIdentifier }
-import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStepLabel, InputIngestStep }
-import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, SpringfieldPlayMode }
+import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, InputContentType }
+import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
+import nl.knaw.dans.easy.properties.app.model.identifier.{ Identifier, IdentifierType, InputIdentifier }
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel, InputIngestStep }
+import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Springfield, SpringfieldPlayMode }
 import nl.knaw.dans.easy.properties.app.model.state.StateLabel.StateLabel
-import nl.knaw.dans.easy.properties.app.model.state.{ InputState, StateLabel }
+import nl.knaw.dans.easy.properties.app.model.state.{ InputState, State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiAction, DoiActionEvent, DoiRegisteredEvent, Timestamp }
-import nl.knaw.dans.easy.properties.app.repository.Repository
+import nl.knaw.dans.easy.properties.app.repository.{ MutationErrorOr, Repository }
 import nl.knaw.dans.easy.{ DataciteService, DataciteServiceException }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.lang.BooleanUtils
 import org.joda.time.DateTime
 
-class ImportProps(repository: Repository, interactor: Interactor, datacite: DataciteService) {
+class ImportProps(repository: Repository, interactor: Interactor, datacite: DataciteService, testMode: Boolean) extends DebugEnhancedLogging {
 
   private var newPropertiesProvided = false
 
@@ -53,18 +54,18 @@ class ImportProps(repository: Repository, interactor: Interactor, datacite: Data
       depositId <- getDepositId(file)
       creationTime = new DateTime(file.attributes.creationTime().toMillis)
       lastModifiedTime = new DateTime(file.attributes.lastModifiedTime().toMillis)
-      _ <- repository.deposits.store(loadDeposit(depositId, creationTime, properties))
-      state <- repository.states.store(depositId, loadState(depositId, lastModifiedTime, properties))
-      _ <- loadIngestStep(depositId, lastModifiedTime, properties, state.label).traverse(repository.ingestSteps.store(depositId, _))
-      doi <- repository.identifiers.store(depositId, loadDoi(depositId, lastModifiedTime, properties))
-      _ <- repository.identifiers.store(depositId, loadUrn(depositId, lastModifiedTime, properties))
-      _ <- repository.identifiers.store(depositId, loadFedoraIdentifier(depositId, lastModifiedTime, properties))
-      _ <- repository.identifiers.store(depositId, loadBagStoreIdentifier(depositId, lastModifiedTime, properties))
-      _ <- repository.doiRegistered.store(depositId, loadDoiRegistered(depositId, lastModifiedTime, properties, doi.idValue))
-      _ <- repository.doiAction.store(depositId, loadDoiAction(depositId, lastModifiedTime, properties))
-      _ <- loadCuration(depositId, lastModifiedTime, properties).traverse(repository.curation.store(depositId, _))
-      _ <- loadSpringfield(depositId, lastModifiedTime, properties).traverse(repository.springfield.store(depositId, _))
-      _ <- loadContentType(depositId, lastModifiedTime, properties).traverse(repository.contentType.store(depositId, _))
+      _ <- storeDeposit(loadDeposit(depositId, creationTime, properties))
+      state <- storeState(depositId, loadState(depositId, lastModifiedTime, properties))
+      _ <- loadIngestStep(depositId, lastModifiedTime, properties, state.label).traverse(storeIngestStep(depositId))
+      doi <- storeIdentifier(depositId, loadDoi(depositId, lastModifiedTime, properties))
+      _ <- storeIdentifier(depositId, loadUrn(depositId, lastModifiedTime, properties))
+      _ <- storeIdentifier(depositId, loadFedoraIdentifier(depositId, lastModifiedTime, properties))
+      _ <- storeIdentifier(depositId, loadBagStoreIdentifier(depositId, lastModifiedTime, properties))
+      _ <- storeDoiRegistered(depositId, loadDoiRegistered(depositId, lastModifiedTime, properties, doi.idValue))
+      _ <- storeDoiAction(depositId, loadDoiAction(depositId, lastModifiedTime, properties))
+      _ <- loadCuration(depositId, lastModifiedTime, properties).traverse(storeCuration(depositId, _))
+      _ <- loadSpringfield(depositId, lastModifiedTime, properties).traverse(storeSpringfield(depositId, _))
+      _ <- loadContentType(depositId, lastModifiedTime, properties).traverse(storeContentType(depositId, _))
       _ = savePropertiesIfChanged(properties)
     } yield s"Loading properties for deposit $depositId succeeded."
   }
@@ -104,7 +105,9 @@ class ImportProps(repository: Repository, interactor: Interactor, datacite: Data
   }
 
   private def storeProp[T](props: PropertiesConfiguration, key: String)(value: T): T = {
-    props.setProperty(key, value)
+    if (testMode) logger.info(s"[TESTMODE] store property $key -> $value")
+    else props.setProperty(key, value)
+
     newPropertiesProvided = true
     value
   }
@@ -292,7 +295,81 @@ class ImportProps(repository: Repository, interactor: Interactor, datacite: Data
   }
 
   private def savePropertiesIfChanged(props: PropertiesConfiguration): Unit = {
-    if (newPropertiesProvided)
-      props.save()
+    if (newPropertiesProvided) {
+      if (testMode) logger.info("[TESTMODE] save deposit properties")
+      else props.save()
+    }
+  }
+
+  private def storeDeposit(deposit: Deposit): MutationErrorOr[Deposit] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store deposit $deposit")
+      deposit.asRight
+    }
+    else repository.deposits.store(deposit)
+  }
+
+  private def storeState(depositId: DepositId, state: InputState): MutationErrorOr[State] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store state $state")
+      state.toOutput("id").asRight
+    }
+    else repository.states.store(depositId, state)
+  }
+
+  private def storeIngestStep(depositId: DepositId)(ingestStep: InputIngestStep): MutationErrorOr[IngestStep] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store ingest state $ingestStep")
+      ingestStep.toOutput("id").asRight
+    }
+    else repository.ingestSteps.store(depositId, ingestStep)
+  }
+
+  private def storeIdentifier(depositId: DepositId, identifier: InputIdentifier): MutationErrorOr[Identifier] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store identifier $identifier")
+      identifier.toOutput("id").asRight
+    }
+    else repository.identifiers.store(depositId, identifier)
+  }
+
+  private def storeDoiRegistered(depositId: DepositId, doiRegisteredEvent: DoiRegisteredEvent): MutationErrorOr[DoiRegisteredEvent] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store doi register event $doiRegisteredEvent")
+      doiRegisteredEvent.asRight
+    }
+    else repository.doiRegistered.store(depositId, doiRegisteredEvent)
+  }
+
+  private def storeDoiAction(depositId: DepositId, doiActionEvent: DoiActionEvent): MutationErrorOr[DoiActionEvent] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store doi action event $doiActionEvent")
+      doiActionEvent.asRight
+    }
+    else repository.doiAction.store(depositId, doiActionEvent)
+  }
+
+  private def storeCuration(depositId: DepositId, curation: InputCuration): MutationErrorOr[Curation] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store curation $curation")
+      curation.toOutput("id").asRight
+    }
+    else repository.curation.store(depositId, curation)
+  }
+
+  private def storeSpringfield(depositId: DepositId, springfield: InputSpringfield): MutationErrorOr[Springfield] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store springfield $springfield")
+      springfield.toOutput("id").asRight
+    }
+    else repository.springfield.store(depositId, springfield)
+  }
+
+  private def storeContentType(depositId: DepositId, contentType: InputContentType): MutationErrorOr[ContentType] = {
+    if (testMode) {
+      logger.info(s"[TESTMODE] store content type $contentType")
+      contentType.toOutput("id").asRight
+    }
+    else repository.contentType.store(depositId, contentType)
   }
 }

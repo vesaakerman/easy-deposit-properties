@@ -48,13 +48,13 @@ object Command extends App with DebugEnhancedLogging {
   private def runSubcommand(): Try[FeedBackMessage] = {
     commandLine.subcommand
       .collect {
-        case loadProps @ commandLine.loadProps => runLoadProps(loadProps.properties())
+        case loadProps @ commandLine.loadProps => runLoadProps(loadProps.properties(), loadProps.doUpdate())
         case commandLine.runService => runAsService()
       }
       .getOrElse(Failure(new IllegalArgumentException(s"Unknown command: ${ commandLine.subcommand }")))
   }
 
-  private def runLoadProps(propsFile: File): Try[FeedBackMessage] = {
+  private def runLoadProps(propsFile: File, doUpdate: Boolean): Try[FeedBackMessage] = {
     val database = new DatabaseAccess(configuration.databaseConfig)
     implicit val sqlErrorHandler: SQLErrorHandler = SQLErrorHandler(configuration.databaseConfig)
 
@@ -65,6 +65,7 @@ object Command extends App with DebugEnhancedLogging {
           repository = new SQLRepo().repository,
           interactor = new Interactor,
           datacite = new DataciteService(configuration.dataciteConfig),
+          testMode = !doUpdate,
         )
           .loadDepositProperties(propsFile)
           .fold(_.msg, identity)
