@@ -98,7 +98,7 @@ class SQLSpringfieldDao(implicit connection: Connection, errorHandler: SQLErrorH
         ts.collectFirst {
           case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
           case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, springfield.timestamp, "springfield")
-        }.getOrElse(new MutationError(ts.head.getMessage) {})
+        }.getOrElse(MutationError(ts.head.getMessage))
       })
       .flatMap(identity)
       .map(springfield.toOutput)

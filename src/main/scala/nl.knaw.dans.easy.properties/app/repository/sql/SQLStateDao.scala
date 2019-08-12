@@ -94,7 +94,7 @@ class SQLStateDao(implicit connection: Connection, errorHandler: SQLErrorHandler
         ts.collectFirst {
           case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
           case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, state.timestamp, "state")
-        }.getOrElse(new MutationError(ts.head.getMessage) {})
+        }.getOrElse(MutationError(ts.head.getMessage))
       })
       .flatMap(identity)
       .map(state.toOutput)

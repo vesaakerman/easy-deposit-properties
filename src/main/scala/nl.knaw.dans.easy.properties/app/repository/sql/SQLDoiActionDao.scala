@@ -72,7 +72,7 @@ class SQLDoiActionDao(implicit connection: Connection, errorHandler: SQLErrorHan
         ts.collectFirst {
           case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
           case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, action.timestamp, "doi action event")
-        }.getOrElse(new MutationError(ts.head.getMessage) {})
+        }.getOrElse(MutationError(ts.head.getMessage))
       })
       .map(_ => action)
   }

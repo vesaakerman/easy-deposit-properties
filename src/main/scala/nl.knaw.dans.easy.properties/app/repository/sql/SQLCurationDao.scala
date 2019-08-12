@@ -100,7 +100,7 @@ class SQLCurationDao(implicit connection: Connection, errorHandler: SQLErrorHand
         ts.collectFirst {
           case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
           case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, curation.timestamp, "curation")
-        }.getOrElse(new MutationError(ts.head.getMessage) {})
+        }.getOrElse(MutationError(ts.head.getMessage))
       })
       .flatMap(identity)
       .map(curation.toOutput)

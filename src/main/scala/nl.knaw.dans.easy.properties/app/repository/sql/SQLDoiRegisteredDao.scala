@@ -72,7 +72,7 @@ class SQLDoiRegisteredDao(implicit connection: Connection, errorHandler: SQLErro
         ts.collectFirst {
           case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
           case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, registered.timestamp, "doi registered event")
-        }.getOrElse(new MutationError(ts.head.getMessage) {})
+        }.getOrElse(MutationError(ts.head.getMessage))
       })
       .map(_ => registered)
   }

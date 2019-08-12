@@ -27,14 +27,17 @@ package object repository {
   type QueryErrorOr[T] = Either[QueryError, T]
   type MutationErrorOr[T] = Either[MutationError, T]
 
-  abstract class QueryError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
+  sealed abstract class QueryError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
   case class DepositDoesNotExistError(depositId: DepositId) extends QueryError(s"Deposit $depositId does not exist.")
   case class InvalidValueError(override val msg: String) extends QueryError(msg)
   object InvalidValueError {
     def apply(ts: Seq[Throwable]): InvalidValueError = InvalidValueError(ts.map(_.getMessage).mkString("\n"))
   }
 
-  abstract class MutationError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
+  sealed abstract class MutationError(val msg: String) extends Exception(msg) with ApplicationError with UserFacingError
+  object MutationError {
+    def apply(msg: String): MutationError = new MutationError(msg) {}
+  }
   case class NoSuchDepositError(depositId: DepositId) extends MutationError(s"Deposit $depositId does not exist.")
   case class DepositAlreadyExistsError(depositId: DepositId) extends MutationError(s"Deposit $depositId already exist.")
   case class DepositIdAndTimestampAlreadyExistError(depositId: DepositId, timestamp: Timestamp, objName: String) extends MutationError(s"Cannot insert this $objName: timestamp '$timestamp' is already used for another $objName associated to depositId $depositId.")

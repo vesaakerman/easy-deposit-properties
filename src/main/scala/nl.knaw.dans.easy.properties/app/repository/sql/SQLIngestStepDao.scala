@@ -94,7 +94,7 @@ class SQLIngestStepDao(implicit connection: Connection, errorHandler: SQLErrorHa
         ts.collectFirst {
           case t if errorHandler.isForeignKeyError(t) => NoSuchDepositError(id)
           case t if errorHandler.isUniquenessConstraintError(t) => DepositIdAndTimestampAlreadyExistError(id, step.timestamp, "ingest step")
-        }.getOrElse(new MutationError(ts.head.getMessage) {})
+        }.getOrElse(MutationError(ts.head.getMessage))
       })
       .flatMap(identity)
       .map(step.toOutput)
