@@ -39,6 +39,7 @@ package object repository {
     def apply(msg: String): MutationError = new MutationError(msg) {}
   }
   case class NoSuchDepositError(depositId: DepositId) extends MutationError(s"Deposit $depositId does not exist.")
+  case class BagNameAlreadySetError(depositId: DepositId) extends MutationError(s"Deposit $depositId already has a bagName set. This cannot be done twice.")
   case class DepositAlreadyExistsError(depositId: DepositId) extends MutationError(s"Deposit $depositId already exist.")
   case class DepositIdAndTimestampAlreadyExistError(depositId: DepositId, timestamp: Timestamp, objName: String) extends MutationError(s"Cannot insert this $objName: timestamp '$timestamp' is already used for another $objName associated to depositId $depositId.")
   case class IdentifierAlreadyExistsError(depositId: DepositId, identifierType: IdentifierType) extends MutationError(s"Identifier $identifierType already exists for depositId $depositId.")

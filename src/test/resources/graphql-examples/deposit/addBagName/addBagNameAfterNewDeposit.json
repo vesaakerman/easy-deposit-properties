@@ -1,0 +1,16 @@
+{
+  "data": {
+    "addBagName": {
+      "clientMutationId": "my-mutation-id",
+      "deposit": {
+        "id": "RGVwb3NpdDowMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDI=",
+        "depositId": "00000000-0000-0000-0000-000000000002",
+        "bagName": "bag2",
+        "creationTimestamp": "2019-02-02T00:00:00.000Z",
+        "depositor": {
+          "depositorId": "user001"
+        }
+      }
+    }
+  }
+}

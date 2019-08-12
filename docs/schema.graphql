@@ -1,9 +1,23 @@
-input AddDepositInput {
+input AddBagNameInput {
   """The deposit's identifier."""
   depositId: UUID!
 
   """The name of the deposited bag."""
   bagName: String!
+  clientMutationId: String
+}
+
+type AddBagNamePayload {
+  deposit: Deposit
+  clientMutationId: String
+}
+
+input AddDepositInput {
+  """The deposit's identifier."""
+  depositId: UUID!
+
+  """The name of the deposited bag."""
+  bagName: String
 
   """The timestamp at which this deposit was created."""
   creationTimestamp: DateTime!
@@ -1005,6 +1019,9 @@ type IsNewVersionEvent {
 type Mutation {
   """Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."""
   addDeposit(input: AddDepositInput!): AddDepositPayload
+
+  """Register the bag's name for the deposit identified by 'id'."""
+  addBagName(input: AddBagNameInput!): AddBagNamePayload
 
   """Update the state of the deposit identified by 'id'."""
   updateState(input: UpdateStateInput!): UpdateStatePayload

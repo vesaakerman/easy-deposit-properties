@@ -21,7 +21,7 @@ import cats.scalatest.EitherValues
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, SeriesFilter }
-import nl.knaw.dans.easy.properties.app.repository.{ DepositAlreadyExistsError, DepositFilters, InvalidValueError }
+import nl.knaw.dans.easy.properties.app.repository.{ BagNameAlreadySetError, DepositAlreadyExistsError, DepositFilters, InvalidValueError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 
@@ -223,6 +223,46 @@ class SQLDepositDaoSpec extends TestSupportFixture
     deposits.find(Seq(depositId6)).value should contain only (depositId6 -> Some(deposit6))
   }
 
+  "storeBagName" should "set the bagName if it wasn't already set" in {
+    val deposits = new SQLDepositDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+    val deposit6 = Deposit(depositId6, None, new DateTime(2019, 6, 6, 0, 0, timeZone), "user003")
+
+    deposits.store(deposit6).value shouldBe deposit6
+    deposits.find(Seq(depositId6)).value should contain only (depositId6 -> Some(deposit6))
+    deposits.storeBagName(depositId6, "bag6").value shouldBe depositId6
+    deposits.find(Seq(depositId6)).value should contain only (depositId6 -> Some(deposit6.copy(bagName = Some("bag6"))))
+  }
+
+  it should "set the bagName if its value in the database currently is an empty string" in {
+    val deposits = new SQLDepositDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+    val deposit6 = Deposit(depositId6, Some(""), new DateTime(2019, 6, 6, 0, 0, timeZone), "user003")
+
+    deposits.store(deposit6).value shouldBe deposit6
+    deposits.find(Seq(depositId6)).value should contain only (depositId6 -> Some(deposit6))
+    deposits.storeBagName(depositId6, "bag6").value shouldBe depositId6
+    deposits.find(Seq(depositId6)).value should contain only (depositId6 -> Some(deposit6.copy(bagName = Some("bag6"))))
+  }
+
+  it should "fail to set the bagName when the deposit doesn't exist" in {
+    val deposits = new SQLDepositDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+
+    deposits.storeBagName(depositId6, "bag6").leftValue shouldBe NoSuchDepositError(depositId6)
+  }
+  
+  it should "fail to set the bagName when the deposit exists and the bagName is already set" in {
+    val deposits = new SQLDepositDao
+    val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
+    val deposit6 = Deposit(depositId6, Some("bag6"), new DateTime(2019, 6, 6, 0, 0, timeZone), "user003")
+
+    deposits.store(deposit6).value shouldBe deposit6
+    deposits.find(Seq(depositId6)).value should contain only (depositId6 -> Some(deposit6))
+    deposits.storeBagName(depositId6, "another name").leftValue shouldBe BagNameAlreadySetError(depositId6)
+    deposits.find(Seq(depositId6)).value should contain only (depositId6 -> Some(deposit6))
+  }
+  
   "lastModified" should "find the 'last modified' timestamp for each of the given depositIds" in {
     val deposits = new SQLDepositDao
 

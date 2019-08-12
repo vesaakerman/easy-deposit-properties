@@ -1,0 +1,14 @@
+mutation {
+    addBagName(input: {clientMutationId: "my-mutation-id", depositId: "00000000-0000-0000-0000-000000000002", bagName: "bag2"}) {
+        clientMutationId
+        deposit {
+            id
+            depositId
+            bagName
+            creationTimestamp
+            depositor {
+                depositorId
+            }
+        }
+    }
+}

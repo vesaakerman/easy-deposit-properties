@@ -27,5 +27,7 @@ trait DepositDao {
 
   def store(deposit: Deposit): MutationErrorOr[Deposit]
 
+  def storeBagName(depositId: DepositId, bagName: String): MutationErrorOr[DepositId]
+
   def lastModified(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]]
 }

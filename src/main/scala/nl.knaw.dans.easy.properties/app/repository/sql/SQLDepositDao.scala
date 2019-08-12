@@ -25,7 +25,7 @@ import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Timestamp }
-import nl.knaw.dans.easy.properties.app.repository.{ DepositAlreadyExistsError, DepositDao, DepositFilters, InvalidValueError, MutationErrorOr, QueryErrorOr }
+import nl.knaw.dans.easy.properties.app.repository.{ BagNameAlreadySetError, DepositAlreadyExistsError, DepositDao, DepositFilters, InvalidValueError, MutationError, MutationErrorOr, NoSuchDepositError, QueryErrorOr }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource.managed
 
@@ -90,6 +90,34 @@ class SQLDepositDao(implicit connection: Connection) extends DepositDao with Com
       .either
       .leftMap(_ => DepositAlreadyExistsError(deposit.id))
       .map(_ => deposit)
+  }
+
+  override def storeBagName(depositId: DepositId, bagName: String): MutationErrorOr[DepositId] = {
+    trace(depositId, bagName)
+    val query = QueryGenerator.storeBagName
+    
+    managed(connection.prepareStatement(query))
+      .map(prepStatement => {
+        prepStatement.setString(1, bagName)
+        prepStatement.setString(2, depositId.toString)
+        prepStatement.executeUpdate()
+      })
+      .either
+      .either
+      .leftMap(_ => NoSuchDepositError(depositId))
+      .flatMap {
+        case 0 =>
+          for {
+            deposits <- find(Seq(depositId)).leftMap(error => MutationError(error.msg)) // not expected to have an error here, but just to be sure
+            depId <- deposits.toMap.get(depositId).flatten
+              .map(_ => BagNameAlreadySetError(depositId)) // deposit was found, this means the bagName was already set for this deposit
+              .getOrElse(NoSuchDepositError(depositId)) // deposit did not occur in search results; cannot set bagName for not-existing deposit
+              .asLeft[DepositId]
+              .map(_ => depositId)
+          } yield depId
+        case 1 => depositId.asRight
+        case n => MutationError(s"Storing the bag's name caused $n rows to be updated. Only one updated row was expected.").asLeft
+      }
   }
 
   override def lastModified(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Timestamp])]] = {

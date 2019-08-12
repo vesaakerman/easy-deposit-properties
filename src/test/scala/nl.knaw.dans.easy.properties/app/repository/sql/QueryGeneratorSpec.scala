@@ -487,6 +487,10 @@ class QueryGeneratorSpec extends TestSupportFixture {
     QueryGenerator.storeDeposit shouldBe "INSERT INTO Deposit (depositId, bagName, creationTimestamp, depositorId) VALUES (?, ?, ?, ?);"
   }
 
+  "storeBagName" should "yield the query for inserting a deposit's bagName into the database" in {
+    QueryGenerator.storeBagName shouldBe "UPDATE Deposit SET bagName = ? WHERE depositId = ? AND (bagName IS NULL OR bagName='');"
+  }
+
   "storeCuration" should "yield the query for inserting a Curation into the database" in {
     QueryGenerator.storeCuration shouldBe "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
   }

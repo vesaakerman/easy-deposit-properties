@@ -26,7 +26,7 @@ import nl.knaw.dans.easy.properties.app.model.springfield.{ InputSpringfield, Sp
 import nl.knaw.dans.easy.properties.app.model.state.{ InputState, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DepositorId, DoiAction, DoiActionEvent, DoiRegisteredEvent, Timestamp }
 import sangria.relay.Mutation
-import sangria.schema.{ Action, BooleanType, Context, Field, InputField, InputObjectType, ObjectType, OptionType, StringType, fields }
+import sangria.schema.{ OptionInputType, Action, BooleanType, Context, Field, InputField, InputObjectType, ObjectType, OptionType, StringType, fields }
 
 trait MutationType {
   this: DepositType
@@ -40,6 +40,7 @@ trait MutationType {
     with Scalars =>
 
   case class AddDepositPayload(clientMutationId: Option[String], depositId: DepositId) extends Mutation
+  case class AddBagNamePayload(clientMutationId: Option[String], depositId: DepositId) extends Mutation
   case class UpdateStatePayload(clientMutationId: Option[String], objectId: String) extends Mutation
   case class UpdateIngestStepPayload(clientMutationId: Option[String], objectId: String) extends Mutation
   case class AddIdentifierPayload(clientMutationId: Option[String], objectId: String) extends Mutation
@@ -54,6 +55,14 @@ trait MutationType {
     description = Some("The deposit's identifier."),
     defaultValue = None,
     fieldType = UUIDType,
+    astDirectives = Vector.empty,
+    astNodes = Vector.empty,
+  )
+  private val bagNameOptionInputField: InputField[Option[String]] = InputField(
+    name = "bagName",
+    description = Some("The name of the deposited bag."),
+    defaultValue = None,
+    fieldType = OptionInputType(StringType),
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
@@ -287,6 +296,11 @@ trait MutationType {
     fieldType = OptionType(DepositType),
     resolve = ctx => DepositResolver.depositById(ctx.value.depositId)(ctx.ctx),
   )
+  private val depositForAddBagNameField: Field[DataContext, AddBagNamePayload] = Field(
+    name = "deposit",
+    fieldType = OptionType(DepositType),
+    resolve = ctx => DepositResolver.depositById(ctx.value.depositId)(ctx.ctx),
+  )
   private val stateField: Field[DataContext, UpdateStatePayload] = Field(
     name = "state",
     fieldType = OptionType(StateType),
@@ -337,7 +351,7 @@ trait MutationType {
     fieldDescription = Some("Register a new deposit with 'id', 'creationTimestamp' and 'depositId'."),
     inputFields = List(
       depositIdInputField,
-      bagNameInputField,
+      bagNameOptionInputField,
       creationTimestampInputField,
       depositorIdInputField,
     ),
@@ -345,6 +359,22 @@ trait MutationType {
       depositField,
     ),
     mutateAndGetPayload = addDeposit,
+  )
+  private val addBagNameField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, AddBagNamePayload, InputObjectType.DefaultInput](
+    fieldName = "addBagName",
+    typeName = "AddBagName",
+    tags = List(
+      RequiresAuthentication,
+    ),
+    fieldDescription = Some("Register the bag's name for the deposit identified by 'id'."),
+    inputFields = List(
+      depositIdInputField,
+      bagNameInputField,
+    ),
+    outputFields = fields(
+      depositForAddBagNameField,
+    ),
+    mutateAndGetPayload = addBagName,
   )
   private val updateStateField: Field[DataContext, Unit] = Mutation.fieldWithClientMutationId[DataContext, Unit, UpdateStatePayload, InputObjectType.DefaultInput](
     fieldName = "updateState",
@@ -496,13 +526,26 @@ trait MutationType {
     context.ctx.repo.deposits
       .store(Deposit(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
-        bagName = Option(input(bagNameInputField.name).asInstanceOf[String]),
+        bagName = input.get(bagNameOptionInputField.name).flatMap(_.asInstanceOf[Option[String]]),
         creationTimestamp = input(creationTimestampInputField.name).asInstanceOf[Timestamp],
         depositorId = input(depositorIdInputField.name).asInstanceOf[String],
       ))
       .map(deposit => AddDepositPayload(
         clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
         depositId = deposit.id,
+      ))
+      .toTry
+  }
+
+  private def addBagName(input: InputObjectType.DefaultInput, context: Context[DataContext, Unit]): Action[DataContext, AddBagNamePayload] = {
+    context.ctx.repo.deposits
+      .storeBagName(
+        depositId = input(depositIdInputField.name).asInstanceOf[DepositId],
+        bagName = input(bagNameInputField.name).asInstanceOf[String],
+      )
+      .map(depositId => AddBagNamePayload(
+        clientMutationId = input.get(Mutation.ClientMutationIdFieldName).flatMap(_.asInstanceOf[Option[String]]),
+        depositId = depositId,
       ))
       .toTry
   }
@@ -649,6 +692,7 @@ trait MutationType {
     description = "The root query for implementing GraphQL mutations.",
     fields = fields[DataContext, Unit](
       addDepositField,
+      addBagNameField,
       updateStateField,
       updateIngestStepField,
       addIdentifierField,
