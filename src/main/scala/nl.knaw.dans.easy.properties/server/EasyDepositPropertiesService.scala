@@ -20,6 +20,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.scalatra._
+import org.scalatra.CorsSupport._
 import org.scalatra.servlet.ScalatraListener
 
 import scala.util.Try
@@ -37,6 +38,11 @@ class EasyDepositPropertiesService(serverPort: Int,
                 override def init(context: ServletContext): Unit = {
                   for ((path, servlet) <- servlets)
                     context.mount(servlet, path)
+
+                  context.initParameters(AllowedOriginsKey) = "*"
+                  context.initParameters(AllowedMethodsKey) = "GET,POST,HEAD"
+                  context.initParameters(AllowedHeadersKey) = "Content-Type,Accept,Authorization"
+                  context.initParameters(AllowCredentialsKey) = "true"
                 }
               })
             }

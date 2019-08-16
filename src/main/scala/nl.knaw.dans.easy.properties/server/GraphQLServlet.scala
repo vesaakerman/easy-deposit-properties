@@ -41,6 +41,7 @@ class GraphQLServlet[Ctx, Conn](schema: Schema[Ctx, Unit],
                                 exceptionHandler: ExceptionHandler = defaultExceptionHandler,
                                 middlewares: List[Middleware[Ctx]] = List.empty)
   extends ScalatraServlet
+    with CorsSupport
     with FutureSupport
     with ServletLogger
     with MaskedLogFormatter
