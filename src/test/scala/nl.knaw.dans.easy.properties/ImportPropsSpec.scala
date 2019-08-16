@@ -94,6 +94,57 @@ class ImportPropsSpec extends TestSupportFixture
     importProps.loadDepositProperties(file) shouldBe right
   }
 
+  it should "find the bag name based on the file system when it isn't given in deposit.properties" in {
+    val file = testDir / "file_system_bag_name" / "ae618372-4c8a-33f8-97e1-80ca528ea41e" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
+
+    inSequence {
+      depositDao.store _ expects where(isDeposit(Deposit(depositId, "my-bag".some, time, "user001"))) returning Deposit(depositId, "my-bag".some, time, "user001").asRight
+      stateDao.store _ expects(depositId, InputState(StateLabel.SUBMITTED, "my description", lastModified)) returning State("my-id", StateLabel.SUBMITTED, "my description", lastModified).asRight
+      ingestStepDao.store _ expects(depositId, InputIngestStep(IngestStepLabel.BAGSTORE, lastModified)) returning IngestStep("my-id", IngestStepLabel.BAGSTORE, lastModified).asRight
+      identifierDao.store _ expects(depositId, InputIdentifier(IdentifierType.DOI, "my-doi-value", lastModified)) returning Identifier("my-id", IdentifierType.DOI, "my-doi-value", lastModified).asRight
+      identifierDao.store _ expects(depositId, InputIdentifier(IdentifierType.URN, "my-urn-value", lastModified)) returning Identifier("my-id", IdentifierType.URN, "my-urn-value", lastModified).asRight
+      identifierDao.store _ expects(depositId, InputIdentifier(IdentifierType.FEDORA, "my-fedora-value", lastModified)) returning Identifier("my-id", IdentifierType.FEDORA, "my-fedora-value", lastModified).asRight
+      identifierDao.store _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
+      doiRegisteredDao.store _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
+      doiActionDao.store _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
+      curationDao.store _ expects(depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
+      springfieldDao.store _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
+      contentTypeDao.store _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
+    }
+
+    importProps.loadDepositProperties(file) shouldBe right
+
+    props(file) should contain(
+      "bag-store.bag-name" -> "my-bag"
+    )
+  }
+
+  it should "don't find the bag name based on the file system when it isn't given in deposit.properties and multiple directories are siblings of this file" in {
+    val file = testDir / "file_system_bag_name" / "9d507261-3b79-22e7-86d0-6fb9417d930d" / "deposit.properties"
+    val (depositId, _, lastModified) = fileProps(file)
+
+    inSequence {
+      depositDao.store _ expects where(isDeposit(Deposit(depositId, none, time, "user001"))) returning Deposit(depositId, none, time, "user001").asRight
+      stateDao.store _ expects(depositId, InputState(StateLabel.SUBMITTED, "my description", lastModified)) returning State("my-id", StateLabel.SUBMITTED, "my description", lastModified).asRight
+      ingestStepDao.store _ expects(depositId, InputIngestStep(IngestStepLabel.BAGSTORE, lastModified)) returning IngestStep("my-id", IngestStepLabel.BAGSTORE, lastModified).asRight
+      identifierDao.store _ expects(depositId, InputIdentifier(IdentifierType.DOI, "my-doi-value", lastModified)) returning Identifier("my-id", IdentifierType.DOI, "my-doi-value", lastModified).asRight
+      identifierDao.store _ expects(depositId, InputIdentifier(IdentifierType.URN, "my-urn-value", lastModified)) returning Identifier("my-id", IdentifierType.URN, "my-urn-value", lastModified).asRight
+      identifierDao.store _ expects(depositId, InputIdentifier(IdentifierType.FEDORA, "my-fedora-value", lastModified)) returning Identifier("my-id", IdentifierType.FEDORA, "my-fedora-value", lastModified).asRight
+      identifierDao.store _ expects(depositId, InputIdentifier(IdentifierType.BAG_STORE, "my-bag-store-value", lastModified)) returning Identifier("my-id", IdentifierType.BAG_STORE, "my-bag-store-value", lastModified).asRight
+      doiRegisteredDao.store _ expects(depositId, DoiRegisteredEvent(value = true, lastModified)) returning DoiRegisteredEvent(value = true, lastModified).asRight
+      doiActionDao.store _ expects(depositId, DoiActionEvent(DoiAction.UPDATE, lastModified)) returning DoiActionEvent(DoiAction.UPDATE, lastModified).asRight
+      curationDao.store _ expects(depositId, InputCuration(isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified)) returning Curation("my-id", isNewVersion = true, isRequired = false, isPerformed = false, "archie001", "does.not.exists@dans.knaw.nl", lastModified).asRight
+      springfieldDao.store _ expects(depositId, InputSpringfield("domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified)) returning Springfield("my-id", "domain", "user", "collection", SpringfieldPlayMode.CONTINUOUS, lastModified).asRight
+      contentTypeDao.store _ expects(depositId, InputContentType(ContentTypeValue.ZIP, lastModified)) returning ContentType("my-id", ContentTypeValue.ZIP, lastModified).asRight
+    }
+
+    importProps.loadDepositProperties(file) shouldBe right
+
+    props(file).toMap should not contain key
+    "bag-store.bag-name"
+  }
+
   it should "interact with the user when necessary values don't exist" in {
     val file = testDir / "interact_max" / "0eb8c353-4b41-4db7-9b1c-15e06a69c143" / "deposit.properties"
     val (depositId, creationTime, lastModified) = fileProps(file)

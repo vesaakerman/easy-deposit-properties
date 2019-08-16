@@ -54,7 +54,7 @@ class ImportProps(repository: Repository, interactor: Interactor, datacite: Data
       depositId <- getDepositId(file)
       creationTime = new DateTime(file.attributes.creationTime().toMillis)
       lastModifiedTime = new DateTime(file.attributes.lastModifiedTime().toMillis)
-      _ <- storeDeposit(loadDeposit(depositId, creationTime, properties))
+      _ <- storeDeposit(loadDeposit(file.parent, depositId, creationTime, properties))
       state <- storeState(depositId, loadState(depositId, lastModifiedTime, properties))
       _ <- loadIngestStep(depositId, lastModifiedTime, properties, state.label).traverse(storeIngestStep(depositId))
       doi <- storeIdentifier(depositId, loadDoi(depositId, lastModifiedTime, properties))
@@ -118,8 +118,11 @@ class ImportProps(repository: Repository, interactor: Interactor, datacite: Data
     value
   }
 
-  private def loadDeposit(depositId: DepositId, creationTime: Timestamp, props: PropertiesConfiguration): Deposit = {
-    val bagName = Option(props.getString("bag-store.bag-name"))
+  private def loadDeposit(deposit: File, depositId: DepositId, creationTime: Timestamp, props: PropertiesConfiguration): Deposit = {
+    val bagName = Option(props.getString("bag-store.bag-name")).orElse {
+      retrieveBagNameFromFilesystem(deposit)
+        .map(storeProp(props, "bag-store.bag-name"))
+    }
     val creationTimestamp = Option(props.getString("creation.timestamp"))
       .map(s => Either.catchOnly[IllegalArgumentException] { DateTime.parse(s) }
         .getOrElse {
@@ -136,6 +139,14 @@ class ImportProps(repository: Repository, interactor: Interactor, datacite: Data
       }
 
     Deposit(depositId, bagName, creationTimestamp, depositorId)
+  }
+
+  private def retrieveBagNameFromFilesystem(deposit: File): Option[String] = {
+    val directories = deposit.children.filter(_.isDirectory).toList
+    if (directories.size == 1)
+      directories.headOption.map(_.name)
+    else
+      none
   }
 
   private def loadState(depositId: DepositId, timestamp: Timestamp, props: PropertiesConfiguration): InputState = {
