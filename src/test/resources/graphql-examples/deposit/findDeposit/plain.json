@@ -71,10 +71,10 @@
         "email": "does.not.exists1@dans.knaw.nl",
         "timestamp": "2019-01-01T03:03:00.000Z"
       },
-      "isNewVersion": false,
+      "isNewVersion": null,
       "isNewVersionEvents": [
         {
-          "value": false,
+          "value": null,
           "timestamp": "2019-01-01T00:00:00.000Z"
         }
       ],

@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.util.UUID
 
+import cats.syntax.option._
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import nl.knaw.dans.easy.properties.app.model.curation.{ Curation, InputCuration }
 import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, InvalidValueError, NoSuchDepositError }
@@ -106,8 +107,20 @@ class SQLCurationDaoSpec extends TestSupportFixture
   "store" should "insert a new curation into the database" in {
     val curations = new SQLCurationDao
     val timestamp = new DateTime(2019, 7, 20, 21, 12, timeZone)
-    val inputCuration = InputCuration(isNewVersion = true, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
-    val expectedCuration = Curation("10", isNewVersion = true, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
+    val inputCuration = InputCuration(isNewVersion = true.some, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
+    val expectedCuration = Curation("10", isNewVersion = true.some, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
+
+    curations.store(depositId1, inputCuration).value shouldBe expectedCuration
+    curations.getById(Seq("10")).value should contain only ("10" -> Some(expectedCuration))
+    curations.getCurrent(Seq(depositId1)).value should contain only (depositId1 -> Some(expectedCuration))
+    curations.getAll(Seq(depositId1)).value.toMap.apply(depositId1) should contain(expectedCuration)
+  }
+
+  it should "insert a new curation into the database with NULL for isNewVersion" in {
+    val curations = new SQLCurationDao
+    val timestamp = new DateTime(2019, 7, 20, 21, 12, timeZone)
+    val inputCuration = InputCuration(isNewVersion = none, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
+    val expectedCuration = Curation("10", isNewVersion = none, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
 
     curations.store(depositId1, inputCuration).value shouldBe expectedCuration
     curations.getById(Seq("10")).value should contain only ("10" -> Some(expectedCuration))
@@ -119,7 +132,7 @@ class SQLCurationDaoSpec extends TestSupportFixture
     val curations = new SQLCurationDao
     val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
     val timestamp = new DateTime(2019, 7, 18, 22, 38, timeZone)
-    val inputCuration = InputCuration(isNewVersion = true, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
+    val inputCuration = InputCuration(isNewVersion = true.some, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
 
     curations.store(depositId6, inputCuration).leftValue shouldBe NoSuchDepositError(depositId6)
   }
@@ -128,8 +141,8 @@ class SQLCurationDaoSpec extends TestSupportFixture
     val curations = new SQLCurationDao
     val depositId = depositId1
     val timestamp = new DateTime(2019, 1, 1, 5, 5, timeZone)
-    val inputCuration1 = InputCuration(isNewVersion = true, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
-    val inputCuration2 = InputCuration(isNewVersion = false, isRequired = false, isPerformed = true, "foo", "foo@bar.com", timestamp)
+    val inputCuration1 = InputCuration(isNewVersion = true.some, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
+    val inputCuration2 = InputCuration(isNewVersion = false.some, isRequired = false, isPerformed = true, "foo", "foo@bar.com", timestamp)
 
     curations.store(depositId, inputCuration1) shouldBe right
     curations.store(depositId, inputCuration2).leftValue shouldBe DepositIdAndTimestampAlreadyExistError(depositId, timestamp, "curation")

@@ -57,7 +57,7 @@ object CurationResolver {
 
   def isNewVersion(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Boolean]] = {
     DeferredValue(currentCurationsFetcher.defer(depositId))
-      .map { case (_, optCuration) => optCuration.map(_.getIsNewVersionEvent.isNewVersion) }
+      .map { case (_, optCuration) => optCuration.flatMap(_.getIsNewVersionEvent.isNewVersion) }
   }
 
   def allIsNewVersionEvents(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[IsNewVersionEvent]] = {

@@ -60,11 +60,11 @@ VALUES ('00000000-0000-0000-0000-000000000001', 'bag-store', '00000000-0000-0000
        ('00000000-0000-0000-0000-000000000005', 'bag-store', '00000000-0000-0000-0000-000000000005', '2019-05-05 00:00:00');
 
 INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp)
-VALUES ('00000000-0000-0000-0000-000000000001', 'false', 'true', 'false', 'archie002', 'does.not.exists2@dans.knaw.nl', '2019-01-01 00:00:00'),
-       ('00000000-0000-0000-0000-000000000001', 'false', 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-01-01 03:03:00'),
-       ('00000000-0000-0000-0000-000000000001', 'false', 'true', 'true' , 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-01-01 04:04:00'),
-       ('00000000-0000-0000-0000-000000000003', 'true' , 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-03-03 00:00:00'),
-       ('00000000-0000-0000-0000-000000000003', 'true' , 'true', 'false', 'archie002', 'does.not.exists2@dans.knaw.nl', '2019-03-03 04:04:00'),
+VALUES ('00000000-0000-0000-0000-000000000001', null   , 'true', 'false', 'archie002', 'does.not.exists2@dans.knaw.nl', '2019-01-01 00:00:00'),
+       ('00000000-0000-0000-0000-000000000001', null   , 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-01-01 03:03:00'),
+       ('00000000-0000-0000-0000-000000000001', null   , 'true', 'true' , 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-01-01 04:04:00'),
+       ('00000000-0000-0000-0000-000000000003', null   , 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-03-03 00:00:00'),
+       ('00000000-0000-0000-0000-000000000003', null   , 'true', 'false', 'archie002', 'does.not.exists2@dans.knaw.nl', '2019-03-03 04:04:00'),
        ('00000000-0000-0000-0000-000000000003', 'true' , 'true', 'true' , 'archie002', 'does.not.exists2@dans.knaw.nl', '2019-03-03 06:06:00'),
        ('00000000-0000-0000-0000-000000000004', 'false', 'true', 'false', 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-04-04 00:00:00'),
        ('00000000-0000-0000-0000-000000000004', 'false', 'true', 'true' , 'archie001', 'does.not.exists1@dans.knaw.nl', '2019-04-04 04:04:00'),

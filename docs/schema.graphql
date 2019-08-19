@@ -137,7 +137,7 @@ Curation event containing the data manager and status of curation for this depos
 """
 type Curation implements Node {
   """True if the deposit is a new version."""
-  isNewVersion: Boolean!
+  isNewVersion: Boolean
 
   """True if curation by a data manager is required."""
   curationRequired: Boolean!
@@ -1009,7 +1009,7 @@ State whether this deposit is a new version, requiring a new DOI and deposit agr
 """
 type IsNewVersionEvent {
   """True if the deposit is a new version."""
-  value: Boolean!
+  value: Boolean
 
   """The timestamp at which was decided that this is a new version."""
   timestamp: DateTime!
@@ -1224,7 +1224,7 @@ input SetCurationInput {
   datamanagerEmail: String!
 
   """True if the deposit is a new version."""
-  isNewVersion: Boolean!
+  isNewVersion: Boolean
 
   """True if curation by a data manager is required."""
   isCurationRequired: Boolean!

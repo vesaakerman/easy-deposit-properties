@@ -19,7 +19,7 @@ import nl.knaw.dans.easy.properties.app.model.SeriesFilter.SeriesFilter
 
 sealed abstract class CurationEvent[T](value: T, timestamp: Timestamp) extends Timestamped
 
-case class IsNewVersionEvent(isNewVersion: Boolean, timestamp: Timestamp) extends CurationEvent(isNewVersion, timestamp)
+case class IsNewVersionEvent(isNewVersion: Option[Boolean], timestamp: Timestamp) extends CurationEvent(isNewVersion, timestamp)
 case class CurationRequiredEvent(curationRequired: Boolean, timestamp: Timestamp) extends CurationEvent(curationRequired, timestamp)
 case class CurationPerformedEvent(curationPerformed: Boolean, timestamp: Timestamp) extends CurationEvent(curationPerformed, timestamp)
 

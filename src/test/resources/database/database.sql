@@ -35,7 +35,7 @@ CREATE TABLE Identifier (
 CREATE TABLE Curation (
     curationId INTEGER IDENTITY NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
-    isNewVersion BOOLEAN NOT NULL,
+    isNewVersion BOOLEAN,
     isRequired BOOLEAN NOT NULL,
     isPerformed BOOLEAN NOT NULL,
     datamanagerUserId VARCHAR(64) NOT NULL,

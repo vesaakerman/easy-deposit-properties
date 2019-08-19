@@ -229,7 +229,14 @@ object QueryGenerator {
 
   lazy val storeBagName: String = "UPDATE Deposit SET bagName = ? WHERE depositId = ? AND (bagName IS NULL OR bagName='');"
 
-  lazy val storeCuration: String = "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
+  def storeCuration(isNewVersionDefined: Boolean): String = {
+    // Note: this is a hack: as `isNewVersion` is an optional property, but it is also a `Boolean`, we cannot use `null` in `prepStatement.setBoolean`. This is not allowed by Scala.
+    // Workaround applied here is to add the `isNewVersion` to the end, only if it is defined.
+    if (isNewVersionDefined)
+      "INSERT INTO Curation (depositId, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp, isNewVersion) VALUES (?, ?, ?, ?, ?, ?, ?);"
+    else
+      "INSERT INTO Curation (depositId, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
+  }
 
   lazy val storeIdentifier: String = "INSERT INTO Identifier (depositId, identifierSchema, identifierValue, timestamp) VALUES (?, ?, ?, ?);"
 

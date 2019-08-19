@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.properties.server
 
 import java.util.UUID
 
+import cats.syntax.option._
 import better.files.File
 import cats.syntax.either._
 import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
@@ -135,7 +136,7 @@ trait GraphQLResolveSpecTestObjects {
   )
   val curation1 = Curation(
     id = "1",
-    isNewVersion = true,
+    isNewVersion = none,
     isRequired = true,
     isPerformed = true,
     datamanagerUserId = "archie001",
@@ -144,7 +145,7 @@ trait GraphQLResolveSpecTestObjects {
   )
   val curation2 = Curation(
     id = "2",
-    isNewVersion = false,
+    isNewVersion = false.some,
     isRequired = false,
     isPerformed = false,
     datamanagerUserId = "archie002",

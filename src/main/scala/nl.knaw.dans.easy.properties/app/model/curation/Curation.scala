@@ -20,7 +20,7 @@ import nl.knaw.dans.easy.properties.app.model.{ CurationPerformedEvent, Curation
 import sangria.relay.Node
 
 case class Curation(id: String,
-                    isNewVersion: Boolean,
+                    isNewVersion: Option[Boolean],
                     isRequired: Boolean,
                     isPerformed: Boolean,
                     datamanagerUserId: String,

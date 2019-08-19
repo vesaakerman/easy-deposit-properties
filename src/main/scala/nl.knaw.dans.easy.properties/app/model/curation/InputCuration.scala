@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.properties.app.model.curation
 
 import nl.knaw.dans.easy.properties.app.model.Timestamp
 
-case class InputCuration(isNewVersion: Boolean,
+case class InputCuration(isNewVersion: Option[Boolean],
                          isRequired: Boolean,
                          isPerformed: Boolean,
                          datamanagerUserId: String,

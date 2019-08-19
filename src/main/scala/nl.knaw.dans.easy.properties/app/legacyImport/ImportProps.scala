@@ -261,8 +261,8 @@ class ImportProps(repository: Repository, interactor: Interactor, datacite: Data
       userId <- Option(props.getString("curation.datamanager.userId"))
       email <- Option(props.getString("curation.datamanager.email"))
 
-      isNewVersionString <- Option(props.getString("curation.is-new-version"))
-      isNewVersion <- Option(BooleanUtils.toBoolean(isNewVersionString))
+      // curation.is-new-version is never used until now and is hence set to `None`
+      isNewVersion = none
 
       curationRequiredString <- Option(props.getString("curation.required"))
       curationRequired <- Option(BooleanUtils.toBoolean(curationRequiredString))

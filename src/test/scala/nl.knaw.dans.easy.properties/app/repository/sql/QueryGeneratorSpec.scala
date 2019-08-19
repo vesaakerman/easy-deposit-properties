@@ -491,8 +491,12 @@ class QueryGeneratorSpec extends TestSupportFixture {
     QueryGenerator.storeBagName shouldBe "UPDATE Deposit SET bagName = ? WHERE depositId = ? AND (bagName IS NULL OR bagName='');"
   }
 
-  "storeCuration" should "yield the query for inserting a Curation into the database" in {
-    QueryGenerator.storeCuration shouldBe "INSERT INTO Curation (depositId, isNewVersion, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?);"
+  "storeCuration" should "yield the query for inserting a Curation into the database if isNewVersion is defined" in {
+    QueryGenerator.storeCuration(true) shouldBe "INSERT INTO Curation (depositId, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp, isNewVersion) VALUES (?, ?, ?, ?, ?, ?, ?);"
+  }
+
+  it should "yield the query for inserting a Curation into the database if isNewVersion is not defined" in {
+    QueryGenerator.storeCuration(false) shouldBe "INSERT INTO Curation (depositId, isRequired, isPerformed, datamanagerUserId, datamanagerEmail, timestamp) VALUES (?, ?, ?, ?, ?, ?);"
   }
 
   "storeSimpleProperty" should "yield the query for inserting an Identifier into the database" in {

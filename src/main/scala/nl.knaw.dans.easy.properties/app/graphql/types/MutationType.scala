@@ -202,11 +202,11 @@ trait MutationType {
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
-  private val isNewVersionValueInputField: InputField[Boolean] = InputField(
+  private val isNewVersionValueInputField: InputField[Option[Boolean]] = InputField(
     name = "isNewVersion",
     description = Some("True if the deposit is a new version."),
     defaultValue = None,
-    fieldType = BooleanType,
+    fieldType = OptionInputType(BooleanType),
     astDirectives = Vector.empty,
     astNodes = Vector.empty,
   )
@@ -637,7 +637,7 @@ trait MutationType {
       .store(
         id = input(depositIdInputField.name).asInstanceOf[DepositId],
         curation = InputCuration(
-          isNewVersion = input(isNewVersionValueInputField.name).asInstanceOf[Boolean],
+          isNewVersion = input.get(isNewVersionValueInputField.name).flatMap(_.asInstanceOf[Option[Boolean]]),
           isRequired = input(curationRequiredValueInputField.name).asInstanceOf[Boolean],
           isPerformed = input(curationPerformedValueInputField.name).asInstanceOf[Boolean],
           datamanagerUserId = input(curationUserIdInputField.name).asInstanceOf[String],
