@@ -69,3 +69,4 @@ GRANT INSERT, SELECT ON Identifier TO easy_deposit_properties;
 GRANT INSERT, SELECT ON Curation TO easy_deposit_properties;
 GRANT INSERT, SELECT ON Springfield TO easy_deposit_properties;
 GRANT INSERT, SELECT ON SimpleProperties TO easy_deposit_properties;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO easy_deposit_properties;
