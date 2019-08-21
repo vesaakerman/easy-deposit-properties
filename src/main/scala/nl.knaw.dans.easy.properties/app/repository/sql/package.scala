@@ -15,11 +15,12 @@
  */
 package nl.knaw.dans.easy.properties.app.repository
 
-import java.sql.Timestamp
+import java.sql.{ PreparedStatement, Timestamp }
 import java.util.Calendar
 
-import org.joda.time.{ DateTime, DateTimeZone }
+import nl.knaw.dans.easy.properties.app.model.DepositId
 import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
+import org.joda.time.{ DateTime, DateTimeZone }
 
 import scala.language.implicitConversions
 
@@ -31,4 +32,10 @@ package object sql {
     Calendar.getInstance(timeZone.toTimeZone)
   }
   implicit def dateTimeToTimestamp(dt: DateTime): Timestamp = new Timestamp(dt.getMillis)
+
+  type PrepStatementResolver = (PreparedStatement, Int) => Unit
+  def setString(s: String): PrepStatementResolver = (ps, i) => ps.setString(i, s)
+  def setDepositId(depositId: DepositId): PrepStatementResolver = setString(depositId.toString)
+  def setInt(int: => Int): PrepStatementResolver = (ps, i) => ps.setInt(i, int)
+  def setInt(s: String): PrepStatementResolver = setInt(s.toInt)
 }

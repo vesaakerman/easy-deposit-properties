@@ -76,12 +76,12 @@ private[sql] trait CommonResultSetParsers {
 
   private[sql] def executeQuery[T, R](parseResult: ResultSet => Either[InvalidValueError, T])
                                      (collectResults: Stream[T] => Seq[R])
-                                     (queryAndValues: (String, Seq[String]))
+                                     (queryAndValues: (String, Seq[PrepStatementResolver]))
                                      (implicit connection: Connection): QueryErrorOr[Seq[R]] = {
     val (query, values) = queryAndValues
     val resultSet = for {
       prepStatement <- managed(connection.prepareStatement(query))
-      _ = values.zipWithIndex.foreach { case (id, index) => prepStatement.setString(index + 1, id) }
+      _ = values.zipWithIndex.foreach { case (filler, index) => filler(prepStatement, index + 1) }
       resultSet <- managed(prepStatement.executeQuery())
     } yield resultSet
 
@@ -93,7 +93,7 @@ private[sql] trait CommonResultSetParsers {
   }
 
   private[sql] def executeGetById[T <: Node](extract: ResultSet => Either[InvalidValueError, T])
-                                            (queryGen: NonEmptyList[String] => (String, Seq[String]))
+                                            (queryGen: NonEmptyList[String] => (String, Seq[PrepStatementResolver]))
                                             (ids: Seq[String])
                                             (implicit connection: Connection): QueryErrorOr[Seq[(String, Option[T])]] = {
     def collectResults(stream: Stream[T]): Seq[(String, Option[T])] = {
@@ -116,7 +116,7 @@ private[sql] trait CommonResultSetParsers {
   }
 
   private[sql] def executeGetCurrent[T](extract: ResultSet => Either[InvalidValueError, (DepositId, T)])
-                                       (queryGen: NonEmptyList[DepositId] => (String, Seq[String]))
+                                       (queryGen: NonEmptyList[DepositId] => (String, Seq[PrepStatementResolver]))
                                        (ids: Seq[DepositId])
                                        (implicit connection: Connection): QueryErrorOr[Seq[(DepositId, Option[T])]] = {
     def collectResults(stream: Stream[(DepositId, T)]): Seq[(DepositId, Option[T])] = {
@@ -137,7 +137,7 @@ private[sql] trait CommonResultSetParsers {
   }
 
   private[sql] def executeGetAll[T](extract: ResultSet => Either[InvalidValueError, (DepositId, T)])
-                                   (queryGen: NonEmptyList[DepositId] => (String, Seq[String]))
+                                   (queryGen: NonEmptyList[DepositId] => (String, Seq[PrepStatementResolver]))
                                    (ids: Seq[DepositId])
                                    (implicit connection: Connection): QueryErrorOr[Seq[(DepositId, Seq[T])]] = {
     def collectResults(stream: Stream[(DepositId, T)]): Seq[(DepositId, Seq[T])] = {
@@ -156,7 +156,7 @@ private[sql] trait CommonResultSetParsers {
   }
 
   private[sql] def executeGetDepositById(extract: ResultSet => Either[InvalidValueError, (String, Deposit)])
-                                        (queryGen: NonEmptyList[String] => (String, Seq[String]))
+                                        (queryGen: NonEmptyList[String] => (String, Seq[PrepStatementResolver]))
                                         (ids: Seq[String])
                                         (implicit connection: Connection): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
     def collectResults(stream: Stream[(String, Deposit)]): Seq[(String, Option[Deposit])] = {

@@ -81,7 +81,7 @@ class QueryGeneratorPropSpec extends PropSpec with GeneratorDrivenPropertyChecks
     arbitrary[(T, List[T])].map { case (t, ts) => NonEmptyList(t, ts) }
   }
 
-  def testNumberOfQuestionMarks[T: Arbitrary](queryGen: T => (String, Seq[String])): Unit = {
+  def testNumberOfQuestionMarks[T: Arbitrary](queryGen: T => (String, Seq[PrepStatementResolver])): Unit = {
     forAll(arbitrary[T])(t => {
       val (query, values) = queryGen(t)
       query.count(_ == '?') shouldBe values.size

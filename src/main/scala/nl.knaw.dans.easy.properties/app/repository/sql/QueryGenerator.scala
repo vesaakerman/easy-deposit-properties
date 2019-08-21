@@ -24,19 +24,19 @@ object QueryGenerator {
 
   lazy val getAllDeposits: String = "SELECT * FROM Deposit;"
 
-  def findDeposits(ids: NonEmptyList[DepositId]): (String, Seq[String]) = {
+  def findDeposits(ids: NonEmptyList[DepositId]): (String, Seq[PrepStatementResolver]) = {
     val query = s"SELECT * FROM Deposit WHERE depositId IN (${ ids.toList.map(_ => "?").mkString(", ") });"
 
-    query -> ids.map(_.toString).toList
+    query -> ids.map(setDepositId).toList
   }
 
-  def searchDeposits(filters: DepositFilters): (String, Seq[String]) = {
+  def searchDeposits(filters: DepositFilters): (String, Seq[PrepStatementResolver]) = {
     type TableName = String
     type KeyName = String
     type LabelName = String
     type Query = String
 
-    def createSubQuery[T <: DepositFilter](filter: T)(tableName: TableName, labelName: LabelName, labelValue: T => String): (TableName, Query, List[String]) = {
+    def createSubQuery[T <: DepositFilter](filter: T)(tableName: TableName, labelName: LabelName, labelValue: T => String): (TableName, Query, List[PrepStatementResolver]) = {
       val query = filter.filter match {
         case SeriesFilter.ALL =>
           s"SELECT DISTINCT depositId FROM $tableName WHERE $labelName = ?"
@@ -44,10 +44,10 @@ object QueryGenerator {
           s"SELECT $tableName.depositId FROM $tableName INNER JOIN (SELECT depositId, max(timestamp) AS max_timestamp FROM $tableName GROUP BY depositId) AS ${ tableName }WithMaxTimestamp ON $tableName.timestamp = ${ tableName }WithMaxTimestamp.max_timestamp WHERE $labelName = ?"
       }
 
-      (tableName, query, labelValue(filter) :: Nil)
+      (tableName, query, setString(labelValue(filter)) :: Nil)
     }
 
-    def createSimplePropertiesSubQuery[T <: DepositFilter](filter: T)(keyValue: String, labelValue: T => String): (TableName, Query, List[String]) = {
+    def createSimplePropertiesSubQuery[T <: DepositFilter](filter: T)(keyValue: String, labelValue: T => String): (TableName, Query, List[PrepStatementResolver]) = {
       val tableName = "SimpleProperties"
       val query = filter.filter match {
         case SeriesFilter.ALL =>
@@ -56,7 +56,7 @@ object QueryGenerator {
           s"SELECT $tableName.depositId FROM $tableName INNER JOIN (SELECT depositId, max(timestamp) AS max_timestamp FROM $tableName WHERE key = ? GROUP BY depositId) AS ${ tableName }WithMaxTimestamp ON $tableName.timestamp = ${ tableName }WithMaxTimestamp.max_timestamp WHERE value = ?"
       }
 
-      (tableName, query, labelValue(filter) :: keyValue :: Nil)
+      (tableName, query, setString(labelValue(filter)) :: setString(keyValue) :: Nil)
     }
 
     val (queryWherePart, whereValues) = List(
@@ -65,9 +65,9 @@ object QueryGenerator {
     )
       .collect {
         case Some((labelName, null)) => s"$labelName IS NULL" -> Nil
-        case Some((labelName, value)) => s"$labelName = ?" -> List(value)
+        case Some((labelName, value)) => s"$labelName = ?" -> List(setString(value))
       }
-      .foldLeft(("", List.empty[String])) {
+      .foldLeft(("", List.empty[PrepStatementResolver])) {
         case (("", vs), (subQuery, values)) => subQuery -> (values ::: vs)
         case ((q, vs), (subQuery, values)) => s"$q AND $subQuery" -> (values ::: vs)
       }
@@ -86,7 +86,7 @@ object QueryGenerator {
         case Some((tableName, q, values)) if queryWherePart.isEmpty => s"INNER JOIN ($q) AS ${ tableName }SearchResult ON Deposit.depositId = ${ tableName }SearchResult.depositId" -> values
         case Some((tableName, q, values)) => s"INNER JOIN ($q) AS ${ tableName }SearchResult ON SelectedDeposits.depositId = ${ tableName }SearchResult.depositId" -> values
       }
-      .foldLeft(("", List.empty[String])) {
+      .foldLeft(("", List.empty[PrepStatementResolver])) {
         case (("", vs), (subQuery, values)) => subQuery -> (values ::: vs)
         case ((q, vs), (subQuery, values)) => s"$q $subQuery" -> (values ::: vs)
       }
@@ -107,7 +107,7 @@ object QueryGenerator {
     }
   }
 
-  def getLastModifiedDate(ids: NonEmptyList[DepositId]): (String, Seq[String]) = {
+  def getLastModifiedDate(ids: NonEmptyList[DepositId]): (String, Seq[PrepStatementResolver]) = {
     val whereClause = ids.toList.map(_ => "?").mkString("WHERE depositId IN (", ", ", ")")
     val tablesAndMaxFields = List(
       "Deposit" -> "creationTimestamp",
@@ -121,19 +121,19 @@ object QueryGenerator {
       .map { case (table, maxField) => s"(SELECT depositId, MAX($maxField) AS max FROM $table $whereClause GROUP BY depositId)" }
       .mkString("SELECT depositId, MAX(max) AS max_timestamp FROM (", " UNION ALL ", ") AS max_timestamps GROUP BY depositId;")
 
-    val stringIds = ids.map(_.toString)
+    val stringIds = ids.map(setDepositId)
     val values = tablesAndMaxFields.map(_ => stringIds).reduce(_ ::: _).toList
 
     query -> values
   }
 
-  def getElementsById(tableName: String, idColumnName: String)(ids: NonEmptyList[String]): (String, Seq[String]) = {
+  def getElementsById(tableName: String, idColumnName: String)(ids: NonEmptyList[String]): (String, Seq[PrepStatementResolver]) = {
     val query = s"SELECT * FROM $tableName WHERE $idColumnName IN (${ ids.toList.map(_ => "?").mkString(", ") });"
 
-    query -> ids.toList
+    query -> ids.map(setInt).toList
   }
 
-  def getCurrentElementByDepositId(tableName: String)(ids: NonEmptyList[DepositId]): (String, Seq[String]) = {
+  def getCurrentElementByDepositId(tableName: String)(ids: NonEmptyList[DepositId]): (String, Seq[PrepStatementResolver]) = {
     val query =
       s"""SELECT *
          |FROM $tableName
@@ -145,55 +145,55 @@ object QueryGenerator {
          |) AS deposit_with_max_timestamp USING (depositId)
          |WHERE timestamp = max_timestamp;""".stripMargin
 
-    query -> ids.map(_.toString).toList
+    query -> ids.map(setDepositId).toList
   }
 
-  def getAllElementsByDepositId(tableName: String)(ids: NonEmptyList[DepositId]): (String, Seq[String]) = {
+  def getAllElementsByDepositId(tableName: String)(ids: NonEmptyList[DepositId]): (String, Seq[PrepStatementResolver]) = {
     val query = s"SELECT * FROM $tableName WHERE depositId IN (${ ids.toList.map(_ => "?").mkString(", ") });"
 
-    query -> ids.map(_.toString).toList
+    query -> ids.map(setDepositId).toList
   }
 
-  def getDepositsById(tableName: String, idColumnName: String)(ids: NonEmptyList[String]): (String, Seq[String]) = {
+  def getDepositsById(tableName: String, idColumnName: String)(ids: NonEmptyList[String]): (String, Seq[PrepStatementResolver]) = {
     val query = s"SELECT $idColumnName, depositId, bagName, creationTimestamp, depositorId FROM Deposit INNER JOIN $tableName ON Deposit.depositId = $tableName.depositId WHERE $idColumnName IN (${ ids.toList.map(_ => "?").mkString(", ") });"
 
-    query -> ids.toList
+    query -> ids.map(setInt).toList
   }
 
-  def getIdentifierByDepositIdAndType(ids: NonEmptyList[(DepositId, IdentifierType)]): (String, Seq[String]) = {
+  def getIdentifierByDepositIdAndType(ids: NonEmptyList[(DepositId, IdentifierType)]): (String, Seq[PrepStatementResolver]) = {
     val (queryWherePart, valuesWherePart) = ids
       .map {
-        case (depositId, idType) => "(depositId = ? AND identifierSchema = ?)" -> (depositId.toString :: idType.toString :: Nil)
+        case (depositId, idType) => "(depositId = ? AND identifierSchema = ?)" -> (setDepositId(depositId) :: setString(idType.toString) :: Nil)
       }
-      .foldLeft(("", List.empty[String])) {
-        case (("", vs), (subQuery, values)) => subQuery -> (values ::: vs)
-        case ((q, vs), (subQuery, values)) => s"$subQuery OR $q" -> (values ::: vs)
+      .foldLeft(("", List.empty[PrepStatementResolver])) {
+        case (("", vs), (subQuery, values)) => subQuery -> (vs ::: values)
+        case ((q, vs), (subQuery, values)) => s"$subQuery OR $q" -> (vs ::: values)
       }
 
     s"SELECT identifierId, depositId, identifierSchema, identifierValue, timestamp FROM Identifier WHERE $queryWherePart;" -> valuesWherePart
   }
 
-  def getIdentifierByTypeAndValue(ids: NonEmptyList[(IdentifierType, String)]): (String, Seq[String]) = {
+  def getIdentifierByTypeAndValue(ids: NonEmptyList[(IdentifierType, String)]): (String, Seq[PrepStatementResolver]) = {
     val (queryWherePart, valuesWherePart) = ids
       .map {
-        case (idType, idValue) => "(identifierSchema = ? AND identifierValue = ?)" -> (idType.toString :: idValue.toString :: Nil)
+        case (idType, idValue) => "(identifierSchema = ? AND identifierValue = ?)" -> (setString(idType.toString) :: setString(idValue.toString) :: Nil)
       }
-      .foldLeft(("", List.empty[String])) {
-        case (("", vs), (subQuery, values)) => subQuery -> (values ::: vs)
-        case ((q, vs), (subQuery, values)) => s"$subQuery OR $q" -> (values ::: vs)
+      .foldLeft(("", List.empty[PrepStatementResolver])) {
+        case (("", vs), (subQuery, values)) => subQuery -> (vs ::: values)
+        case ((q, vs), (subQuery, values)) => s"$subQuery OR $q" -> (vs ::: values)
       }
 
     s"SELECT identifierId, identifierSchema, identifierValue, timestamp FROM Identifier WHERE $queryWherePart;" -> valuesWherePart
   }
 
-  def getSimplePropsElementsById(tableName: String, idColumnName: String, key: String)(ids: NonEmptyList[String]): (String, Seq[String]) = {
+  def getSimplePropsElementsById(tableName: String, idColumnName: String, key: String)(ids: NonEmptyList[String]): (String, Seq[PrepStatementResolver]) = {
     val query = s"SELECT * FROM $tableName WHERE key = ? AND $idColumnName IN (${ ids.toList.map(_ => "?").mkString(", ") });"
     val values = key :: ids
 
-    query -> values.toList
+    query -> values.map(setString).toList
   }
 
-  def getSimplePropsCurrentElementByDepositId(tableName: String, key: String)(ids: NonEmptyList[DepositId]): (String, Seq[String]) = {
+  def getSimplePropsCurrentElementByDepositId(tableName: String, key: String)(ids: NonEmptyList[DepositId]): (String, Seq[PrepStatementResolver]) = {
     val query =
       s"""SELECT *
          |FROM $tableName
@@ -208,19 +208,19 @@ object QueryGenerator {
          |AND key = ?;""".stripMargin
     val values = key :: (ids.map(_.toString) :+ key)
 
-    query -> values.toList
+    query -> values.map(setString).toList
   }
 
-  def getSimplePropsAllElementsByDepositId(tableName: String, key: String)(ids: NonEmptyList[DepositId]): (String, Seq[String]) = {
+  def getSimplePropsAllElementsByDepositId(tableName: String, key: String)(ids: NonEmptyList[DepositId]): (String, Seq[PrepStatementResolver]) = {
     val query = s"SELECT * FROM $tableName WHERE key = ? AND depositId IN (${ ids.toList.map(_ => "?").mkString(", ") });"
     val values = key :: ids.map(_.toString)
 
-    query -> values.toList
+    query -> values.map(setString).toList
   }
 
-  def getSimplePropsDepositsById(tableName: String, idColumnName: String, key: String)(ids: NonEmptyList[String]): (String, Seq[String]) = {
+  def getSimplePropsDepositsById(tableName: String, idColumnName: String, key: String)(ids: NonEmptyList[String]): (String, Seq[PrepStatementResolver]) = {
     val query = s"SELECT $idColumnName, depositId, bagName, creationTimestamp, depositorId FROM Deposit INNER JOIN $tableName ON Deposit.depositId = $tableName.depositId WHERE key = ? AND $idColumnName IN (${ ids.toList.map(_ => "?").mkString(", ") });"
-    val values = key :: ids
+    val values = setString(key) :: ids.map(setInt)
 
     query -> values.toList
   }

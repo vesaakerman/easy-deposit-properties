@@ -15,18 +15,20 @@
  */
 package nl.knaw.dans.easy.properties.app.repository.sql
 
+import java.sql.PreparedStatement
 import java.util.UUID
 
 import cats.data.NonEmptyList
-import nl.knaw.dans.easy.properties.app.model.SeriesFilter
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, StateLabel }
+import nl.knaw.dans.easy.properties.app.model.{ DepositId, SeriesFilter }
 import nl.knaw.dans.easy.properties.app.repository.DepositFilters
 import nl.knaw.dans.easy.properties.fixture.TestSupportFixture
 import org.scalactic.{ AbstractStringUniformity, Uniformity }
+import org.scalamock.scalatest.MockFactory
 
-class QueryGeneratorSpec extends TestSupportFixture {
+class QueryGeneratorSpec extends TestSupportFixture with MockFactory {
 
   val whiteSpaceNormalised: Uniformity[String] = {
     new AbstractStringUniformity {
@@ -39,6 +41,26 @@ class QueryGeneratorSpec extends TestSupportFixture {
 
       override def toString: String = "whiteSpaceNormalised"
     }
+  }
+
+  def setStringMock(filler: PrepStatementResolver, expectedValue: String): Unit = {
+    val ps = mock[PreparedStatement]
+
+    ps.setString _ expects(1, expectedValue) once()
+
+    filler(ps, 1)
+  }
+
+  def setDepositIdMock(filler: PrepStatementResolver, expectedValue: DepositId): Unit = {
+    setStringMock(filler, expectedValue.toString)
+  }
+
+  def setIntMock(filler: PrepStatementResolver, expectedValue: Int): Unit = {
+    val ps = mock[PreparedStatement]
+
+    ps.setInt _ expects(1, expectedValue) once()
+
+    filler(ps, 1)
   }
 
   "getAllDeposits" should "query for all deposits" in {
@@ -55,7 +77,10 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE depositId IN (?, ?, ?, ?, ?);""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain allElementsOf depositIds.map(_.toString).toList
+    values should have size depositIds.size
+    forEvery(values zip depositIds.toList) { case (value, expectedValue) =>
+      setDepositIdMock(value, expectedValue)
+    }
   }
 
   "searchDeposits" should "render a query that selects all deposits when no filters are set" in {
@@ -74,9 +99,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
       """SELECT *
         |FROM Deposit
         |WHERE depositorId = ?;""".stripMargin
+    val expectedValues = List("user001")
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain only "user001"
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits with a null bag name" in {
@@ -100,9 +129,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
       """SELECT *
         |FROM Deposit
         |WHERE bagName = ?;""".stripMargin
+    val expectedValues = List("my-bag")
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain only "my-bag"
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits of a certain depositor and with a certain bag name" in {
@@ -117,9 +150,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |FROM Deposit
         |WHERE depositorId = ?
         |AND bagName = ?;""".stripMargin
+    val expectedValues = List("user001", "my-bag")
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain inOrderOnly("user001", "my-bag")
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits with a certain 'latest state'" in {
@@ -141,9 +178,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |  WHERE label = ?
         |) AS StateSearchResult
         |ON Deposit.depositId = StateSearchResult.depositId;""".stripMargin
+    val expectedValues = List(StateLabel.ARCHIVED.toString)
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain only StateLabel.ARCHIVED.toString
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits that at some time had this certain state label" in {
@@ -158,9 +199,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |  FROM State
         |  WHERE label = ?
         |) AS StateSearchResult ON Deposit.depositId = StateSearchResult.depositId;""".stripMargin
+    val expectedValues = List(StateLabel.SUBMITTED.toString)
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain only StateLabel.SUBMITTED.toString
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits of a certain depositor, with a certain bagName and with a certain 'latest state'" in {
@@ -191,13 +236,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |  WHERE label = ?
         |) AS StateSearchResult
         |ON SelectedDeposits.depositId = StateSearchResult.depositId;""".stripMargin
+    val expectedValues = List("user001", "my-bag", StateLabel.SUBMITTED.toString)
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain inOrderOnly(
-      "user001",
-      "my-bag",
-      StateLabel.SUBMITTED.toString
-    )
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits with a certain 'latest ingest step'" in {
@@ -220,9 +265,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |  WHERE value = ?
         |) AS SimplePropertiesSearchResult
         |ON Deposit.depositId = SimplePropertiesSearchResult.depositId;""".stripMargin
+    val expectedSize = List("ingest-step", IngestStepLabel.FEDORA.toString)
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain inOrderOnly("ingest-step", IngestStepLabel.FEDORA.toString)
+    values should have size expectedSize.size
+    forEvery(values zip expectedSize) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits that sometime had this certain ingest step" in {
@@ -238,9 +287,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |  WHERE key = ?
         |  AND value = ?
         |) AS SimplePropertiesSearchResult ON Deposit.depositId = SimplePropertiesSearchResult.depositId;""".stripMargin
+    val expectedSize = List("ingest-step", IngestStepLabel.FEDORA.toString)
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain inOrderOnly("ingest-step", IngestStepLabel.FEDORA.toString)
+    values should have size expectedSize.size
+    forEvery(values zip expectedSize) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits with a certain 'latest state' and that sometime had this certain ingest step" in {
@@ -271,9 +324,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |  WHERE key = ?
         |  AND value = ?
         |) AS SimplePropertiesSearchResult ON Deposit.depositId = SimplePropertiesSearchResult.depositId;""".stripMargin
+    val expectedSize = List(StateLabel.SUBMITTED.toString, "ingest-step", IngestStepLabel.FEDORA.toString)
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain inOrderOnly(StateLabel.SUBMITTED.toString, "ingest-step", IngestStepLabel.FEDORA.toString)
+    values should have size expectedSize.size
+    forEvery(values zip expectedSize) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   it should "render a query that searches for deposits of a certain depositor, with a certain bagName, with a certain 'latest state' and that sometime had this certain ingest step" in {
@@ -311,9 +368,13 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |  WHERE key = ?
         |  AND value = ?
         |) AS SimplePropertiesSearchResult ON SelectedDeposits.depositId = SimplePropertiesSearchResult.depositId;""".stripMargin
+    val expectedSize = List("user001", "my-bag", StateLabel.SUBMITTED.toString, "ingest-step", IngestStepLabel.FEDORA.toString)
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain inOrderOnly("user001", "my-bag", StateLabel.SUBMITTED.toString, "ingest-step", IngestStepLabel.FEDORA.toString)
+    values should have size expectedSize.size
+    forEvery(values zip expectedSize) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
+    }
   }
 
   "getLastModifiedDate" should "generate a UNION query" in {
@@ -331,16 +392,17 @@ class QueryGeneratorSpec extends TestSupportFixture {
          |  (SELECT depositId, MAX(timestamp) AS max FROM SimpleProperties WHERE depositId IN (?, ?, ?, ?, ?) GROUP BY depositId)
          |) AS max_timestamps
          |GROUP BY depositId;""".stripMargin
+    val expectedSize = Seq.fill(6)(depositIds.map(_.toString).toList).flatten
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should {
-      have length (depositIds.size * 6) and
-        contain theSameElementsAs Seq.fill(6)(depositIds.map(_.toString).toList).flatten
+    values should have size expectedSize.size
+    forEvery(values zip expectedSize) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
     }
   }
 
   "getElementsById" should "generate a query that, given a table name and id column name, finds the elements associated with the given ids" in {
-    val ids = NonEmptyList.fromListUnsafe((1 to 5).map(i => s"id$i").toList)
+    val ids = NonEmptyList.fromListUnsafe((1 to 5).map(_.toString).toList)
     val (query, values) = QueryGenerator.getElementsById("State", "stateId")(ids)
 
     val expectedQuery =
@@ -349,7 +411,10 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE stateId IN (?, ?, ?, ?, ?);""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain allElementsOf ids.toList
+    values should have size ids.size
+    forEvery(values zip ids.map(_.toInt).toList) { case (value, expectedValue) =>
+      setIntMock(value, expectedValue)
+    }
   }
 
   "getCurrentElementByDepositId" should "generate a query that, given a table name, finds the element that is latest associated with the given depositIds" in {
@@ -368,7 +433,10 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE timestamp = max_timestamp;""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain allElementsOf depositIds.map(_.toString).toList
+    values should have size depositIds.size
+    forEvery(values zip depositIds.toList) { case (value, expectedValue) =>
+      setDepositIdMock(value, expectedValue)
+    }
   }
 
   "getAllElementsByDepositId" should "generate a query that, given a table name, finds all elements that are/were associated with the given depositIds" in {
@@ -381,11 +449,14 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE depositId IN (?, ?, ?, ?, ?);""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain allElementsOf depositIds.map(_.toString).toList
+    values should have size depositIds.size
+    forEvery(values zip depositIds.toList) { case (value, expectedValue) =>
+      setDepositIdMock(value, expectedValue)
+    }
   }
 
   "getDepositsById" should "generate a query that, given a table name and id column name, finds deposits corresponing to the given ids" in {
-    val ids = NonEmptyList.fromListUnsafe((1 to 5).map(i => s"id$i").toList)
+    val ids = NonEmptyList.fromListUnsafe((1 to 5).map(_.toString).toList)
     val (query, values) = QueryGenerator.getDepositsById("State", "stateId")(ids)
 
     val expectedQuery =
@@ -396,7 +467,10 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |WHERE stateId IN (?, ?, ?, ?, ?);""".stripMargin
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should contain allElementsOf ids.toList
+    values should have size ids.size
+    forEvery(values zip ids.map(_.toInt).toList) { case (value, expectedValue) =>
+      setIntMock(value, expectedValue)
+    }
   }
 
   "getIdentifierByDepositIdAndType" should "produce a query that selects the identifiers that belong to the given deposits and have the given identifier types" in {
@@ -415,11 +489,12 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |OR (depositId = ? AND identifierSchema = ?)
         |OR (depositId = ? AND identifierSchema = ?)
         |OR (depositId = ? AND identifierSchema = ?);""".stripMargin
+    val expectedValues = ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should {
-      have length (ids.size * 2) and
-        contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
     }
   }
 
@@ -433,11 +508,12 @@ class QueryGeneratorSpec extends TestSupportFixture {
       """SELECT identifierId, depositId, identifierSchema, identifierValue, timestamp
         |FROM Identifier
         |WHERE (depositId = ? AND identifierSchema = ?);""".stripMargin
+    val expectedValues = ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should {
-      have length (ids.size * 2) and
-        contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
     }
   }
 
@@ -457,11 +533,12 @@ class QueryGeneratorSpec extends TestSupportFixture {
         |OR (identifierSchema = ? AND identifierValue = ?)
         |OR (identifierSchema = ? AND identifierValue = ?)
         |OR (identifierSchema = ? AND identifierValue = ?);""".stripMargin
+    val expectedValues = ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should {
-      have length (ids.size * 2) and
-        contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
     }
   }
 
@@ -475,11 +552,12 @@ class QueryGeneratorSpec extends TestSupportFixture {
       """SELECT identifierId, identifierSchema, identifierValue, timestamp
         |FROM Identifier
         |WHERE (identifierSchema = ? AND identifierValue = ?);""".stripMargin
+    val expectedValues = ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
 
     query should equal(expectedQuery)(after being whiteSpaceNormalised)
-    values should {
-      have length (ids.size * 2) and
-        contain theSameElementsAs ids.toList.flatMap { case (depositId, idType) => List(depositId.toString, idType.toString) }
+    values should have size expectedValues.size
+    forEvery(values zip expectedValues) { case (value, expectedValue) =>
+      setStringMock(value, expectedValue)
     }
   }
 
