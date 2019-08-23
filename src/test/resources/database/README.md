@@ -35,4 +35,18 @@ the project's root directory; _NOT_ from this directory.**
 ```
 
 
+`TestData.script`
+-----------------
+This is the test data that is used with the HSQL database. When testing with the [`run.sh` scripts],
+this file gets appended to `db.script` to provide some basic data for testing. **Note that changes
+made to `TestData.sql`, should also be made to `TestData.script`.**
+
+
+`TestData.sql`
+--------------
+This is the test data that is used during unit tests. Many tests rely on these values, so it is best
+to take care in modifying any of them. **Note that changes made to `TestData.sql`, should also be
+made to `TestData.script`.**
+
+
 [`run.sh` scripts]: https://github.com/DANS-KNAW/dans-dev-tools/

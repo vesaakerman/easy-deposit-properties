@@ -25,6 +25,7 @@ echo "$(sed -E 's/(^deposit-properties.database.(username|password).*$)/#\1/' $P
 mkdir $DATADIR/database
 cp src/test/resources/database/db.properties $DATADIR/database/db.properties
 cp src/test/resources/database/db.script $DATADIR/database/db.script
+cat src/test/resources/database/TestData.script >> $DATADIR/database/db.script
 
 cp -r src/test/resources/legacy-import $DATADIR/legacy-import
 
