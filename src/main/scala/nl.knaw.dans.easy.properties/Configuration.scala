@@ -71,8 +71,8 @@ object Configuration {
         setDatasetResolver(new URL(properties.getString("deposit-properties.datacite.resolver")))
       },
       profilingConfig = for {
-        threshold <- Option(properties.getLong("deposit-properties.graphql.profiling.threshold"))
-        addExtensions = Option(properties.getBoolean("deposit-properties.graphql.profiling.addExtensions")).getOrElse(false)
+        threshold <- Option(properties.getString("deposit-properties.graphql.profiling.threshold")).map(_.toLong)
+        addExtensions = properties.getBoolean("deposit-properties.graphql.profiling.addExtensions", false)
       } yield ProfilingConfiguration(threshold milliseconds, addExtensions),
     )
   }

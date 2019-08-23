@@ -21,6 +21,7 @@ HOMEDIR=home
 PROPS_FILE=$HOMEDIR/cfg/application.properties
 
 echo "$(sed -E 's/(^deposit-properties.database.(username|password).*$)/#\1/' $PROPS_FILE)" > $PROPS_FILE
+echo "$(sed -E 's/(^deposit-properties.graphql.profiling.(threshold|addExtensions).*$)/#\1/' $PROPS_FILE)" > $PROPS_FILE
 
 mkdir $DATADIR/database
 cp src/test/resources/database/db.properties $DATADIR/database/db.properties
