@@ -20,13 +20,13 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 
 trait SpringfieldDao {
 
-  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Springfield])]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[Springfield]]
 
-  def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Springfield])]]
+  def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Springfield)]]
 
   def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Springfield])]]
 
   def store(id: DepositId, springfield: InputSpringfield): MutationErrorOr[Springfield]
 
-  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]]
+  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]]
 }

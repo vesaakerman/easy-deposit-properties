@@ -19,7 +19,6 @@ import java.util.UUID
 
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel, InputIngestStep }
-import nl.knaw.dans.easy.properties.app.model.state.{ InputState, StateLabel }
 import nl.knaw.dans.easy.properties.app.repository.{ DepositIdAndTimestampAlreadyExistError, InvalidValueError, NoSuchDepositError }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseDataFixture, DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
@@ -34,18 +33,14 @@ class SQLIngestStepDaoSpec extends TestSupportFixture
   "getById" should "find ingest steps identified by their id" in {
     val ingestSteps = new SQLIngestStepDao
 
-    ingestSteps.getById(Seq("4", "10", "14")).value should contain only(
-      "4" -> Some(step4),
-      "10" -> Some(step10),
-      "14" -> Some(step14),
-    )
+    ingestSteps.getById(Seq("4", "10", "14")).value should contain inOrderOnly(step4, step10, step14)
   }
 
-  it should "return a None if the id is unknown" in {
+  it should "return an empty collection if the id is unknown" in {
     val ingestSteps = new SQLIngestStepDao
     val unknownId = "102"
 
-    ingestSteps.getById(Seq(unknownId)).value should contain only (unknownId -> Option.empty)
+    ingestSteps.getById(Seq(unknownId)).value shouldBe empty
   }
 
   it should "return an empty collection when the input collection is empty" in {
@@ -64,16 +59,15 @@ class SQLIngestStepDaoSpec extends TestSupportFixture
     val ingestSteps = new SQLIngestStepDao
 
     ingestSteps.getCurrent(Seq(depositId4, depositId5)).value should contain only(
-      depositId5 -> Some(step14),
-      depositId4 -> None,
+      depositId5 -> step14,
     )
   }
 
-  it should "return a None if the depositId is unknown" in {
+  it should "return an empty collection if the depositId is unknown" in {
     val ingestSteps = new SQLIngestStepDao
     val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
 
-    ingestSteps.getCurrent(Seq(depositId6)).value should contain only (depositId6 -> Option.empty)
+    ingestSteps.getCurrent(Seq(depositId6)).value shouldBe empty
   }
 
   it should "return an empty collection when the input collection is empty" in {
@@ -91,7 +85,7 @@ class SQLIngestStepDaoSpec extends TestSupportFixture
     )
   }
 
-  it should "return a None if the depositId is unknown" in {
+  it should "return an empty collection if the depositId is unknown" in {
     val ingestSteps = new SQLIngestStepDao
     val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
 
@@ -111,8 +105,8 @@ class SQLIngestStepDaoSpec extends TestSupportFixture
     val expectedIngestStep = IngestStep("32", IngestStepLabel.BAGINDEX, timestamp)
 
     ingestSteps.store(depositId4, inputIngestStep).value shouldBe expectedIngestStep
-    ingestSteps.getById(Seq("32")).value should contain only ("32" -> Some(expectedIngestStep))
-    ingestSteps.getCurrent(Seq(depositId4)).value should contain only (depositId4 -> Some(expectedIngestStep))
+    ingestSteps.getById(Seq("32")).value should contain only expectedIngestStep
+    ingestSteps.getCurrent(Seq(depositId4)).value should contain only (depositId4 -> expectedIngestStep)
     ingestSteps.getAll(Seq(depositId4)).value.toMap.apply(depositId4) should contain(expectedIngestStep)
   }
 
@@ -140,17 +134,17 @@ class SQLIngestStepDaoSpec extends TestSupportFixture
     val ingestSteps = new SQLIngestStepDao
 
     ingestSteps.getDepositsById(Seq("5", "11", "13")).value should contain only(
-      "5" -> Some(deposit1),
-      "11" -> Some(deposit2),
-      "13" -> Some(deposit2),
+      "5" -> deposit1,
+      "11" -> deposit2,
+      "13" -> deposit2,
     )
   }
 
-  it should "return a None if the ingestStepId is unknown" in {
+  it should "return an empty collection if the ingestStepId is unknown" in {
     val ingestSteps = new SQLIngestStepDao
     val unknownIngestStepId = "102"
 
-    ingestSteps.getDepositsById(Seq(unknownIngestStepId)).value should contain only (unknownIngestStepId -> Option.empty)
+    ingestSteps.getDepositsById(Seq(unknownIngestStepId)).value shouldBe empty
   }
 
   it should "return an empty collection when the input collection is empty" in {

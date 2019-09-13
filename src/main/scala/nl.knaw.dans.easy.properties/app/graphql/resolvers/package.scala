@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 import nl.knaw.dans.easy.properties.app.repository.QueryErrorOr
 import sangria.execution.deferred.{ Fetcher, HasId }
+import sangria.relay.Node
 
 import scala.concurrent.ExecutionContext
 
@@ -26,16 +27,18 @@ package object resolvers {
   implicit def executionContext(implicit ctx: DataContext): ExecutionContext = ctx.executionContext
 
   private[resolvers] implicit def keyBasedHasId[K, V]: HasId[(K, V), K] = HasId { case (id, _) => id }
+  private[resolvers] implicit val depositHasId: HasId[Deposit, DepositId] = HasId[Deposit, DepositId](_.id)
+  private[resolvers] implicit def nodeHasId[T <: Node]: HasId[T, String] = HasId(_.id)
 
-  type ByIdFetcher[T] = Fetcher[DataContext, (String, Option[T]), (String, Option[T]), String]
+  type ByIdFetcher[T] = Fetcher[DataContext, T, T, String]
 
-  private[resolvers] def fetchById[T](f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Option[T])]]): ByIdFetcher[T] = {
+  private[resolvers] def fetchById[T <: Node](f: DataContext => Seq[String] => QueryErrorOr[Seq[T]]): ByIdFetcher[T] = {
     Fetcher.caching(f(_)(_).toFuture)
   }
 
-  type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, Option[T]), (DepositId, Option[T]), DepositId]
+  type CurrentFetcher[T] = Fetcher[DataContext, (DepositId, T), (DepositId, T), DepositId]
 
-  private[resolvers] def fetchCurrent[T](f: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, Option[T])]]): CurrentFetcher[T] = {
+  private[resolvers] def fetchCurrent[T](f: DataContext => Seq[DepositId] => QueryErrorOr[Seq[(DepositId, T)]]): CurrentFetcher[T] = {
     Fetcher.caching(f(_)(_).toFuture)
   }
 
@@ -45,9 +48,9 @@ package object resolvers {
     Fetcher.caching(f(_)(_).toFuture)
   }
 
-  type DepositByIdFetcher = Fetcher[DataContext, (String, Option[Deposit]), (String, Option[Deposit]), String]
+  type DepositByIdFetcher = Fetcher[DataContext, (String, Deposit), (String, Deposit), String]
 
-  private[resolvers] def fetchDepositsById(f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Option[Deposit])]]): DepositByIdFetcher = {
+  private[resolvers] def fetchDepositsById(f: DataContext => Seq[String] => QueryErrorOr[Seq[(String, Deposit)]]): DepositByIdFetcher = {
     Fetcher.caching(f(_)(_).toFuture)
   }
 

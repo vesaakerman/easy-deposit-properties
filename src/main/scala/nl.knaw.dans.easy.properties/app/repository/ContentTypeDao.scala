@@ -20,13 +20,13 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 
 trait ContentTypeDao {
 
-  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[ContentType])]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[ContentType]]
 
-  def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[ContentType])]]
+  def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, ContentType)]]
 
   def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[ContentType])]]
 
   def store(id: DepositId, contentType: InputContentType): MutationErrorOr[ContentType]
 
-  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]]
+  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]]
 }

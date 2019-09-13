@@ -49,13 +49,13 @@ class SQLIngestStepDao(implicit connection: Connection, errorHandler: SQLErrorHa
     } yield ingestStepId -> deposit
   }
 
-  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[IngestStep])]] = {
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[IngestStep]] = {
     trace(ids)
 
     executeGetById(parseIngestStep)(QueryGenerator.getSimplePropsElementsById("ingest-step"))(ids)
   }
 
-  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IngestStep])]] = {
+  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, IngestStep)]] = {
     trace(ids)
 
     executeGetCurrent(parseDepositIdAndIngestStep)(QueryGenerator.getSimplePropsCurrentElementByDepositId("ingest-step"))(ids)
@@ -100,7 +100,7 @@ class SQLIngestStepDao(implicit connection: Connection, errorHandler: SQLErrorHa
       .map(step.toOutput)
   }
 
-  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]] = {
     trace(ids)
 
     executeGetDepositById(parseIngestStepIdAndDeposit)(QueryGenerator.getSimplePropsDepositsById("ingest-step"))(ids)

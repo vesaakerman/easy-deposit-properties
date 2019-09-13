@@ -52,13 +52,13 @@ class SQLSpringfieldDao(implicit connection: Connection, errorHandler: SQLErrorH
     } yield springfieldId -> deposit
   }
 
-  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Springfield])]] = {
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[Springfield]] = {
     trace(ids)
 
     executeGetById(parseSpringfield)(QueryGenerator.getElementsById("Springfield", "springfieldId"))(ids)
   }
 
-  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Springfield])]] = {
+  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Springfield)]] = {
     trace(ids)
 
     executeGetCurrent(parseDepositIdAndSpringfield)(QueryGenerator.getCurrentElementByDepositId("Springfield"))(ids)
@@ -104,7 +104,7 @@ class SQLSpringfieldDao(implicit connection: Connection, errorHandler: SQLErrorH
       .map(springfield.toOutput)
   }
 
-  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]] = {
     trace(ids)
 
     executeGetDepositById(parseSpringfieldIdAndDeposit)(QueryGenerator.getDepositsById("Springfield", "springfieldId"))(ids)

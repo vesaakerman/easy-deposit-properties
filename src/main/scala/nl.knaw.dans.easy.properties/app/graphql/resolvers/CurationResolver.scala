@@ -29,8 +29,7 @@ object CurationResolver {
   val depositByCurationIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.curation.getDepositsById)
 
   def curationById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Curation]] = {
-    DeferredValue(byIdFetcher.defer(id))
-      .map { case (_, optCuration) => optCuration }
+    DeferredValue(byIdFetcher.deferOpt(id))
   }
 
   def currentCuratorsById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Curator]] = {
@@ -51,13 +50,13 @@ object CurationResolver {
   }
 
   def depositByCurationId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
-    DeferredValue(depositByCurationIdFetcher.defer(id))
-      .map { case (_, optDeposit) => optDeposit }
+    DeferredValue(depositByCurationIdFetcher.deferOpt(id))
+      .map(_.map { case (_, deposit) => deposit })
   }
 
   def isNewVersion(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Boolean]] = {
-    DeferredValue(currentCurationsFetcher.defer(depositId))
-      .map { case (_, optCuration) => optCuration.flatMap(_.getIsNewVersionEvent.isNewVersion) }
+    DeferredValue(currentCurationsFetcher.deferOpt(depositId))
+      .map(_.flatMap { case (_, curation) => curation.isNewVersion })
   }
 
   def allIsNewVersionEvents(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[IsNewVersionEvent]] = {
@@ -66,8 +65,8 @@ object CurationResolver {
   }
 
   def isCurationRequired(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Boolean]] = {
-    DeferredValue(currentCurationsFetcher.defer(depositId))
-      .map { case (_, optCuration) => optCuration.map(_.getCurationRequiredEvent.curationRequired) }
+    DeferredValue(currentCurationsFetcher.deferOpt(depositId))
+      .map(_.map { case (_, curation) => curation.isRequired })
   }
 
   def allIsCurationRequiredEvents(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[CurationRequiredEvent]] = {
@@ -76,8 +75,8 @@ object CurationResolver {
   }
 
   def isCurationPerformed(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Boolean]] = {
-    DeferredValue(currentCurationsFetcher.defer(depositId))
-      .map { case (_, optCuration) => optCuration.map(_.getCurationPerformedEvent.curationPerformed) }
+    DeferredValue(currentCurationsFetcher.deferOpt(depositId))
+      .map(_.map { case (_, curation) => curation.isPerformed })
   }
 
   def allIsCurationPerformedEvents(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[CurationPerformedEvent]] = {

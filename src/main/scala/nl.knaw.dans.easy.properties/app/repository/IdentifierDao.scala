@@ -21,15 +21,15 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 
 trait IdentifierDao {
 
-  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Identifier])]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[Identifier]]
 
-  def getByType(ids: Seq[(DepositId, IdentifierType)]): QueryErrorOr[Seq[((DepositId, IdentifierType), Option[Identifier])]]
+  def getByType(ids: Seq[(DepositId, IdentifierType)]): QueryErrorOr[Seq[((DepositId, IdentifierType), Identifier)]]
 
-  def getByTypesAndValues(ids: Seq[(IdentifierType, String)]): QueryErrorOr[Seq[((IdentifierType, String), Option[Identifier])]]
+  def getByTypesAndValues(ids: Seq[(IdentifierType, String)]): QueryErrorOr[Seq[((IdentifierType, String), Identifier)]]
 
   def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[Identifier])]]
 
   def store(id: DepositId, identifier: InputIdentifier): MutationErrorOr[Identifier]
 
-  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]]
+  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]]
 }

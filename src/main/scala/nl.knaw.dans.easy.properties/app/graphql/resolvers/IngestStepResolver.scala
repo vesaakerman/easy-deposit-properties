@@ -28,13 +28,12 @@ object IngestStepResolver {
   val depositByIngestStepIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.ingestSteps.getDepositsById)
 
   def ingestStepById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[IngestStep]] = {
-    DeferredValue(byIdFetcher.defer(id))
-      .map { case (_, optIngestStep) => optIngestStep }
+    DeferredValue(byIdFetcher.deferOpt(id))
   }
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[IngestStep]] = {
-    DeferredValue(currentIngestStepsFetcher.defer(depositId))
-      .map { case (_, optIngestStep) => optIngestStep }
+    DeferredValue(currentIngestStepsFetcher.deferOpt(depositId))
+      .map(_.map { case (_, ingestStep) => ingestStep })
   }
 
   def allById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[IngestStep]] = {
@@ -43,7 +42,7 @@ object IngestStepResolver {
   }
 
   def depositByIngestStepId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
-    DeferredValue(depositByIngestStepIdFetcher.defer(id))
-      .map { case (_, optDeposit) => optDeposit }
+    DeferredValue(depositByIngestStepIdFetcher.deferOpt(id))
+      .map(_.map { case (_, deposit) => deposit })
   }
 }

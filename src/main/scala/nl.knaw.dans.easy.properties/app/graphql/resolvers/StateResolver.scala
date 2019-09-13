@@ -28,13 +28,12 @@ object StateResolver {
   val depositByStateIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.states.getDepositsById)
 
   def stateById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[State]] = {
-    DeferredValue(byIdFetcher.defer(id))
-      .map { case (_, optState) => optState }
+    DeferredValue(byIdFetcher.deferOpt(id))
   }
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[State]] = {
-    DeferredValue(currentStatesFetcher.defer(depositId))
-      .map { case (_, optState) => optState }
+    DeferredValue(currentStatesFetcher.deferOpt(depositId))
+      .map(_.map { case (_, state) => state })
   }
 
   def allById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[State]] = {
@@ -43,7 +42,7 @@ object StateResolver {
   }
 
   def depositByStateId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
-    DeferredValue(depositByStateIdFetcher.defer(id))
-      .map { case (_, optDeposit) => optDeposit }
+    DeferredValue(depositByStateIdFetcher.deferOpt(id))
+      .map(_.map { case (_, deposit) => deposit })
   }
 }

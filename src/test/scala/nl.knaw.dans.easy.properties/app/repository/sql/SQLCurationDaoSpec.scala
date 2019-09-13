@@ -34,18 +34,14 @@ class SQLCurationDaoSpec extends TestSupportFixture
   "getById" should "find curation configurations identified by their curationId" in {
     val curations = new SQLCurationDao
 
-    curations.getById(Seq("2", "4", "9")).value should contain only(
-      "2" -> Some(curation2),
-      "4" -> Some(curation4),
-      "9" -> Some(curation9),
-    )
+    curations.getById(Seq("2", "4", "9")).value should contain inOrderOnly(curation2, curation4, curation9)
   }
 
-  it should "return a None if the curationId is unknown" in {
+  it should "return an empty collection if the curationId is unknown" in {
     val curations = new SQLCurationDao
     val unknowncurationId = "102"
 
-    curations.getById(Seq(unknowncurationId)).value should contain only (unknowncurationId -> Option.empty)
+    curations.getById(Seq(unknowncurationId)).value shouldBe empty
   }
 
   it should "return an empty collection when the input collection is empty" in {
@@ -64,16 +60,15 @@ class SQLCurationDaoSpec extends TestSupportFixture
     val curations = new SQLCurationDao
 
     curations.getCurrent(Seq(depositId1, depositId2)).value should contain only(
-      depositId1 -> Some(curation2),
-      depositId2 -> None,
+      depositId1 -> curation2,
     )
   }
 
-  it should "return a None if the depositId is unknown" in {
+  it should "return an empty collection if the depositId is unknown" in {
     val curations = new SQLCurationDao
     val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
 
-    curations.getCurrent(Seq(depositId6)).value should contain only (depositId6 -> Option.empty)
+    curations.getCurrent(Seq(depositId6)).value shouldBe empty
   }
 
   it should "return an empty collection when the input collection is empty" in {
@@ -91,7 +86,7 @@ class SQLCurationDaoSpec extends TestSupportFixture
     )
   }
 
-  it should "return a None if the depositId is unknown" in {
+  it should "return an empty collection if the depositId is unknown" in {
     val curations = new SQLCurationDao
     val depositId6 = UUID.fromString("00000000-0000-0000-0000-000000000006")
 
@@ -111,8 +106,8 @@ class SQLCurationDaoSpec extends TestSupportFixture
     val expectedCuration = Curation("10", isNewVersion = true.some, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
 
     curations.store(depositId1, inputCuration).value shouldBe expectedCuration
-    curations.getById(Seq("10")).value should contain only ("10" -> Some(expectedCuration))
-    curations.getCurrent(Seq(depositId1)).value should contain only (depositId1 -> Some(expectedCuration))
+    curations.getById(Seq("10")).value should contain only expectedCuration
+    curations.getCurrent(Seq(depositId1)).value should contain only (depositId1 -> expectedCuration)
     curations.getAll(Seq(depositId1)).value.toMap.apply(depositId1) should contain(expectedCuration)
   }
 
@@ -123,8 +118,8 @@ class SQLCurationDaoSpec extends TestSupportFixture
     val expectedCuration = Curation("10", isNewVersion = none, isRequired = true, isPerformed = false, "my-username", "foo@bar.com", timestamp)
 
     curations.store(depositId1, inputCuration).value shouldBe expectedCuration
-    curations.getById(Seq("10")).value should contain only ("10" -> Some(expectedCuration))
-    curations.getCurrent(Seq(depositId1)).value should contain only (depositId1 -> Some(expectedCuration))
+    curations.getById(Seq("10")).value should contain only expectedCuration
+    curations.getCurrent(Seq(depositId1)).value should contain only (depositId1 -> expectedCuration)
     curations.getAll(Seq(depositId1)).value.toMap.apply(depositId1) should contain(expectedCuration)
   }
 
@@ -152,18 +147,17 @@ class SQLCurationDaoSpec extends TestSupportFixture
     val curations = new SQLCurationDao
 
     curations.getDepositsById(Seq("1", "4", "7", "10")).value should contain only(
-      "1" -> Some(deposit1),
-      "4" -> Some(deposit3),
-      "7" -> Some(deposit4),
-      "10" -> None,
+      "1" -> deposit1,
+      "4" -> deposit3,
+      "7" -> deposit4,
     )
   }
 
-  it should "return a None if the curationId is unknown" in {
+  it should "return an empty collection if the curationId is unknown" in {
     val curations = new SQLCurationDao
     val unknowncurationId = "102"
 
-    curations.getDepositsById(Seq(unknowncurationId)).value should contain only (unknowncurationId -> Option.empty)
+    curations.getDepositsById(Seq(unknowncurationId)).value shouldBe empty
   }
 
   it should "return an empty collection when the input collection is empty" in {

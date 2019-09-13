@@ -50,13 +50,13 @@ class SQLStateDao(implicit connection: Connection, errorHandler: SQLErrorHandler
     } yield stateId -> deposit
   }
 
-  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[State])]] = {
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[State]] = {
     trace(ids)
 
     executeGetById(parseState)(QueryGenerator.getElementsById("State", "stateId"))(ids)
   }
 
-  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[State])]] = {
+  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, State)]] = {
     trace(ids)
 
     executeGetCurrent(parseDepositIdAndState)(QueryGenerator.getCurrentElementByDepositId("State"))(ids)
@@ -100,7 +100,7 @@ class SQLStateDao(implicit connection: Connection, errorHandler: SQLErrorHandler
       .map(state.toOutput)
   }
 
-  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]] = {
     trace(ids)
 
     executeGetDepositById(parseStateIdAndDeposit)(QueryGenerator.getDepositsById("State", "stateId"))(ids)

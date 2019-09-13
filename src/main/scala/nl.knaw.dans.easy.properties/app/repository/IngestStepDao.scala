@@ -20,13 +20,13 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 
 trait IngestStepDao {
 
-  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[IngestStep])]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[IngestStep]]
 
-  def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[IngestStep])]]
+  def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, IngestStep)]]
 
   def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[IngestStep])]]
 
   def store(id: DepositId, step: InputIngestStep): MutationErrorOr[IngestStep]
 
-  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]]
+  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]]
 }

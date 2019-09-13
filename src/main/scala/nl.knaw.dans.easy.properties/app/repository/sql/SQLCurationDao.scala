@@ -60,13 +60,13 @@ class SQLCurationDao(implicit connection: Connection, errorHandler: SQLErrorHand
     } yield curationId -> deposit
   }
 
-  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Curation])]] = {
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[Curation]] = {
     trace(ids)
 
     executeGetById(parseCuration)(QueryGenerator.getElementsById("Curation", "curationId"))(ids)
   }
 
-  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[Curation])]] = {
+  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Curation)]] = {
     trace(ids)
 
     executeGetCurrent(parseDepositIdAndCuration)(QueryGenerator.getCurrentElementByDepositId("Curation"))(ids)
@@ -113,7 +113,7 @@ class SQLCurationDao(implicit connection: Connection, errorHandler: SQLErrorHand
       .map(curation.toOutput)
   }
 
-  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]] = {
     trace(ids)
 
     executeGetDepositById(parseCurationIdAndDeposit)(QueryGenerator.getDepositsById("Curation", "curationId"))(ids)

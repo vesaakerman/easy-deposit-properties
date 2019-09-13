@@ -49,13 +49,13 @@ class SQLContentTypeDao(implicit connection: Connection, errorHandler: SQLErrorH
     } yield contentTypeId -> deposit
   }
 
-  override def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[ContentType])]] = {
+  override def getById(ids: Seq[String]): QueryErrorOr[Seq[ContentType]] = {
     trace(ids)
 
     executeGetById(parseContentType)(QueryGenerator.getSimplePropsElementsById("content-type"))(ids)
   }
 
-  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[ContentType])]] = {
+  override def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, ContentType)]] = {
     trace(ids)
 
     executeGetCurrent(parseDepositIdAndContentType)(QueryGenerator.getSimplePropsCurrentElementByDepositId("content-type"))(ids)
@@ -100,7 +100,7 @@ class SQLContentTypeDao(implicit connection: Connection, errorHandler: SQLErrorH
       .map(contentType.toOutput)
   }
 
-  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
+  override def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]] = {
     trace(ids)
 
     executeGetDepositById(parseContentTypeIdAndDeposit)(QueryGenerator.getSimplePropsDepositsById("content-type"))(ids)

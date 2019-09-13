@@ -20,13 +20,13 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId }
 
 trait StateDao {
 
-  def getById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[State])]]
+  def getById(ids: Seq[String]): QueryErrorOr[Seq[State]]
 
-  def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Option[State])]]
+  def getCurrent(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, State)]]
 
   def getAll(ids: Seq[DepositId]): QueryErrorOr[Seq[(DepositId, Seq[State])]]
 
   def store(id: DepositId, state: InputState): MutationErrorOr[State]
 
-  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Option[Deposit])]]
+  def getDepositsById(ids: Seq[String]): QueryErrorOr[Seq[(String, Deposit)]]
 }

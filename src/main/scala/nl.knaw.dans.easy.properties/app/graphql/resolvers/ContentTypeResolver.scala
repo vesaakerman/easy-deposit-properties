@@ -28,13 +28,12 @@ object ContentTypeResolver {
   val depositByContentTypeIdFetcher: DepositByIdFetcher = fetchDepositsById(_.repo.contentType.getDepositsById)
 
   def contentTypeById(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[ContentType]] = {
-    DeferredValue(byIdFetcher.defer(id))
-      .map { case (_, optContentType) => optContentType }
+    DeferredValue(byIdFetcher.deferOpt(id))
   }
 
   def currentById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Option[ContentType]] = {
-    DeferredValue(currentContentTypesFetcher.defer(depositId))
-      .map { case (_, optContentType) => optContentType }
+    DeferredValue(currentContentTypesFetcher.deferOpt(depositId))
+      .map(_.map { case (_, contentType) => contentType })
   }
 
   def allById(depositId: DepositId)(implicit ctx: DataContext): DeferredValue[DataContext, Seq[ContentType]] = {
@@ -43,7 +42,7 @@ object ContentTypeResolver {
   }
 
   def depositByContentTypeId(id: String)(implicit ctx: DataContext): DeferredValue[DataContext, Option[Deposit]] = {
-    DeferredValue(depositByContentTypeIdFetcher.defer(id))
-      .map { case (_, optDeposit) => optDeposit }
+    DeferredValue(depositByContentTypeIdFetcher.deferOpt(id))
+      .map(_.map { case (_, deposit) => deposit })
   }
 }

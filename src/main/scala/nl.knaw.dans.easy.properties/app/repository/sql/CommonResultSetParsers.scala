@@ -20,10 +20,8 @@ import java.util.UUID
 
 import cats.data.NonEmptyList
 import cats.instances.either._
-import cats.instances.option._
 import cats.instances.stream._
 import cats.syntax.either._
-import cats.syntax.functor._
 import cats.syntax.traverse._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Origin, Timestamp }
 import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, QueryErrorOr }
@@ -96,22 +94,12 @@ private[sql] trait CommonResultSetParsers {
   private[sql] def executeGetById[T <: Node](extract: ResultSet => Either[InvalidValueError, T])
                                             (queryGen: NonEmptyList[String] => (String, Seq[PrepStatementResolver]))
                                             (ids: Seq[String])
-                                            (implicit connection: Connection): QueryErrorOr[Seq[(String, Option[T])]] = {
-    def collectResults(stream: Stream[T]): Seq[(String, Option[T])] = {
-      val results = stream.toList
-        .groupBy(_.id)
-        .flatMap { case (id, ss) =>
-          assert(ss.size == 1)
-          ss.headOption.tupleLeft(id)
-        }
-      ids.map(id => id -> results.get(id))
-    }
-
+                                            (implicit connection: Connection): QueryErrorOr[Seq[T]] = {
     NonEmptyList.fromList(ids.toList)
       .map(_
         .traverse[Either[InvalidValueError, ?], String](validateId)
         .map(queryGen)
-        .flatMap(executeQuery(extract)(collectResults))
+        .flatMap(executeQuery(extract)(identity))
       )
       .getOrElse(Seq.empty.asRight)
   }
@@ -119,21 +107,10 @@ private[sql] trait CommonResultSetParsers {
   private[sql] def executeGetCurrent[T](extract: ResultSet => Either[InvalidValueError, (DepositId, T)])
                                        (queryGen: NonEmptyList[DepositId] => (String, Seq[PrepStatementResolver]))
                                        (ids: Seq[DepositId])
-                                       (implicit connection: Connection): QueryErrorOr[Seq[(DepositId, Option[T])]] = {
-    def collectResults(stream: Stream[(DepositId, T)]): Seq[(DepositId, Option[T])] = {
-      val results = stream.toList
-        .groupBy { case (depositId, _) => depositId }
-        .flatMap {
-          case (id, ss) =>
-            assert(ss.size == 1)
-            ss.headOption.map { case (_, t) => t }.tupleLeft(id)
-        }
-      ids.map(id => id -> results.get(id))
-    }
-
+                                       (implicit connection: Connection): QueryErrorOr[Seq[(DepositId, T)]] = {
     NonEmptyList.fromList(ids.toList)
       .map(queryGen)
-      .map(executeQuery(extract)(collectResults))
+      .map(executeQuery(extract)(identity))
       .getOrElse(Seq.empty.asRight)
   }
 
@@ -159,22 +136,12 @@ private[sql] trait CommonResultSetParsers {
   private[sql] def executeGetDepositById(extract: ResultSet => Either[InvalidValueError, (String, Deposit)])
                                         (queryGen: NonEmptyList[String] => (String, Seq[PrepStatementResolver]))
                                         (ids: Seq[String])
-                                        (implicit connection: Connection): QueryErrorOr[Seq[(String, Option[Deposit])]] = {
-    def collectResults(stream: Stream[(String, Deposit)]): Seq[(String, Option[Deposit])] = {
-      val results = stream.toList
-        .groupBy { case (stateId, _) => stateId }
-        .flatMap { case (id, ss) =>
-          assert(ss.size == 1)
-          ss.headOption.map { case (_, deposit) => deposit }.tupleLeft(id)
-        }
-      ids.map(id => id -> results.get(id))
-    }
-
+                                        (implicit connection: Connection): QueryErrorOr[Seq[(String, Deposit)]] = {
     NonEmptyList.fromList(ids.toList)
       .map(_
         .traverse[Either[InvalidValueError, ?], String](validateId)
         .map(queryGen)
-        .flatMap(executeQuery(extract)(collectResults))
+        .flatMap(executeQuery(extract)(identity))
       )
       .getOrElse(Seq.empty.asRight)
   }
