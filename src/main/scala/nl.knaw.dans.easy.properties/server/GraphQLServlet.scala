@@ -34,7 +34,7 @@ import org.scalatra.auth.strategy.BasicAuthStrategy.BasicAuthRequest
 import sangria.ast.Document
 import sangria.execution._
 import sangria.marshalling.json4s.native._
-import sangria.parser.{ DeliveryScheme, QueryParser, SyntaxError }
+import sangria.parser.{ DeliveryScheme, ParserConfig, QueryParser, SyntaxError }
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
@@ -63,7 +63,7 @@ class GraphQLServlet(database: DatabaseAccess,
 
     val GraphQLInput(query, variables, operation) = Serialization.read[GraphQLInput](request.body)
     val middlewares = new Middlewares(profiling)
-    QueryParser.parse(query)(DeliveryScheme.Either)
+    QueryParser.parse(query, ParserConfig.default.withoutComments)(DeliveryScheme.Either)
       .fold({
         case e: SyntaxError => Future.successful(BadRequest(syntaxError(e)))
         case e => Future.failed(e)
