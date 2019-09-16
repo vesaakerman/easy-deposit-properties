@@ -57,7 +57,7 @@ class GraphQLServlet(database: DatabaseAccess,
   post("/") {
     contentType = "application/json"
     val auth = getAuthentication
-    val profiling = if (request.queryString contains "profile")
+    val profiling = if (request.queryString contains "doProfile")
                       ProfilingConfiguration(profilingThreshold).some
                     else none
 
