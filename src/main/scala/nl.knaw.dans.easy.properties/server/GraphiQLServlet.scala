@@ -30,6 +30,7 @@ class GraphiQLServlet(backendPath: String) extends ScalatraServlet {
      *   - removed unnecessary comments
      *   - add property 'schema: undefined' to the rendered GraphiQL Component
      *   - add property 'response: parameters.response' to the rendered GraphiQL Component
+     *   - introduce custom 'profile' button based on https://gist.github.com/OlegIlyenko/066475c919d3246c344e217aae36ccf4
      */
     contentType = "text/html"
     Ok {
