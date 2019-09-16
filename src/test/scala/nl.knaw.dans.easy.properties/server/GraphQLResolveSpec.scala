@@ -17,9 +17,9 @@ package nl.knaw.dans.easy.properties.server
 
 import java.util.UUID
 
-import cats.syntax.option._
 import better.files.File
 import cats.syntax.either._
+import cats.syntax.option._
 import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.app.model.contentType.{ ContentType, ContentTypeValue, DepositContentTypeFilter }
 import nl.knaw.dans.easy.properties.app.model.curation.Curation
@@ -31,20 +31,20 @@ import nl.knaw.dans.easy.properties.app.model.springfield.{ Springfield, Springf
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositId, DepositIsNewVersionFilter, DoiAction, DoiActionEvent, DoiRegisteredEvent, Origin, SeriesFilter }
 import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, CurationDao, DepositDao, DepositFilters, DoiActionDao, DoiRegisteredDao, IdentifierDao, IngestStepDao, Repository, SpringfieldDao, StateDao }
-import nl.knaw.dans.easy.properties.fixture.{ FileSystemSupport, TestSupportFixture }
+import nl.knaw.dans.easy.properties.fixture.{ DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
 import org.json4s.JsonAST.JNothing
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization._
 import org.json4s.{ DefaultFormats, Formats }
-import org.scalamock.function.FunctionAdapter1
 import org.scalamock.scalatest.MockFactory
 import org.scalatra.test.EmbeddedJettyContainer
 import org.scalatra.test.scalatest.ScalatraSuite
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.language.implicitConversions
+import scala.concurrent.duration._
+import scala.language.{ implicitConversions, postfixOps }
 
 trait GraphQLResolveSpecTestObjects {
   val depositId1: DepositId = UUID.fromString("00000000-0000-0000-0000-000000000001")
@@ -186,6 +186,7 @@ trait GraphQLResolveSpecTestObjects {
 
 class GraphQLResolveSpec extends TestSupportFixture
   with MockFactory
+  with DatabaseFixture
   with FileSystemSupport
   with GraphQLResolveSpecTestObjects
   with EmbeddedJettyContainer
@@ -202,10 +203,11 @@ class GraphQLResolveSpec extends TestSupportFixture
   private val springfieldDao = mock[SpringfieldDao]
   private val contentTypeDao = mock[ContentTypeDao]
   private val repository = Repository(depositDao, stateDao, ingestStepDao, identifierDao, doiRegisteredDao, doiActionDao, curationDao, springfieldDao, contentTypeDao)
-  private val servlet = DepositPropertiesGraphQLServlet[Unit](
-    connGen = _ (()),
+  private val servlet = new GraphQLServlet(
+    database = databaseAccess,
     repository = _ => repository,
-    authenticationConfig = Auth("", ""),
+    profilingThreshold = 1 minute,
+    expectedAuth = Auth("", ""),
   )
   private implicit val jsonFormats: Formats = new DefaultFormats {}
 

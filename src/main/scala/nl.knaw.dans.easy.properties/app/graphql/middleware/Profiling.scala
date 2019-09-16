@@ -26,4 +26,4 @@ object Profiling {
   }
 }
 
-case class ProfilingConfiguration(threshold: FiniteDuration, addExtensions: Boolean)
+case class ProfilingConfiguration(threshold: FiniteDuration, addExtensions: Boolean = true)

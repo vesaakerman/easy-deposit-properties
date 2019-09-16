@@ -22,7 +22,6 @@ import better.files.File.root
 import nl.knaw.dans.easy.DataciteServiceConfiguration
 import nl.knaw.dans.easy.properties.app.database.DatabaseConfiguration
 import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
-import nl.knaw.dans.easy.properties.app.graphql.middleware.ProfilingConfiguration
 import org.apache.commons.configuration.PropertiesConfiguration
 
 import scala.concurrent.duration._
@@ -33,7 +32,7 @@ case class Configuration(version: String,
                          auth: Auth,
                          databaseConfig: DatabaseConfiguration,
                          dataciteConfig: DataciteServiceConfiguration,
-                         profilingConfig: Option[ProfilingConfiguration] = Option.empty,
+                         profilingThreshold: FiniteDuration,
                         )
 
 object Configuration {
@@ -57,10 +56,10 @@ object Configuration {
         password = properties.getString("deposit-properties.auth.password"),
       ),
       databaseConfig = DatabaseConfiguration(
-        properties.getString("deposit-properties.database.driver-class"),
-        properties.getString("deposit-properties.database.url"),
-        properties.getString("deposit-properties.database.username"),
-        properties.getString("deposit-properties.database.password"),
+        dbDriverClassName = properties.getString("deposit-properties.database.driver-class"),
+        dbUrl = properties.getString("deposit-properties.database.url"),
+        dbUsername = properties.getString("deposit-properties.database.username"),
+        dbPassword = properties.getString("deposit-properties.database.password"),
       ),
       dataciteConfig = new DataciteServiceConfiguration {
         setConnectionTimeout(properties.getString("deposit-properties.datacite.connection-timeout").toInt)
@@ -70,10 +69,7 @@ object Configuration {
         setDoiRegistrationUri(properties.getString("deposit-properties.datacite.registration.doi.uri"))
         setDatasetResolver(new URL(properties.getString("deposit-properties.datacite.resolver")))
       },
-      profilingConfig = for {
-        threshold <- Option(properties.getString("deposit-properties.graphql.profiling.threshold")).map(_.toLong)
-        addExtensions = properties.getBoolean("deposit-properties.graphql.profiling.addExtensions", false)
-      } yield ProfilingConfiguration(threshold milliseconds, addExtensions),
+      profilingThreshold = properties.getLong("deposit-properties.graphql.profiling.threshold") milliseconds,
     )
   }
 }

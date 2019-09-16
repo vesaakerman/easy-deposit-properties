@@ -24,6 +24,9 @@ import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.fixture.CustomMatchers
 import org.scalatest._
 
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
 class ReadmeSpec extends FlatSpec with Matchers with CustomMatchers {
 
   private val configuration = Configuration(
@@ -32,6 +35,7 @@ class ReadmeSpec extends FlatSpec with Matchers with CustomMatchers {
     auth = Auth("", ""),
     databaseConfig = DatabaseConfiguration("", ""),
     dataciteConfig = new DataciteServiceConfiguration,
+    profilingThreshold = 1 minute,
   )
   private val clo = new CommandLineOptions(Array[String](), configuration) {
     // avoids System.exit() in case of invalid arguments or "--help"

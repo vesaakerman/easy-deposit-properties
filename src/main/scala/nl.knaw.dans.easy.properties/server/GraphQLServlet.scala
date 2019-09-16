@@ -15,9 +15,16 @@
  */
 package nl.knaw.dans.easy.properties.server
 
+import java.sql.Connection
+
+import cats.syntax.option._
+import nl.knaw.dans.easy.properties.app.database.DatabaseAccess
 import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
+import nl.knaw.dans.easy.properties.app.graphql.middleware.{ Middlewares, ProfilingConfiguration }
+import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, GraphQLSchema }
+import nl.knaw.dans.easy.properties.app.repository.Repository
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-import nl.knaw.dans.lib.logging.servlet._
+import nl.knaw.dans.lib.logging.servlet.{ LogResponseBodyOnError, MaskedLogFormatter, ServletLogger }
 import org.json4s.JsonDSL._
 import org.json4s.ext.UUIDSerializer
 import org.json4s.native.{ JsonMethods, Serialization }
@@ -26,21 +33,17 @@ import org.scalatra._
 import org.scalatra.auth.strategy.BasicAuthStrategy.BasicAuthRequest
 import sangria.ast.Document
 import sangria.execution._
-import sangria.execution.deferred.DeferredResolver
 import sangria.marshalling.json4s.native._
-import sangria.parser._
-import sangria.schema.Schema
+import sangria.parser.{ DeliveryScheme, QueryParser, SyntaxError }
 
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.language.{ higherKinds, postfixOps }
 
-class GraphQLServlet[Ctx, Conn](schema: Schema[Ctx, Unit],
-                                connGen: (Conn => Future[ActionResult]) => Future[ActionResult],
-                                ctxProvider: Conn => Option[Auth] => Ctx,
-                                deferredResolver: DeferredResolver[Ctx] = DeferredResolver.empty,
-                                exceptionHandler: ExceptionHandler = defaultExceptionHandler,
-                                middlewares: List[Middleware[Ctx]] = List.empty)
-                               (implicit protected val executor: ExecutionContext)
+class GraphQLServlet(database: DatabaseAccess,
+                     repository: Connection => Repository,
+                     profilingThreshold: FiniteDuration,
+                     expectedAuth: Auth,
+                    )(implicit protected val executor: ExecutionContext)
   extends ScalatraServlet
     with CorsSupport
     with FutureSupport
@@ -54,13 +57,17 @@ class GraphQLServlet[Ctx, Conn](schema: Schema[Ctx, Unit],
   post("/") {
     contentType = "application/json"
     val auth = getAuthentication
+    val profiling = if (request.queryString contains "profile")
+                      ProfilingConfiguration(profilingThreshold).some
+                    else none
 
     val GraphQLInput(query, variables, operation) = Serialization.read[GraphQLInput](request.body)
+    val middlewares = new Middlewares(profiling)
     QueryParser.parse(query)(DeliveryScheme.Either)
       .fold({
         case e: SyntaxError => Future.successful(BadRequest(syntaxError(e)))
         case e => Future.failed(e)
-      }, execute(variables, operation, auth))
+      }, execute(variables, operation, auth, middlewares))
   }
 
   private def getAuthentication: Option[Auth] = {
@@ -71,17 +78,35 @@ class GraphQLServlet[Ctx, Conn](schema: Schema[Ctx, Unit],
       Option.empty
   }
 
-  private def execute(variables: Option[String], operation: Option[String], auth: Option[Auth])(queryAst: Document): Future[ActionResult] = {
-    connGen(conn => {
+  val defaultExceptionHandler = ExceptionHandler(
+    onException = {
+      case (_, e) =>
+        logger.error(s"Exception: ${ e.getMessage }", e)
+        HandledException(e.getMessage)
+    },
+    onViolation = {
+      case (_, e) =>
+        logger.error(s"Violation: ${ e.errorMessage }", e)
+        HandledException(e.errorMessage)
+    },
+    onUserFacingError = {
+      case (_, e) =>
+        logger.error(s"User facing error: ${ e.getMessage }", e)
+        HandledException(e.getMessage)
+    },
+  )
+
+  private def execute(variables: Option[String], operation: Option[String], auth: Option[Auth], middlewares: Middlewares)(queryAst: Document): Future[ActionResult] = {
+    database.futureTransaction(conn => {
       Executor.execute(
-        schema = schema,
+        schema = GraphQLSchema.schema,
         queryAst = queryAst,
-        userContext = ctxProvider(conn)(auth),
+        userContext = DataContext(repository(conn), auth, expectedAuth),
         operationName = operation,
         variables = parseVariables(variables),
-        deferredResolver = deferredResolver,
-        exceptionHandler = exceptionHandler,
-        middleware = middlewares,
+        deferredResolver = GraphQLSchema.deferredResolver,
+        exceptionHandler = defaultExceptionHandler,
+        middleware = middlewares.values,
       )
         .map(Serialization.writePretty(_))
         .map(Ok(_))

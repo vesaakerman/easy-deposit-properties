@@ -15,7 +15,6 @@
  */
 package nl.knaw.dans.easy.properties
 
-import java.sql.Connection
 import java.util.concurrent.Executors
 
 import better.files.File
@@ -23,7 +22,7 @@ import nl.knaw.dans.easy.DataciteService
 import nl.knaw.dans.easy.properties.app.database.{ DatabaseAccess, SQLErrorHandler }
 import nl.knaw.dans.easy.properties.app.legacyImport.{ ImportProps, Interactor }
 import nl.knaw.dans.easy.properties.app.repository.sql.SQLRepo
-import nl.knaw.dans.easy.properties.server.{ DepositPropertiesGraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
+import nl.knaw.dans.easy.properties.server.{ GraphQLServlet, EasyDepositPropertiesService, EasyDepositPropertiesServlet, GraphiQLServlet }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
@@ -84,7 +83,12 @@ object Command extends App with DebugEnhancedLogging {
 
     val service = new EasyDepositPropertiesService(configuration.serverPort, Map(
       "/" -> new EasyDepositPropertiesServlet(configuration.version),
-      "/graphql" -> DepositPropertiesGraphQLServlet[Connection](database.futureTransaction, implicit conn => new SQLRepo().repository, configuration.auth, configuration.profilingConfig),
+      "/graphql" -> new GraphQLServlet(
+        database = database,
+        repository = implicit conn => new SQLRepo().repository,
+        profilingThreshold = configuration.profilingThreshold,
+        expectedAuth = configuration.auth,
+      ),
       "/graphiql" -> new GraphiQLServlet("/graphql"),
     ))
     Runtime.getRuntime.addShutdownHook(new Thread("service-shutdown") {

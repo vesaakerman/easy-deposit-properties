@@ -15,8 +15,6 @@
  */
 package nl.knaw.dans.easy.properties.server
 
-import java.sql.Connection
-
 import better.files.File
 import nl.knaw.dans.easy.properties.app.graphql.middleware.Authentication.Auth
 import nl.knaw.dans.easy.properties.app.repository.sql.SQLRepo
@@ -32,6 +30,8 @@ import org.scalatra.test.EmbeddedJettyContainer
 import org.scalatra.test.scalatest.ScalatraSuite
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class GraphQLExamplesSpec extends TestSupportFixture
   with FileSystemSupport
@@ -41,12 +41,12 @@ class GraphQLExamplesSpec extends TestSupportFixture
   with EmbeddedJettyContainer
   with ScalatraSuite {
 
-  private val auth = Auth("my-username", "my-password")
   private val authHeader = "Authorization" -> "Basic bXktdXNlcm5hbWU6bXktcGFzc3dvcmQ="
-  private val servlet = DepositPropertiesGraphQLServlet[Connection](
-    connGen = databaseAccess.futureTransaction,
+  private val servlet = new GraphQLServlet(
+    database = databaseAccess,
     repository = new SQLRepo()(_, errorHandler).repository,
-    authenticationConfig = auth,
+    profilingThreshold = 1 minute,
+    expectedAuth = Auth("my-username", "my-password"),
   )
   implicit val jsonFormats: Formats = new DefaultFormats {} + UUIDSerializer
 
