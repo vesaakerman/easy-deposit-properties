@@ -1,4 +1,4 @@
-CREATE TABLE Deposit (
+CREATE TABLE IF NOT EXISTS Deposit (
     depositId CHAR(36) NOT NULL PRIMARY KEY,
     bagName TEXT,
     creationTimestamp TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE Deposit (
     origin VARCHAR(6) NOT NULL
 );
 
-CREATE TABLE State (
+CREATE TABLE IF NOT EXISTS State (
     stateId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     label VARCHAR(64) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE State (
     UNIQUE (depositId, timestamp)
 );
 
-CREATE TABLE Identifier (
+CREATE TABLE IF NOT EXISTS Identifier (
     identifierId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     identifierSchema VARCHAR(64) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE Identifier (
     UNIQUE (identifierSchema, identifierValue)
 );
 
-CREATE TABLE Curation (
+CREATE TABLE IF NOT EXISTS Curation (
     curationId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     isNewVersion BOOLEAN,
@@ -40,7 +40,7 @@ CREATE TABLE Curation (
     UNIQUE (depositId, timestamp)
 );
 
-CREATE TABLE Springfield (
+CREATE TABLE IF NOT EXISTS Springfield (
     springfieldId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     domain VARCHAR(32) NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE Springfield (
     UNIQUE (depositId, timestamp)
 );
 
-CREATE TABLE SimpleProperties (
+CREATE TABLE IF NOT EXISTS SimpleProperties (
     propertyId SERIAL NOT NULL PRIMARY KEY,
     depositId CHAR(36) NOT NULL,
     key VARCHAR(64) NOT NULL,
