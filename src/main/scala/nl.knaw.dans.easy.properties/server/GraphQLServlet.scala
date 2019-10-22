@@ -25,6 +25,7 @@ import nl.knaw.dans.easy.properties.app.graphql.{ DataContext, GraphQLSchema }
 import nl.knaw.dans.easy.properties.app.repository.Repository
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.logging.servlet.{ LogResponseBodyOnError, MaskedLogFormatter, ServletLogger }
+import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.ext.UUIDSerializer
 import org.json4s.native.{ JsonMethods, Serialization }
@@ -96,14 +97,14 @@ class GraphQLServlet(database: DatabaseAccess,
     },
   )
 
-  private def execute(variables: Option[String], operation: Option[String], auth: Option[Auth], middlewares: Middlewares)(queryAst: Document): Future[ActionResult] = {
+  private def execute(variables: Option[JValue], operation: Option[String], auth: Option[Auth], middlewares: Middlewares)(queryAst: Document): Future[ActionResult] = {
     database.futureTransaction(conn => {
       Executor.execute(
         schema = GraphQLSchema.schema,
         queryAst = queryAst,
         userContext = DataContext(repository(conn), auth, expectedAuth),
         operationName = operation,
-        variables = parseVariables(variables),
+        variables = variables.getOrElse(JObject(Nil)),
         deferredResolver = GraphQLSchema.deferredResolver,
         exceptionHandler = defaultExceptionHandler,
         middleware = middlewares.values,

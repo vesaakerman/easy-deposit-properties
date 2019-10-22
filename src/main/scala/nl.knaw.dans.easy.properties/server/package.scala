@@ -16,11 +16,12 @@
 package nl.knaw.dans.easy.properties
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import org.json4s.JValue
 import sangria.execution.{ ExceptionHandler, HandledException }
 
 package object server extends DebugEnhancedLogging {
 
-  case class GraphQLInput(query: String, variables: Option[String], operationName: Option[String])
+  case class GraphQLInput(query: String, variables: Option[JValue], operationName: Option[String])
 
   val defaultExceptionHandler = ExceptionHandler(
     onException = {
