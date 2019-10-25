@@ -24,6 +24,7 @@ import scala.language.postfixOps
 class Middlewares(profilingConfig: Option[ProfilingConfiguration]) extends DebugEnhancedLogging {
 
   lazy val values: List[Middleware[DataContext]] = List(
+    Some(AuditLog),
     Some(Authentication),
     Some(timer),
     slowLog,
