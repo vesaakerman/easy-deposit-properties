@@ -41,8 +41,6 @@
             <outputDirectory>bin</outputDirectory>
             <includes>
                 <include>easy-deposit-properties</include>
-                <include>easy-deposit-properties-service-start</include>
-                <include>easy-deposit-properties-initd.sh</include>
             </includes>
             <fileMode>0755</fileMode>
         </fileSet>
