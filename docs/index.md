@@ -1,5 +1,5 @@
-EASY-DEPOSIT-PROPERTIES
-===========
+easy-deposit-properties
+=======================
 [![Build Status](https://travis-ci.org/DANS-KNAW/easy-deposit-properties.png?branch=master)](https://travis-ci.org/DANS-KNAW/easy-deposit-properties)
 
 SYNOPSIS
