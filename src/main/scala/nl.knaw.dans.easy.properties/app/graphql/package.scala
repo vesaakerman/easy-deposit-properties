@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.graphql
+package nl.knaw.dans.easy.properties.app
 
-import nl.knaw.dans.easy.properties.app.Deleter
-import nl.knaw.dans.easy.properties.app.graphql.model.{ Mutation, Query }
-import nl.knaw.dans.easy.properties.app.register.DepositPropertiesRegistration
-import nl.knaw.dans.easy.properties.app.repository.Repository
+import sangria.schema.Context
 
 import scala.concurrent.ExecutionContext
 
-trait DataContext {
+package object graphql {
 
-  val query: Query
-  val mutation: Mutation
-  val executionContext: ExecutionContext
+  private[graphql] implicit def dataContextFromContext(implicit ctx: Context[DataContext, _]): DataContext = ctx.ctx
 
-  def isLoggedIn: Boolean
-
-  def repo: Repository
-
-  def registration: DepositPropertiesRegistration
-
-  def deleter: Deleter
+  private[graphql] implicit def executionContext(implicit ctx: DataContext): ExecutionContext = ctx.executionContext
 }

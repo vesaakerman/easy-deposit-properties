@@ -15,28 +15,35 @@
  */
 package nl.knaw.dans.easy.properties.app.graphql
 
-import nl.knaw.dans.easy.properties.app.graphql.resolvers.{ ContentTypeResolver, CurationResolver, DepositResolver, DoiEventResolver, IdentifierResolver, IngestStepResolver, SpringfieldResolver, StateResolver }
-import nl.knaw.dans.easy.properties.app.graphql.types._
+import nl.knaw.dans.easy.properties.app.graphql.resolvers._
+import nl.knaw.dans.easy.properties.app.graphql.model.Scalars
+import nl.knaw.dans.easy.properties.app.graphql.typedefinitions._
 import sangria.execution.deferred.DeferredResolver
+import sangria.macros.derive._
 import sangria.schema._
 
 object GraphQLSchema extends Scalars
-  with NodeType
-  with MetaTypes
-  with TimebasedSearch
-  with ContentTypeGraphQLType
-  with SpringfieldType
-  with CurationEventType
-  with DoiEventTypes
-  with IdentifierGraphQLType
-  with IngestStepType
-  with StateType
-  with CurationType
-  with CuratorType
-  with DepositorType
-  with DepositType
-  with QueryType
-  with MutationType {
+  with GraphQLCommonTypes
+  with GraphQLContentTypeType
+  with GraphQLCurationPerformedType
+  with GraphQLCurationRequiredType
+  with GraphQLCuratorType
+  with GraphQLDepositType
+  with GraphQLDoiActionType
+  with GraphQLDoiRegisteredType
+  with GraphQLIdentifierType
+  with GraphQLIngestStepType
+  with GraphQLIsNewVersionType
+  with GraphQLMutationType
+  with GraphQLQueryType
+  with GraphQLSpringfieldType
+  with GraphQLStateType {
+
+  implicit val QueryType: ObjectType[DataContext, Unit] = deriveContextObjectType(
+    _.query,
+    AddFields(nodeField, nodesField),
+  )
+  implicit val MutationType: ObjectType[DataContext, Unit] = deriveContextObjectType(_.mutation)
 
   val schema: Schema[DataContext, Unit] = Schema[DataContext, Unit](QueryType, mutation = Option(MutationType))
   val deferredResolver: DeferredResolver[DataContext] = DeferredResolver.fetchers(

@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.graphql
+package nl.knaw.dans.easy.properties.app.graphql.typedefinitions
 
-import sangria.marshalling.{ CoercedScalaResultMarshaller, FromInput, ResultMarshaller }
-import sangria.schema.Context
+import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType
+import sangria.macros.derive.{ DocumentValue, EnumTypeDescription, deriveEnumType }
+import sangria.schema.EnumType
 
-import scala.language.implicitConversions
+trait GraphQLIdentifierType {
 
-package object types {
-
-  private[types] implicit def dataContextFromContext(implicit ctx: Context[DataContext, _]): DataContext = ctx.ctx
-
-  implicit def fromInput[T](create: Map[String, Any] => T): FromInput[T] = new FromInput[T] {
-    override val marshaller: ResultMarshaller = CoercedScalaResultMarshaller.default
-
-    override def fromResult(node: marshaller.Node): T = create(node.asInstanceOf[Map[String, Any]])
-  }
+  implicit val IdentifierTypeType: EnumType[IdentifierType.Value] = deriveEnumType(
+    EnumTypeDescription("The type of the identifier."),
+    DocumentValue("DOI", "The doi identifier."),
+    DocumentValue("URN", "The 'urn:nbn' identifier."),
+    DocumentValue("FEDORA", "The Fedora identifier."),
+    DocumentValue("BAG_STORE", "The bagstore identifier."),
+  )
 }
