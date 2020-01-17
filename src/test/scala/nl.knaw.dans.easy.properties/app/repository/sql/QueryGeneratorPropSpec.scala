@@ -22,9 +22,11 @@ import nl.knaw.dans.easy.properties.app.model.curator.DepositCuratorFilter
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.identifier.IdentifierType.IdentifierType
 import nl.knaw.dans.easy.properties.app.model.ingestStep.{ DepositIngestStepFilter, IngestStepLabel }
+import nl.knaw.dans.easy.properties.app.model.sort.{ DepositOrder, DepositOrderField, OrderDirection }
 import nl.knaw.dans.easy.properties.app.model.state.{ DepositStateFilter, StateLabel }
-import nl.knaw.dans.easy.properties.app.model.{ DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositIsNewVersionFilter, DoiAction, Origin, SeriesFilter }
+import nl.knaw.dans.easy.properties.app.model.{ AtTime, Between, DepositCurationPerformedFilter, DepositCurationRequiredFilter, DepositDoiActionFilter, DepositDoiRegisteredFilter, DepositIsNewVersionFilter, DoiAction, EarlierThan, LaterThan, NotBetween, Origin, SeriesFilter, TimeFilter, Timestamp }
 import nl.knaw.dans.easy.properties.app.repository.{ DepositFilters, DepositorIdFilters }
+import org.joda.time.DateTime
 import org.scalacheck.Arbitrary._
 import org.scalacheck.{ Arbitrary, Gen }
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
@@ -60,6 +62,31 @@ class QueryGeneratorPropSpec extends PropSpec with GeneratorDrivenPropertyChecks
   implicit val arbitraryCurationRequiredFilter: Arbitrary[DepositCurationRequiredFilter] = genDepositFilter(DepositCurationRequiredFilter)
   implicit val arbitraryCurationPerformedFilter: Arbitrary[DepositCurationPerformedFilter] = genDepositFilter(DepositCurationPerformedFilter)
   implicit val arbitraryContentTypeFilter: Arbitrary[DepositContentTypeFilter] = genDepositFilter(ContentTypeValue)(DepositContentTypeFilter)
+  implicit val arbitraryDepositOrder: Arbitrary[DepositOrder] = Arbitrary {
+    for {
+      field <- genFromEnum(DepositOrderField).arbitrary
+      direction <- genFromEnum(OrderDirection).arbitrary
+    } yield DepositOrder(field, direction)
+  }
+
+  implicit val arbitraryTimestamp: Arbitrary[Timestamp] = Arbitrary {
+    Gen.calendar.map(c => new DateTime(c.getTime))
+  }
+  implicit val arbitraryTimeFilter: Arbitrary[TimeFilter] = Arbitrary {
+    Gen.oneOf[TimeFilter](
+      arbitraryTimestamp.arbitrary.map(EarlierThan),
+      arbitraryTimestamp.arbitrary.map(LaterThan),
+      arbitraryTimestamp.arbitrary.map(AtTime),
+      for {
+        earlier <- arbitraryTimestamp.arbitrary
+        later <- arbitraryTimestamp.arbitrary
+      } yield Between(earlier, later),
+      for {
+        earlier <- arbitraryTimestamp.arbitrary
+        later <- arbitraryTimestamp.arbitrary
+      } yield NotBetween(earlier, later),
+    )
+  }
 
   implicit val arbitraryDepositFilters: Arbitrary[DepositFilters] = Arbitrary {
     arbitrary[(
@@ -75,6 +102,8 @@ class QueryGeneratorPropSpec extends PropSpec with GeneratorDrivenPropertyChecks
         Option[DepositCurationPerformedFilter],
         Option[DepositContentTypeFilter],
         Option[Origin.Origin],
+        Option[TimeFilter],
+        Option[DepositOrder],
       )]
       .map(DepositFilters.tupled)
   }
@@ -94,7 +123,6 @@ class QueryGeneratorPropSpec extends PropSpec with GeneratorDrivenPropertyChecks
       )]
       .map(DepositorIdFilters.tupled)
   }
-
   implicit def arbitraryNonEmptyList[T: Arbitrary]: Arbitrary[NonEmptyList[T]] = Arbitrary {
     arbitrary[(T, List[T])].map { case (t, ts) => NonEmptyList(t, ts) }
   }

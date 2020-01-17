@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.graphql.ordering
+package nl.knaw.dans.easy.properties.app.model.sort
 
-import nl.knaw.dans.easy.properties.app.model.springfield.Springfield
+import nl.knaw.dans.easy.properties.app.model.ingestStep.{ IngestStep, IngestStepLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Timestamp, timestampOrdering }
-import sangria.macros.derive.GraphQLDescription
 
-@GraphQLDescription("Properties by which springfields can be ordered")
-object SpringfieldOrderField extends Enumeration {
-  type SpringfieldOrderField = Value
+object IngestStepOrderField extends Enumeration {
+  type IngestStepOrderField = Value
 
   // @formatter:off
-  @GraphQLDescription("Order springfields by timestamp")
-  val TIMESTAMP: SpringfieldOrderField = Value("TIMESTAMP")
+  val STEP     : IngestStepOrderField = Value("STEP")
+  val TIMESTAMP: IngestStepOrderField = Value("TIMESTAMP")
   // @formatter:on
 }
 
-case class SpringfieldOrder(field: SpringfieldOrderField.SpringfieldOrderField,
-                            direction: OrderDirection.OrderDirection) extends Ordering[Springfield] {
-  def compare(x: Springfield, y: Springfield): Int = {
-    val orderByField: Ordering[Springfield] = field match {
-      case SpringfieldOrderField.TIMESTAMP =>
+case class IngestStepOrder(field: IngestStepOrderField.IngestStepOrderField,
+                           direction: OrderDirection.OrderDirection) extends Ordering[IngestStep] {
+  def compare(x: IngestStep, y: IngestStep): Int = {
+    val orderByField: Ordering[IngestStep] = field match {
+      case IngestStepOrderField.STEP =>
+        Ordering[IngestStepLabel.IngestStepLabel].on(_.step)
+      case IngestStepOrderField.TIMESTAMP =>
         Ordering[Timestamp].on(_.timestamp)
     }
 

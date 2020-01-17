@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.graphql.ordering
+package nl.knaw.dans.easy.properties.app.model.sort
 
 import nl.knaw.dans.easy.properties.app.model.state.{ State, StateLabel }
 import nl.knaw.dans.easy.properties.app.model.{ Timestamp, timestampOrdering }
-import sangria.macros.derive.GraphQLDescription
 
-@GraphQLDescription("Properties by which states can be ordered")
 object StateOrderField extends Enumeration {
   type StateOrderField = Value
 
   // @formatter:off
-  @GraphQLDescription("Order states by label")
   val LABEL    : StateOrderField = Value("LABEL")
-  @GraphQLDescription("Order states by timestamp")
   val TIMESTAMP: StateOrderField = Value("TIMESTAMP")
   // @formatter:on
 }

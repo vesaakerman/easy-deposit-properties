@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.properties.app.graphql.ordering
+package nl.knaw.dans.easy.properties.app.model.sort
 
 import sangria.macros.derive.GraphQLDescription
 
 import scala.language.implicitConversions
 
-@GraphQLDescription("Possible directions in which to order a list of items when provided an orderBy argument")
 object OrderDirection extends Enumeration {
   type OrderDirection = Value
 
