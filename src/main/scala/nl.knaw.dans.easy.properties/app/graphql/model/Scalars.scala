@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.properties.app.graphql.model
 import java.util.UUID
 
 import cats.syntax.either._
+import nl.knaw.dans.lib.string._
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import sangria.ast.StringValue
@@ -29,7 +30,7 @@ trait Scalars {
   case object UUIDCoercionViolation extends ValueCoercionViolation("UUID value expected")
 
   private def parseUUID(s: String): Either[Violation, UUID] = {
-    Either.catchNonFatal { UUID.fromString(s) }
+    s.toUUID
       .fold(_ => UUIDCoercionViolation.asLeft, _.asRight)
   }
 

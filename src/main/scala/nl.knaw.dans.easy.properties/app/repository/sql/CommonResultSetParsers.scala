@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.properties.app.repository.sql
 
 import java.sql.{ Connection, ResultSet }
-import java.util.UUID
 
 import cats.data.NonEmptyList
 import cats.instances.either._
@@ -25,6 +24,7 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, Origin, Timestamp }
 import nl.knaw.dans.easy.properties.app.repository.{ InvalidValueError, QueryErrorOr }
+import nl.knaw.dans.lib.string._
 import org.joda.time.{ DateTime, DateTimeZone }
 import resource.managed
 import sangria.relay.Node
@@ -40,7 +40,7 @@ private[sql] trait CommonResultSetParsers {
   }
 
   private[sql] def parseDepositId(s: String): Either[InvalidValueError, DepositId] = {
-    Either.catchOnly[IllegalArgumentException] { UUID.fromString(s) }
+    s.toUUID
       .leftMap(_ => InvalidValueError(s"Invalid depositId value: '$s'"))
   }
 

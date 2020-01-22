@@ -36,6 +36,7 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositId, DoiAction, D
 import nl.knaw.dans.easy.properties.app.repository.{ MutationErrorOr, Repository }
 import nl.knaw.dans.easy.{ DataciteService, DataciteServiceException }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import nl.knaw.dans.lib.string._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.lang.BooleanUtils
 import org.joda.time.DateTime
@@ -97,11 +98,7 @@ class ImportProps(repository: Repository, interactor: Interactor, datacite: Data
     file.parentOption
       .map(_.name.asRight)
       .getOrElse { NoSuchParentDirError(file).asLeft }
-      .flatMap(s => parseDepositId(s).leftMap(_ => NoDepositIdError(s)))
-  }
-
-  private def parseDepositId(s: String): Either[IllegalArgumentException, DepositId] = {
-    Either.catchOnly[IllegalArgumentException](UUID.fromString(s))
+      .flatMap(s => s.toUUID.leftMap(_ => NoDepositIdError(s)))
   }
 
   private def storeProp[T](props: PropertiesConfiguration, key: String)(value: T): T = {
