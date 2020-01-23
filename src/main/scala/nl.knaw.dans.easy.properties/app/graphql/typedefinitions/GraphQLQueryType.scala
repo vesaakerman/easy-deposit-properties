@@ -23,6 +23,8 @@ import nl.knaw.dans.easy.properties.app.graphql.resolvers._
 import sangria.macros.derive._
 import sangria.relay.{ GlobalId, Node, NodeDefinition }
 import sangria.schema.{ Context, ObjectType }
+import nl.knaw.dans.lib.string._
+import nl.knaw.dans.lib.error._
 
 trait GraphQLQueryType {
   this: Scalars
@@ -52,7 +54,7 @@ trait GraphQLQueryType {
             CurationResolver.curationById(id.id)
               .map(_.map(curation => new GraphQLCurator(curation.getCurator)))
           case GraphQLDepositType.name =>
-            DepositResolver.depositById(UUID.fromString(id.id))
+            DepositResolver.depositById(id.id.toUUID.toTry.unsafeGetOrThrow)
               .map(_.map(new GraphQLDeposit(_)))
           case GraphQLIdentifierType.name =>
             IdentifierResolver.identifierById(id.id)

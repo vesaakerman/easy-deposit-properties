@@ -1,0 +1,19 @@
+{
+  "data": {
+    "node": null
+  },
+  "errors": [
+    {
+      "message": "String '1' is not a UUID",
+      "path": [
+        "node"
+      ],
+      "locations": [
+        {
+          "line": 2,
+          "column": 5
+        }
+      ]
+    }
+  ]
+}

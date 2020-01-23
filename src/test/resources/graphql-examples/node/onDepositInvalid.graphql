@@ -1,0 +1,14 @@
+query {
+    node(id: "RGVwb3NpdDox"){
+        ... on Deposit {
+            id
+            depositId
+            creationTimestamp
+            state {
+                label
+                description
+                timestamp
+            }
+        }
+    }
+}

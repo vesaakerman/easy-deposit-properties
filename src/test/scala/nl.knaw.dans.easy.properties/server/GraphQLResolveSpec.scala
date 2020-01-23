@@ -34,7 +34,7 @@ import nl.knaw.dans.easy.properties.app.model.{ Deposit, DepositCurationPerforme
 import nl.knaw.dans.easy.properties.app.repository.{ ContentTypeDao, CurationDao, DepositDao, DepositFilters, DoiActionDao, DoiRegisteredDao, IdentifierDao, IngestStepDao, Repository, SpringfieldDao, StateDao }
 import nl.knaw.dans.easy.properties.fixture.{ DatabaseFixture, FileSystemSupport, TestSupportFixture }
 import org.joda.time.DateTime
-import org.json4s.JsonAST.JNothing
+import org.json4s.JsonAST.{ JNothing, JString }
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization._
@@ -1657,6 +1657,19 @@ class GraphQLResolveSpec extends TestSupportFixture
     }
 
     runQuery(input)
+  }
+
+  it should "resolve 'node/onDepositInvalid.graphql' with an error message about invalid UUID" in {
+    val input = graphqlExamplesDir / "node" / "onDepositInvalid.graphql"
+
+    depositDao.find _ expects * never()
+    stateDao.getCurrent _ expects * never()
+
+    val inputBody = compact(render("query" -> input.contentAsString))
+    post(uri = "/", body = inputBody.getBytes) {
+      (parse(body) \ "errors") \\ "message" should matchPattern { case JString("String '1' is not a UUID") => }
+      status shouldBe 200
+    }
   }
 
   it should "resolve 'node/onIdentifier.graphql' with 2 calls to the repository" in {
